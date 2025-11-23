@@ -1,233 +1,354 @@
-# EDM (temporary handle for a new, untitled project)
+# EDM Track Analysis
 
- claude-flow swarm "read docs\PROJECT_SPEC.md and create a detailed technical implementation plan in /plans using TDD, the SAFLA model, in Python, using a VSCode DevContainer and WSL, using pip and uv.  Focus first on accurate BPMs, beat grids and phrasing.  Set up a mount for music files in the DevContainer, mapped to C:\Music\Library on the host machine.  Ensure claude-code and other AI tooling work properly in the DevContainer.  Just do research, do not write code yet or implemnent anything.
+A Python library and command-line tool for analyzing EDM tracks, providing BPM detection, structure analysis, and integration with external music services.
 
-## Vision
+## Features
 
-An ML-powered system for comprehensive musical and strucural analysis of EDM tracks.  This is part of a larger project.  Initially, the focus is entirely on essential structural elements (BPM), key track moments (drops, builds, breakdowns) and external connectivity.
+- **BPM Detection**: Accurate BPM detection using madmom and librosa
+- **Structure Analysis**: Detect intro, buildup, drop, breakdown, and outro sections
+- **External Service Integration**: Query Spotify, Beatport, and TuneBat for track information
+- **Rich CLI**: Beautiful command-line interface with progress bars and tables
+- **Configurable**: Support for configuration files and environment variables
+- **Extensible**: Clean library API for programmatic use
 
-## Planned Features
+## Installation
 
-**Structural Elements:**
-- **Essentials** - BPM, beat grids, phrasing, key
-- **Track progression** - intro, verse, chorus, bridge, outro, etc.
-- **Key moments** - drops, builds and breakdowns
-- **Risers/Sweeps** - The specific automation c     ves (exponential vs linear) and their duration
-- **Percussion rolls/fills** - Snare rolls, hi-hat patterns that signal transitions (often at bars 7-8 or 15-16)
-- **Bass cuts/returns** - The specific pattern of bass removal (full cut vs high-pass sweep)
-- **Vocal chops/hooks** - Repetitive vocal elements that DJs can use as mixing anchors
-- **"Fake drops"** - Where tension builds but releases into another breakdown instead
-- **Switch-ups** - Mid-phrase rhythm changes common in psytrance and tech-house
+### Prerequisites
 
-**Harmonic/Melodic Structure:**
-- **Key modulation points** - Tracks that shift key (important for harmonic mixing)
-- **Melodic call-and-response** patterns 
-- **Chord progression loops** - 4-bar vs 8-bar vs 16-bar harmonic cycle
-- **Tonal vs atonal sections** - Some tracks strip to pure percussion
-- **Harmonic density** - Stacked leads vs single elements (affects EQ headroom for mixing)
+- Python 3.9 or higher (tested with Python 3.12)
+- pip or pip3
+- git
+- ffmpeg (required for madmom audio file loading)
+- System packages (Ubuntu/Debian):
+  ```bash
+  sudo apt update
+  sudo apt install -y python3-pip python3-venv python3-dev build-essential ffmpeg
+  ```
 
-**Energy Topology:**
-- **Energy "plateaus" vs "peaks"** - Some drops maintain energy, others spike and decay
-- **Tension release patterns** - Immediate vs gradual, full vs partial
-- **"Breathing" patterns** - Regular energy oscillations within sections
-- **Drive patterns** - Whether energy increases linearly or in steps
+### From Source (Recommended for Development)
 
-**DJ-Specific Markers:**
-- **Mix-in/mix-out zones** - Sections specifically designed for blending
-- **Loop-safe regions** - Areas without progression that can loop indefinitely
-- **Mixing hazards** - vocal sections, unusual structural changes, etc.
-- **Phrase vulnerability** - Sections where losing phase alignment is catastrophic vs forgiving
-- **EQ pockets** - Frequency ranges intentionally left empty for layering
-- **"DJ tool" sections** - Minimal loops meant for creative mixing
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/crsmithdev/edm.git
+   cd edm
+   ```
 
-**External Data**
-- **Local** -  extract BPM, key and other relevant metadata from files
-- **Online** - fetch data from services  / APIs (Spotify, etc.) to find / validate track data
-- **Priority** - for basic things (BPM, key) check local, then online, then analyze if still missing
+2. **Create and activate a virtual environment**:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-## Core Software Stack
+3. **Install dependencies**:
+   
+   First, install Cython and NumPy (required for building madmom):
+   ```bash
+   pip install Cython numpy
+   ```
+   
+   Then install core dependencies:
+   ```bash
+   pip install librosa pydantic "typer[all]" rich spotipy requests mutagen
+   ```
+   
+   Install madmom from source (required for accurate BPM detection):
+   ```bash
+   pip install git+https://github.com/CPJKU/madmom.git
+   ```
 
-**Audio Processing & Feature Extraction:**
-- **librosa** (which you're already using) for spectral features, onset detection, tempo tracking
-- **madmom** - specifically designed for music information retrieval, excellent for beat/downbeat tracking
-- **essentia** - has EDM-specific algorithms for key detection, danceability, and energy analysis
-- **pytorch** or **tensorflow** for the deep learning components
-- **torchaudio** if using PyTorch - provides GPU-accelerated spectrograms
+4. **Install the edm package in editable mode**:
+   ```bash
+   pip install --no-deps -e .
+   ```
 
-## Multi-Model Architecture
+5. **Verify installation**:
+   ```bash
+   edm --version
+   ```
 
-This will require several specialized models working together:
+### Alternative: Install with pip (when dependencies resolve)
 
-### 1. **Structural Segmentation Model (CNN + RNN)**
-- Input: Mel-spectrograms, chromagrams, self-similarity matrices
-- Architecture: CNN for local pattern detection → Bi-LSTM for temporal context → CRF layer for segment boundaries
-- Output: Frame-level predictions of intro/breakdown/drop/build/outro
-- Training: Your hand-tagged timestamps of structural boundaries
+Once all dependencies are available on PyPI for your Python version:
 
-### 2. **Drop Detection Specialist**
-- Input: Multi-resolution spectrograms (focusing on 20-200Hz for bass drops)
-- Features: RMS energy derivatives, spectral flux, sub-bass energy ratios
-- Architecture: Temporal Convolutional Network (TCN) - better than RNNs for long sequences
-- Key insight: Train on 16-32 bar windows centered on drops vs non-drops
-
-### 3. **BPM/Beat Grid Model**
-- Start with traditional DSP (autocorrelation, comb filters) for initial estimate
-- Refine with learned model that handles tempo changes and half/double-time sections
-- Train on tracks where you've manually corrected Rekordbox's beat grids
-
-### 4. **Energy/Tension Profiler**
-- Extract energy bands: sub-bass (20-60Hz), bass (60-250Hz), mid (250-4kHz), high (4kHz+)
-- Model tension curves using attention mechanisms to identify build patterns
-- Output: Continuous energy/tension values that inform your cue point placement
-
-## Feature Engineering
-
-**Time-domain features:**
-- Zero-crossing rate (percussion density)
-- RMS energy with multiple window sizes
-- Peak/average ratios (dynamic range)
-
-**Frequency-domain features:**
-- Spectral centroid movement (brightness changes)
-- Spectral rolloff points
-- Harmonic-percussive separation ratios
-
-**Music-specific features:**
-- Onset strength patterns (for identifying percussion strips/fills)
-- Chroma energy normalized statistics (harmonic stability)
-- Tempogram (for detecting rhythm changes)
-
-## Training Data & Data Augmentation Strategies
-
-I will provide a set of hand-tagged tracks for training as needed.
-
-Since hand-tagging is expensivem, these methods may be useful:
-
-- **Pitch shifting** (±2 semitones) without tempo change
-- **Time stretching** (95-105% tempo) 
-- **Mix simulation** - overlay tracks at different volumes to simulate mixing scenarios
-- **EQ augmentation** - apply DJ-style EQ curves
-- **Pseudo-labeling** - use high-confidence predictions to expand training set
-
-## Training Approach
-
-1. **Start with pre-training** on large music datasets (FMA, MagnaTagATune) for general music understanding
-2. **Transfer learning** to EDM-specific features using your hand-tagged data
-3. **Active learning loop**:
-   - Model makes predictions on new tracks
-   - You correct only the uncertain/wrong predictions
-   - Retrain with expanded dataset
-   - Your existing 244-track library could seed this effectively
-
-4. **Multi-task learning** - train all objectives jointly with shared encoder:
-   - Structure segmentation (classification)
-   - BPM prediction (regression)
-   - Cue point suggestion (sequence labeling)
-   - Energy profiling (regression)
-
-## Validation Strategy
-
-- **Objective metrics**: Precision/recall for boundaries (±2 seconds tolerance)
-- **Perceptual validation**: A/B test cue points in actual DJ sets
-- **Cross-validation by subgenre**: Ensure it works across progressive house, melodic techno, psytrance
-
-The CNN+RNN architecture works because:
-- **CNN** captures local rhythmic patterns (kick-snare patterns, hi-hat rhythms)
-- **RNN** understands the metrical hierarchy (which beats are strong/weak)
-- **Multi-scale** processing handles both micro-timing and phrase structure
-
-## Key Insights for Maximum Reliability
-
-1. **Always use Madmom's DBN tracker as your primary** - It's specifically trained on electronic music
-2. **Detect and lock to kick drums** - In EDM, the kick is the truth
-3. **Validate with structure** - Drops should align with downbeats
-4. **Learn from your corrections** - Build a personalized correction model
-5. **Check tempo stability** - Real EDM doesn't drift; if it does, you've got the wrong grid
-
-## Relevant Recent ML Techniques
-
-### 1. **Diffusion Models for Audio (2023-2024)**
-- Not just for generation - can be used for **masked audio modeling**
-- Train to reconstruct missing segments → learns deep structure
-- Recent work: Moûsai, AudioLDM2 architectures adapted for analysis
-
-### 2. **Hierarchical Transformers**
-- **HiP-Hop** (Hierarchical Prosody Prediction) techniques from speech can map to music
-- **Perceiver AR** - Handles multiple timescales naturally
-- **FlashAttention-2** - Makes it feasible to process full tracks at sample level
-
-### 3. **Self-Supervised Contrastive Learning**
-- **CLMR** (Contrastive Learning for Music Representations)
-- **SimCLR adapted for audio** - Learn representations without labels
-- **COLA** (Contrastive Learning for Audio) - Specifically good for structure
-- Train on augmented pairs: same track with different EQ = similar, different tracks = dissimilar
-
-### 4. **Neural Audio Codecs as Features**
-- **Encodec**, **SoundStream** representations capture perceptual importance
-- Much better than raw spectrograms for downstream tasks
-- **DAC (Descript Audio Codec)** - Optimized for music, not just speech
-
-### 5. **Mamba/State Space Models (2024)**
-- Linear-time complexity for long sequences (perfect for full tracks)
-- **Audio-Mamba** architectures showing SOTA results
-- Better than transformers for catching long-range dependencies in music
-
-### 6. **Multimodal Music Understanding**
-- **MusicFM** - Foundation model trained on music + metadata + user behavior
-- **CLAP** models (like CLIP but for audio/text)
-- Could incorporate DJ comments, crowd recordings, social media reactions
-
-### 7. **Differentiable DSP Layers**
-- **DDSP** (Differentiable Digital Signal Processing)
-- Combine learned and traditional signal processing
-- Example: Learned filterbanks that discover EDM-relevant frequency bands
-
-### 8. **Mixture-of-Experts for Multi-Genre**
-- Different experts for different subgenres
-- Router network learns track style and activates appropriate experts
-- Particularly good for handling progressive → techno → psytrance differences
-
-## Specific Recent Papers/Techniques Worth Implementing
-
-**"Beat Transformer" (2023)** - Attention-based beat tracking that handles complex patterns:
-```python
-# Learns to attend to different metrical levels
-class BeatTransformer(nn.Module):
-    def forward(self, audio_features):
-        # Multi-head attention across different time scales
-        beat_attention = self.beat_heads(audio_features)
-        downbeat_attention = self.downbeat_heads(audio_features)
-        phrase_attention = self.phrase_heads(audio_features)
-        return hierarchical_decode(beat_attention, downbeat_attention, phrase_attention)
+```bash
+pip install -e .
 ```
 
-**"MusCALL" (2024)** - Curriculum learning for structure:
-- Start training on simple 4/4 house
-- Gradually introduce complex prog house and psytrance
-- Model learns robust features that generalize
+### Development Installation
 
-**"ProtoTypical Networks for Audio"** - Few-shot learning:
-- Define prototypes for "drop", "breakdown", etc. from just a few examples
-- Useful when you have limited tagged data for rare patterns
+For development with testing and linting tools:
 
-### Integration Ideas
-
-**Ensemble with Music Theory Priors:**
-```python
-class EDMStructureNet(nn.Module):
-    def __init__(self):
-        # Neural components
-        self.mamba_encoder = MambaBlock(d_model=512)
-        self.perceiver = PerceiverResampler()
-        
-        # Theory-informed components
-        self.bar_attention = BarAlignedAttention()  # Forces attention at 8/16 bar boundaries
-        self.energy_physics = EnergyConservationLoss()  # Energy can't jump discontinuously
+```bash
+pip install -e ".[dev]"
 ```
 
-**Active Learning with Uncertainty:**
-- Use Monte Carlo dropout to identify tracks where model is uncertain
-- Focus your hand-tagging efforts on these high-value examples
-- Recent work shows 10x reduction in labeling needs
+### Why Install madmom from Source?
 
-The biggest game-changer could be combining Mamba/SSM architectures (for efficient long-range modeling) with differentiable DSP (for interpretable features) and contrastive pre-training on large unlabeled EDM collections. This would give a foundation model that understands EDM deeply before even adding labels.
+The PyPI version of madmom (0.16.1) has build issues with Python 3.12 due to Cython dependencies. Installing from the GitHub repository (version 0.17.dev0) provides:
+- Python 3.12 compatibility
+- Latest bug fixes and improvements
+- Better performance on modern systems
+
+If you encounter issues building madmom, you can use librosa-only mode by passing `use_madmom=False` to the analysis functions, though madmom provides more accurate BPM detection for EDM tracks.
+
+## Quick Start
+
+### Command Line
+
+Analyze a single track:
+```bash
+edm analyze track.mp3
+```
+
+Analyze with specific types:
+```bash
+edm analyze track.mp3 --types bpm,grid
+```
+
+Analyze multiple tracks:
+```bash
+edm analyze *.mp3
+```
+
+Analyze directory recursively:
+```bash
+edm analyze /path/to/tracks/ --recursive
+```
+
+Save results to JSON:
+```bash
+edm analyze track.mp3 --output results.json
+```
+
+Enable verbose logging:
+```bash
+edm analyze track.mp3 --verbose
+```
+
+### Python Library
+
+```python
+from pathlib import Path
+from edm.analysis import analyze_bpm, analyze_structure
+
+# Analyze BPM
+result = analyze_bpm(Path("track.mp3"))
+print(f"BPM: {result.bpm:.1f} (confidence: {result.confidence:.2f})")
+
+# Analyze structure
+structure = analyze_structure(Path("track.mp3"))
+for section in structure.sections:
+    print(f"{section.label}: {section.start_time:.1f}s - {section.end_time:.1f}s")
+```
+
+## Configuration
+
+### Spotify API Credentials
+
+To enable Spotify BPM lookup, set your API credentials in a `.env` file in the project root:
+
+```bash
+SPOTIFY_CLIENT_ID=your_client_id_here
+SPOTIFY_CLIENT_SECRET=your_client_secret_here
+```
+
+### BPM Lookup Strategy
+
+EDM uses a cascading strategy for BPM detection:
+
+1. **Metadata** (fastest): Read BPM from file tags (ID3v2, MP4, FLAC)
+2. **Spotify API** (accurate): Professional BPM data from Spotify
+3. **Computed** (most accurate for EDM): madmom DBN beat tracking
+
+Control the strategy with flags:
+- `--ignore-metadata`: Skip file metadata (uses Spotify → computed)
+- `--offline`: Skip Spotify API (uses metadata → computed)
+- `--offline --ignore-metadata`: Force computation only
+
+### Configuration File
+
+Create `~/.config/edm/config.toml`:
+
+```toml
+log_level = "INFO"
+
+[analysis]
+detect_bpm = true
+detect_structure = true
+use_madmom = true
+use_librosa = false
+
+[external_services]
+enable_beatport = true
+enable_tunebat = true
+cache_ttl = 3600
+```
+
+### Environment Variables
+
+Alternative to `.env` file:
+
+```bash
+export SPOTIFY_CLIENT_ID=your_client_id
+export SPOTIFY_CLIENT_SECRET=your_client_secret
+export EDM_LOG_LEVEL=DEBUG
+```
+
+## CLI Reference
+
+### Global Options
+
+- `--version`, `-v`: Show version and exit
+- `--help`: Show help message
+
+### `analyze` Command
+
+Analyze EDM tracks for BPM, structure, and other features.
+
+**Arguments:**
+- `FILES`: Audio files to analyze (required)
+
+**Options:**
+- `--types`, `-t TEXT`: Comma-separated analysis types (bpm,grid,structure)
+- `--output`, `-o PATH`: Save results to JSON file
+- `--format`, `-f TEXT`: Output format (table, json) [default: table]
+- `--config`, `-c PATH`: Path to configuration file
+- `--recursive`, `-r`: Recursively analyze directories
+- `--verbose`: Enable verbose logging (DEBUG level)
+- `--quiet`, `-q`: Suppress non-essential output
+- `--no-color`: Disable colored output
+
+**Examples:**
+```bash
+# Basic analysis
+edm analyze track.mp3
+
+# BPM only
+edm analyze track.mp3 --types bpm
+
+# Multiple types
+edm analyze track.mp3 --types bpm,grid
+
+# Batch analysis
+edm analyze *.mp3 --output results.json
+
+# Recursive directory
+edm analyze /music/edm/ --recursive --format json
+
+# Verbose mode
+edm analyze track.mp3 --verbose
+```
+
+## Architecture
+
+### Library Structure
+
+```
+src/edm/
+├── __init__.py           # Package entry point
+├── analysis/             # Analysis algorithms
+│   ├── bpm.py           # BPM detection
+│   └── structure.py     # Structure analysis
+├── io/                   # File I/O
+│   ├── audio.py         # Audio loading
+│   └── metadata.py      # Metadata reading
+├── external/             # External API clients
+│   ├── spotify.py       # Spotify integration
+│   ├── beatport.py      # Beatport integration
+│   └── tunebat.py       # TuneBat integration
+├── features/             # Feature extraction
+│   ├── spectral.py      # Spectral features
+│   └── temporal.py      # Temporal features
+├── models/               # ML models
+│   └── base.py          # Model loading
+├── config.py             # Configuration management
+└── exceptions.py         # Custom exceptions
+```
+
+### CLI Structure
+
+```
+src/cli/
+├── __init__.py           # CLI package
+├── main.py               # Entry point with Typer
+└── commands/             # Command implementations
+    └── analyze.py       # Analyze command
+```
+
+## Development
+
+### Running Tests
+
+```bash
+pytest
+```
+
+### Code Formatting
+
+```bash
+black src tests
+```
+
+### Linting
+
+```bash
+ruff src tests
+```
+
+### Type Checking
+
+```bash
+mypy src
+```
+
+## Dependencies
+
+### Core Libraries
+- **librosa**: Audio processing and analysis
+- **madmom**: BPM detection and beat tracking
+- **essentia**: Music information retrieval
+- **numpy**: Numerical computing
+
+### CLI & Configuration
+- **typer**: Modern CLI framework
+- **rich**: Beautiful terminal output
+- **pydantic**: Configuration validation
+
+### External Services
+- **spotipy**: Spotify API client
+- **requests**: HTTP client
+
+## Logging
+
+Logs are written to `~/.local/share/edm/logs/edm.log` by default.
+
+### Log Levels
+
+- `DEBUG`: Detailed diagnostic information
+- `INFO`: General informational messages (default)
+- `WARNING`: Warning messages
+- `ERROR`: Error messages
+
+### Logging vs CLI Output
+
+- **CLI output** (stdout): User-facing information, progress, results
+- **Logs** (file): Detailed diagnostic information for debugging
+
+The library never uses `print()` statements. All output goes through either Rich (CLI) or logging (diagnostics).
+
+## License
+
+[Your License Here]
+
+## Contributing
+
+Contributions are welcome! Please open an issue or pull request.
+
+## Credits
+
+Built with:
+- [librosa](https://librosa.org/)
+- [madmom](https://madmom.readthedocs.io/)
+- [essentia](https://essentia.upf.edu/)
+- [Typer](https://typer.tiangolo.com/)
+- [Rich](https://rich.readthedocs.io/)
