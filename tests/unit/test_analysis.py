@@ -7,7 +7,6 @@ import pytest
 from edm.analysis.bpm import BPMResult, analyze_bpm
 from edm.exceptions import AnalysisError
 
-
 # Test fixtures directory
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 

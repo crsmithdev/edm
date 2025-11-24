@@ -4,9 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from edm.io.metadata import read_metadata, _get_artist, _get_title, _get_album, _get_bpm
 from edm.exceptions import AudioFileError
-
+from edm.io.metadata import _get_album, _get_artist, _get_bpm, _get_title, read_metadata
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
@@ -90,19 +89,18 @@ def test_bpm_validation_out_of_range():
     """Test that invalid BPM values are rejected."""
     # Create a temporary file with invalid BPM
     import mutagen
-    from mutagen.id3 import TBPM
-    
+
     audio_file = FIXTURES_DIR / "click_120bpm.wav"
-    
+
     # Test with mutagen directly for BPM validation
-    audio = mutagen.File(audio_file)
-    
+    mutagen.File(audio_file)
+
     # Mock invalid BPM scenarios
     from unittest.mock import Mock
     mock_audio = Mock()
     mock_audio.tags = {'TBPM': Mock()}
     mock_audio.tags['TBPM'].__str__ = Mock(return_value='500')  # Too high
-    
+
     result = _get_bpm(mock_audio, audio_file)
     assert result is None  # Should reject invalid BPM
 
@@ -110,10 +108,10 @@ def test_bpm_validation_out_of_range():
 def test_title_fallback_to_filename():
     """Test that title falls back to filename when no tag present."""
     audio_file = FIXTURES_DIR / "beat_150bpm.wav"
-    
+
     import mutagen
     audio = mutagen.File(audio_file)
-    
+
     title = _get_title(audio, audio_file)
     assert title == "beat_150bpm"
 
@@ -121,10 +119,10 @@ def test_title_fallback_to_filename():
 def test_get_artist_returns_none_for_no_tags():
     """Test that _get_artist returns None when no tags present."""
     audio_file = FIXTURES_DIR / "click_125bpm.wav"
-    
+
     import mutagen
     audio = mutagen.File(audio_file)
-    
+
     artist = _get_artist(audio)
     assert artist is None
 
@@ -132,10 +130,10 @@ def test_get_artist_returns_none_for_no_tags():
 def test_get_album_returns_none_for_no_tags():
     """Test that _get_album returns None when no tags present."""
     audio_file = FIXTURES_DIR / "click_125bpm.wav"
-    
+
     import mutagen
     audio = mutagen.File(audio_file)
-    
+
     album = _get_album(audio)
     assert album is None
 
@@ -146,7 +144,7 @@ def test_metadata_extraction_multiple_formats():
         ("tagged_128bpm.wav", "WAV", 128.0),
         ("tagged_140bpm.flac", "FLAC", 140.0),
     ]
-    
+
     for filename, expected_format, expected_bpm in test_files:
         audio_file = FIXTURES_DIR / filename
         if audio_file.exists():

@@ -1,8 +1,9 @@
 """Generate synthetic test audio files with known BPM for testing."""
 
+from pathlib import Path
+
 import numpy as np
 import soundfile as sf
-from pathlib import Path
 
 
 def generate_click_track(bpm, duration=10.0, sample_rate=44100, output_path=None):
