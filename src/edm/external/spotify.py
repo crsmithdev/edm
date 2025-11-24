@@ -1,6 +1,6 @@
 """Spotify API integration for track metadata and BPM lookup."""
 
-import logging
+import structlog
 import os
 import time
 from dataclasses import dataclass
@@ -8,7 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Optional
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @dataclass

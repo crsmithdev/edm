@@ -1,11 +1,11 @@
 """Track structure and section detection."""
 
-import logging
+import structlog
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @dataclass

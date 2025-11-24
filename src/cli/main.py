@@ -1,18 +1,17 @@
 """Main CLI entry point using Typer."""
 
-import logging
 import sys
 from pathlib import Path
 from typing import List, Optional
 
+import structlog
 import typer
 from dotenv import load_dotenv
 from rich.console import Console
-from rich.logging import RichHandler
 
 from cli.commands.analyze import analyze_command
 from edm import __version__ as lib_version
-from edm.config import get_default_log_dir
+from edm.logging import configure_logging
 
 # Load environment variables from .env file
 load_dotenv()
@@ -31,43 +30,6 @@ def version_callback(value: bool):
         console.print(f"EDM CLI v{lib_version}")
         console.print(f"Library v{lib_version}")
         raise typer.Exit()
-
-
-def setup_logging(verbose: bool = False, quiet: bool = False, no_color: bool = False):
-    """Configure logging system.
-
-    Parameters
-    ----------
-    verbose : bool
-        Enable DEBUG level logging.
-    quiet : bool
-        Suppress all logging except errors.
-    no_color : bool
-        Disable colored output in logs.
-    """
-    log_dir = get_default_log_dir()
-    log_file = log_dir / "edm.log"
-
-    # Determine log level
-    if quiet:
-        level = logging.ERROR
-    elif verbose:
-        level = logging.DEBUG
-    else:
-        level = logging.INFO
-
-    # Configure root logger
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.FileHandler(log_file),
-            RichHandler(console=Console(stderr=True, no_color=no_color), show_path=False),
-        ],
-    )
-
-    logger = logging.getLogger(__name__)
-    logger.debug(f"Logging to {log_file}")
 
 
 @app.callback()
@@ -132,10 +94,25 @@ def analyze(
         "--ignore-metadata",
         help="Skip reading metadata from audio files",
     ),
+    log_level: str = typer.Option(
+        "INFO",
+        "--log-level",
+        help="Set log level (DEBUG, INFO, WARNING, ERROR)",
+    ),
+    log_file: Optional[Path] = typer.Option(
+        None,
+        "--log-file",
+        help="Write logs to file (JSON format)",
+    ),
+    json_logs: bool = typer.Option(
+        False,
+        "--json-logs",
+        help="Output logs in JSON format",
+    ),
     verbose: bool = typer.Option(
         False,
         "--verbose",
-        help="Enable verbose logging (DEBUG level)",
+        help="Enable verbose logging (equivalent to --log-level DEBUG)",
     ),
     quiet: bool = typer.Option(
         False,
@@ -182,8 +159,21 @@ def analyze(
 
         edm analyze track.mp3 --offline --ignore-metadata  # Compute only
     """
+    # Determine log level (--verbose overrides --log-level)
+    effective_log_level = "DEBUG" if verbose else log_level.upper()
+    if quiet:
+        effective_log_level = "ERROR"
+
     # Set up logging
-    setup_logging(verbose=verbose, quiet=quiet, no_color=no_color)
+    configure_logging(
+        level=effective_log_level,
+        json_format=json_logs,
+        log_file=log_file,
+        no_color=no_color,
+    )
+
+    logger = structlog.get_logger(__name__)
+    logger.debug("cli_started", log_level=effective_log_level, json_logs=json_logs)
 
     # Disable colors if requested or not a TTY
     if no_color or not sys.stdout.isatty():
@@ -209,8 +199,8 @@ def analyze(
             console=console,
         )
     except Exception as e:
-        logger = logging.getLogger(__name__)
-        logger.error(f"Analysis failed: {e}", exc_info=verbose)
+        logger = structlog.get_logger(__name__)
+        logger.error("analysis_failed", error=str(e), exc_info=verbose)
         if not quiet:
             console.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(code=1)

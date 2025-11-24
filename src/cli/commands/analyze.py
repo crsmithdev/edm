@@ -1,11 +1,11 @@
 """Analyze command implementation."""
 
 import json
-import logging
 import time
 from pathlib import Path
 from typing import List, Optional
 
+import structlog
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
@@ -15,7 +15,7 @@ from edm.analysis.structure import analyze_structure
 from edm.config import load_config
 from edm.exceptions import AnalysisError, AudioFileError
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def analyze_command(
@@ -68,9 +68,17 @@ def analyze_command(
     audio_files = collect_audio_files(files, recursive)
 
     if not audio_files:
+        logger.warning("no_audio_files_found", paths=[str(f) for f in files])
         console.print("[yellow]No audio files found[/yellow]")
         return
 
+    logger.info(
+        "analysis_starting",
+        file_count=len(audio_files),
+        run_bpm=run_bpm,
+        run_structure=run_structure,
+        offline=offline,
+    )
     if not quiet:
         console.print(f"Found {len(audio_files)} file(s) to analyze")
 
@@ -100,7 +108,7 @@ def analyze_command(
                 progress.update(task, advance=1)
 
             except (AudioFileError, AnalysisError) as e:
-                logger.error(f"Failed to analyze {filepath}: {e}")
+                logger.error("file_analysis_failed", filepath=str(filepath), error=str(e))
                 if not quiet:
                     console.print(f"[red]Error analyzing {filepath.name}:[/red] {e}")
                 results.append(
@@ -118,6 +126,12 @@ def analyze_command(
 
     # Display timing summary
     if not quiet and len(audio_files) > 0:
+        logger.info(
+            "analysis_complete",
+            total_files=len(audio_files),
+            total_time=round(total_time, 2),
+            avg_time=round(total_time / len(audio_files), 2) if audio_files else 0,
+        )
         console.print(f"\nTotal time: {total_time:.2f}s")
         if len(audio_files) > 1:
             console.print(f"Average time per track: {total_time / len(audio_files):.2f}s")
@@ -180,7 +194,7 @@ def analyze_file(
     dict
         Analysis results.
     """
-    logger.info(f"Analyzing {filepath}")
+    logger.info("analyzing_file", filepath=str(filepath))
     result = {}
 
     if run_bpm:

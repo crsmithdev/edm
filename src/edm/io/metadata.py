@@ -1,12 +1,12 @@
 """Audio file metadata reading."""
 
-import logging
+import structlog
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from mutagen import File as MutagenFile
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def read_metadata(filepath: Path) -> Dict[str, Any]:
