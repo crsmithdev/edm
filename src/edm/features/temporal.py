@@ -21,15 +21,13 @@ class TemporalFeatures:
     onset_strength : np.ndarray
         Onset strength envelope.
     """
+
     rms_energy: np.ndarray
     zero_crossing_rate: np.ndarray
     onset_strength: np.ndarray
 
 
-def extract_temporal_features(
-    audio_data: np.ndarray,
-    sample_rate: int
-) -> TemporalFeatures:
+def extract_temporal_features(audio_data: np.ndarray, sample_rate: int) -> TemporalFeatures:
     """Extract temporal features from audio.
 
     Parameters
@@ -57,5 +55,5 @@ def extract_temporal_features(
     return TemporalFeatures(
         rms_energy=np.zeros(num_frames),
         zero_crossing_rate=np.zeros(num_frames),
-        onset_strength=np.zeros(num_frames)
+        onset_strength=np.zeros(num_frames),
     )

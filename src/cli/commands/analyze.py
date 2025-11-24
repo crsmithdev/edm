@@ -60,7 +60,9 @@ def analyze_command(
 
     # Determine which analyses to run
     run_bpm = analysis_types is None or "bpm" in analysis_types
-    run_structure = analysis_types is None or "structure" in analysis_types or "grid" in analysis_types
+    run_structure = (
+        analysis_types is None or "structure" in analysis_types or "grid" in analysis_types
+    )
 
     # Collect all audio files
     audio_files = collect_audio_files(files, recursive)
@@ -101,10 +103,12 @@ def analyze_command(
                 logger.error(f"Failed to analyze {filepath}: {e}")
                 if not quiet:
                     console.print(f"[red]Error analyzing {filepath.name}:[/red] {e}")
-                results.append({
-                    "file": str(filepath),
-                    "error": str(e),
-                })
+                results.append(
+                    {
+                        "file": str(filepath),
+                        "error": str(e),
+                    }
+                )
 
     # Display results
     if format == "json" or output:
@@ -153,7 +157,9 @@ def collect_audio_files(paths: List[Path], recursive: bool) -> List[Path]:
     return sorted(audio_files)
 
 
-def analyze_file(filepath: Path, run_bpm: bool, run_structure: bool, offline: bool, ignore_metadata: bool) -> dict:
+def analyze_file(
+    filepath: Path, run_bpm: bool, run_structure: bool, offline: bool, ignore_metadata: bool
+) -> dict:
     """Analyze a single audio file.
 
     Parameters
@@ -252,16 +258,8 @@ def output_table(results: List[dict], console: Console, quiet: bool):
     table.add_column("Time", justify="right")
 
     # Map sources to icons and colors
-    source_icons = {
-        "metadata": "📄",
-        "spotify": "🎵",
-        "computed": "🔬"
-    }
-    source_colors = {
-        "metadata": "blue",
-        "spotify": "green",
-        "computed": "yellow"
-    }
+    source_icons = {"metadata": "📄", "spotify": "🎵", "computed": "🔬"}
+    source_colors = {"metadata": "blue", "spotify": "green", "computed": "yellow"}
 
     for result in results:
         if "error" in result:
@@ -279,7 +277,9 @@ def output_table(results: List[dict], console: Console, quiet: bool):
             bpm_source = result.get("bpm_source", "")
             source_icon = source_icons.get(bpm_source, "")
             source_color = source_colors.get(bpm_source, "white")
-            source_display = f"{source_icon} [{source_color}]{bpm_source}[/{source_color}]" if bpm_source else ""
+            source_display = (
+                f"{source_icon} [{source_color}]{bpm_source}[/{source_color}]" if bpm_source else ""
+            )
 
             table.add_row(
                 Path(result["file"]).name,

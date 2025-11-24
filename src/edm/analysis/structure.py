@@ -23,6 +23,7 @@ class Section:
     confidence : float
         Confidence score between 0 and 1.
     """
+
     label: str
     start_time: float
     end_time: float
@@ -40,6 +41,7 @@ class StructureResult:
     duration : float
         Total track duration in seconds.
     """
+
     sections: List[Section]
     duration: float
 
@@ -86,5 +88,5 @@ def analyze_structure(filepath: Path) -> StructureResult:
             Section(label="buildup", start_time=30.0, end_time=60.0, confidence=0.85),
             Section(label="drop", start_time=60.0, end_time=120.0, confidence=0.95),
         ],
-        duration=180.0
+        duration=180.0,
     )

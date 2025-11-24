@@ -21,15 +21,13 @@ class SpectralFeatures:
     flux : np.ndarray
         Spectral flux over time.
     """
+
     centroid: np.ndarray
     rolloff: np.ndarray
     flux: np.ndarray
 
 
-def extract_spectral_features(
-    audio_data: np.ndarray,
-    sample_rate: int
-) -> SpectralFeatures:
+def extract_spectral_features(audio_data: np.ndarray, sample_rate: int) -> SpectralFeatures:
     """Extract spectral features from audio.
 
     Parameters
@@ -55,7 +53,5 @@ def extract_spectral_features(
     # Placeholder implementation
     num_frames = 100
     return SpectralFeatures(
-        centroid=np.zeros(num_frames),
-        rolloff=np.zeros(num_frames),
-        flux=np.zeros(num_frames)
+        centroid=np.zeros(num_frames), rolloff=np.zeros(num_frames), flux=np.zeros(num_frames)
     )

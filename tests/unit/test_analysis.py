@@ -26,14 +26,17 @@ def test_analyze_bpm_nonexistent_file():
         analyze_bpm(Path("nonexistent_dummy.mp3"))
 
 
-@pytest.mark.parametrize("bpm,tolerance", [
-    (120, 6.0),  # ±5% tolerance
-    (125, 6.25),
-    (128, 6.4),
-    (140, 7.0),
-    (150, 7.5),
-    (174, 8.7),
-])
+@pytest.mark.parametrize(
+    "bpm,tolerance",
+    [
+        (120, 6.0),  # ±5% tolerance
+        (125, 6.25),
+        (128, 6.4),
+        (140, 7.0),
+        (150, 7.5),
+        (174, 8.7),
+    ],
+)
 def test_analyze_bpm_click_tracks(bpm, tolerance):
     """Test BPM analysis on synthetic click tracks with known BPM.
 
@@ -53,16 +56,19 @@ def test_analyze_bpm_click_tracks(bpm, tolerance):
     assert 0.0 <= result.confidence <= 1.0
 
     # Check BPM accuracy (5% tolerance is standard for tempo detection)
-    assert abs(result.bpm - bpm) <= tolerance, (
-        f"BPM detection failed: expected {bpm}±{tolerance}, got {result.bpm}"
-    )
+    assert (
+        abs(result.bpm - bpm) <= tolerance
+    ), f"BPM detection failed: expected {bpm}±{tolerance}, got {result.bpm}"
 
 
-@pytest.mark.parametrize("bpm,tolerance", [
-    (120, 6.0),
-    (128, 6.4),
-    (140, 7.0),
-])
+@pytest.mark.parametrize(
+    "bpm,tolerance",
+    [
+        (120, 6.0),
+        (128, 6.4),
+        (140, 7.0),
+    ],
+)
 def test_analyze_bpm_beat_patterns(bpm, tolerance):
     """Test BPM analysis on synthetic beat patterns.
 
@@ -76,9 +82,9 @@ def test_analyze_bpm_beat_patterns(bpm, tolerance):
 
     assert isinstance(result, BPMResult)
     assert result.source == "computed"
-    assert abs(result.bpm - bpm) <= tolerance, (
-        f"BPM detection on beat pattern failed: expected {bpm}±{tolerance}, got {result.bpm}"
-    )
+    assert (
+        abs(result.bpm - bpm) <= tolerance
+    ), f"BPM detection on beat pattern failed: expected {bpm}±{tolerance}, got {result.bpm}"
 
 
 def test_analyze_bpm_returns_high_confidence():
@@ -90,7 +96,6 @@ def test_analyze_bpm_returns_high_confidence():
     result = analyze_bpm(audio_file, offline=True, ignore_metadata=True)
 
     # Synthetic audio should yield high confidence
-    assert result.confidence > 0.7, (
-        f"Expected high confidence for synthetic audio, got {result.confidence}"
-    )
-
+    assert (
+        result.confidence > 0.7
+    ), f"Expected high confidence for synthetic audio, got {result.confidence}"

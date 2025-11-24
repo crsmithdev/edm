@@ -24,6 +24,7 @@ class BeatportTrackInfo:
     genre : Optional[str]
         Genre.
     """
+
     title: str
     artist: str
     bpm: Optional[float] = None

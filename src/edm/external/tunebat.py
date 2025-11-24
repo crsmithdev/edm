@@ -22,6 +22,7 @@ class TuneBatTrackInfo:
     key : Optional[str]
         Musical key.
     """
+
     title: str
     artist: str
     bpm: Optional[float] = None

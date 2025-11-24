@@ -28,9 +28,10 @@ class BPMResult:
     alternatives : List[float]
         Alternative BPM candidates (for tempo multiplicity).
     """
+
     bpm: float
     confidence: float
-    source: Literal['metadata', 'spotify', 'computed']
+    source: Literal["metadata", "spotify", "computed"]
     method: Optional[str] = None
     computation_time: float = 0.0
     alternatives: List[float] = None
@@ -47,7 +48,7 @@ def analyze_bpm(
     use_librosa: bool = False,
     strategy: Optional[List[str]] = None,
     ignore_metadata: bool = False,
-    offline: bool = False
+    offline: bool = False,
 ) -> BPMResult:
     """Analyze BPM of an audio track using cascading lookup strategy.
 
@@ -126,6 +127,7 @@ def analyze_bpm(
             continue
 
     from edm.exceptions import AnalysisError
+
     raise AnalysisError(f"All BPM lookup strategies failed for {filepath}")
 
 
@@ -176,15 +178,15 @@ def _try_metadata(filepath: Path) -> Optional[BPMResult]:
         from edm.io.metadata import read_metadata
 
         metadata = read_metadata(filepath)
-        bpm = metadata.get('bpm')
+        bpm = metadata.get("bpm")
 
         if bpm and _is_valid_bpm(bpm):
             logger.info(f"Found BPM {bpm} in file metadata")
             return BPMResult(
                 bpm=float(bpm),
                 confidence=0.7,  # Metadata confidence
-                source='metadata',
-                method=None
+                source="metadata",
+                method=None,
             )
         else:
             logger.debug("No valid BPM found in metadata")
@@ -216,8 +218,8 @@ def _try_spotify(filepath: Path) -> Optional[BPMResult]:
 
         # Get artist and title from metadata for searching
         metadata = read_metadata(filepath)
-        artist = metadata.get('artist')
-        title = metadata.get('title')
+        artist = metadata.get("artist")
+        title = metadata.get("title")
 
         if not artist or not title:
             logger.debug("Missing artist or title for Spotify search")
@@ -232,8 +234,8 @@ def _try_spotify(filepath: Path) -> Optional[BPMResult]:
             return BPMResult(
                 bpm=float(track_info.bpm),
                 confidence=0.9,  # Spotify confidence
-                source='spotify',
-                method=None
+                source="spotify",
+                method=None,
             )
         else:
             logger.debug("Track not found on Spotify or no BPM available")
@@ -272,9 +274,9 @@ def _try_compute(filepath: Path, use_madmom: bool, use_librosa: bool) -> Optiona
         return BPMResult(
             bpm=result.bpm,
             confidence=result.confidence,
-            source='computed',
+            source="computed",
             method=result.method,
-            alternatives=result.alternatives
+            alternatives=result.alternatives,
         )
 
     except Exception as e:

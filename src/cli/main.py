@@ -62,8 +62,8 @@ def setup_logging(verbose: bool = False, quiet: bool = False, no_color: bool = F
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.FileHandler(log_file),
-            RichHandler(console=Console(stderr=True, no_color=no_color), show_path=False)
-        ]
+            RichHandler(console=Console(stderr=True, no_color=no_color), show_path=False),
+        ],
     )
 
     logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ def main(
         "-v",
         callback=version_callback,
         is_eager=True,
-        help="Show version and exit."
+        help="Show version and exit.",
     ),
 ):
     """EDM track analysis CLI."""

@@ -26,9 +26,10 @@ class ComputedBPM:
     alternatives : list[float]
         Alternative BPM candidates (for tempo multiplicity).
     """
+
     bpm: float
     confidence: float
-    method: Literal['madmom-dbn', 'librosa']
+    method: Literal["madmom-dbn", "librosa"]
     alternatives: list[float] = None
 
     def __post_init__(self):
@@ -89,10 +90,7 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
 
                 logger.info(f"Detected BPM: {bpm:.1f} (confidence: {confidence:.2f})")
                 return ComputedBPM(
-                    bpm=bpm,
-                    confidence=confidence,
-                    method='madmom-dbn',
-                    alternatives=alternatives
+                    bpm=bpm, confidence=confidence, method="madmom-dbn", alternatives=alternatives
                 )
             else:
                 raise ValueError("No tempo detected")
@@ -118,19 +116,18 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
 
         logger.info(f"Detected BPM: {bpm:.1f} (confidence: {confidence:.2f})")
         return ComputedBPM(
-            bpm=bpm,
-            confidence=confidence,
-            method='madmom-dbn',
-            alternatives=alternatives
+            bpm=bpm, confidence=confidence, method="madmom-dbn", alternatives=alternatives
         )
 
     except ImportError:
         logger.error("madmom not installed, cannot compute BPM")
         from edm.exceptions import AnalysisError
+
         raise AnalysisError("madmom library not installed")
     except Exception as e:
         logger.error(f"madmom BPM computation failed: {e}")
         from edm.exceptions import AnalysisError
+
         raise AnalysisError(f"BPM computation failed: {e}")
 
 
@@ -195,15 +192,13 @@ def compute_bpm_librosa(filepath: Path, hop_length: int = 512) -> ComputedBPM:
 
         logger.info(f"Detected BPM: {bpm:.1f} (confidence: {confidence:.2f})")
         return ComputedBPM(
-            bpm=bpm,
-            confidence=confidence,
-            method='librosa',
-            alternatives=alternatives
+            bpm=bpm, confidence=confidence, method="librosa", alternatives=alternatives
         )
 
     except Exception as e:
         logger.error(f"librosa BPM computation failed: {e}")
         from edm.exceptions import AnalysisError
+
         raise AnalysisError(f"BPM computation failed: {e}")
 
 
@@ -243,10 +238,7 @@ def _adjust_bpm_to_edm_range(bpm: float, alternatives: list[float]) -> float:
 
 
 def compute_bpm(
-    filepath: Path,
-    prefer_madmom: bool = True,
-    madmom_fps: int = 100,
-    librosa_hop_length: int = 512
+    filepath: Path, prefer_madmom: bool = True, madmom_fps: int = 100, librosa_hop_length: int = 512
 ) -> ComputedBPM:
     """Compute BPM using available methods.
 

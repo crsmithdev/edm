@@ -23,6 +23,7 @@ class AnalysisConfig(BaseModel):
     use_librosa : bool
         Use librosa for BPM detection.
     """
+
     detect_bpm: bool = True
     detect_structure: bool = True
     use_madmom: bool = True
@@ -45,6 +46,7 @@ class ExternalServicesConfig(BaseModel):
     cache_ttl : int
         Cache time-to-live in seconds.
     """
+
     spotify_client_id: Optional[str] = Field(None, env="SPOTIFY_CLIENT_ID")
     spotify_client_secret: Optional[str] = Field(None, env="SPOTIFY_CLIENT_SECRET")
     enable_beatport: bool = True
@@ -66,6 +68,7 @@ class EDMConfig(BaseModel):
     log_file : Optional[Path]
         Path to log file.
     """
+
     analysis: AnalysisConfig = Field(default_factory=AnalysisConfig)
     external_services: ExternalServicesConfig = Field(default_factory=ExternalServicesConfig)
     log_level: str = "INFO"

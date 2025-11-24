@@ -41,6 +41,7 @@ def read_metadata(filepath: Path) -> Dict[str, Any]:
 
     if not filepath.exists():
         from edm.exceptions import AudioFileError
+
         raise AudioFileError(f"File not found: {filepath}")
 
     try:
@@ -52,9 +53,9 @@ def read_metadata(filepath: Path) -> Dict[str, Any]:
             "artist": _get_artist(audio),
             "title": _get_title(audio, filepath),
             "album": _get_album(audio),
-            "duration": audio.info.length if hasattr(audio.info, 'length') else None,
-            "bitrate": getattr(audio.info, 'bitrate', None),
-            "sample_rate": getattr(audio.info, 'sample_rate', None),
+            "duration": audio.info.length if hasattr(audio.info, "length") else None,
+            "bitrate": getattr(audio.info, "bitrate", None),
+            "sample_rate": getattr(audio.info, "sample_rate", None),
             "format": filepath.suffix[1:].upper(),
             "bpm": _get_bpm(audio, filepath),
         }
@@ -65,56 +66,57 @@ def read_metadata(filepath: Path) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Failed to read metadata from {filepath}: {e}")
         from edm.exceptions import AudioFileError
+
         raise AudioFileError(f"Failed to read metadata: {e}")
 
 
 def _get_artist(audio) -> Optional[str]:
     """Extract artist from audio file."""
-    if hasattr(audio, 'tags') and audio.tags:
+    if hasattr(audio, "tags") and audio.tags:
         # ID3 tags (MP3)
-        if 'TPE1' in audio.tags:
-            return str(audio.tags['TPE1'])
+        if "TPE1" in audio.tags:
+            return str(audio.tags["TPE1"])
         # Vorbis comments (FLAC, OGG)
-        if 'artist' in audio.tags:
-            val = audio.tags['artist']
+        if "artist" in audio.tags:
+            val = audio.tags["artist"]
             return str(val[0]) if isinstance(val, list) else str(val)
         # MP4 tags
-        if '©ART' in audio.tags:
-            val = audio.tags['©ART']
+        if "©ART" in audio.tags:
+            val = audio.tags["©ART"]
             return str(val[0]) if isinstance(val, list) else str(val)
     return None
 
 
 def _get_title(audio, filepath: Path) -> str:
     """Extract title from audio file, falling back to filename."""
-    if hasattr(audio, 'tags') and audio.tags:
+    if hasattr(audio, "tags") and audio.tags:
         # ID3 tags (MP3)
-        if 'TIT2' in audio.tags:
-            return str(audio.tags['TIT2'])
+        if "TIT2" in audio.tags:
+            return str(audio.tags["TIT2"])
         # Vorbis comments (FLAC, OGG)
-        if 'title' in audio.tags:
-            val = audio.tags['title']
+        if "title" in audio.tags:
+            val = audio.tags["title"]
             return str(val[0]) if isinstance(val, list) else str(val)
         # MP4 tags
-        if '©nam' in audio.tags:
-            val = audio.tags['©nam']
+        if "©nam" in audio.tags:
+            val = audio.tags["©nam"]
             return str(val[0]) if isinstance(val, list) else str(val)
     return filepath.stem
 
 
 def _get_album(audio) -> Optional[str]:
     """Extract album from audio file."""
-    if hasattr(audio, 'tags') and audio.tags:
+    if hasattr(audio, "tags") and audio.tags:
         # ID3 tags (MP3)
-        if 'TALB' in audio.tags:
-            return str(audio.tags['TALB'])
+        if "TALB" in audio.tags:
+            return str(audio.tags["TALB"])
         # Vorbis comments (FLAC, OGG)
-        if 'album' in audio.tags:
-            val = audio.tags['album']
+        if "album" in audio.tags:
+            val = audio.tags["album"]
             return str(val[0]) if isinstance(val, list) else str(val)
         # MP4 tags
-        if '©alb' in audio.tags:
-            val = audio.tags['©alb']
+        if "©alb" in audio.tags:
+            val = audio.tags["©alb"]
             return str(val[0]) if isinstance(val, list) else str(val)
     return None
 
@@ -139,29 +141,29 @@ def _get_bpm(audio, filepath: Path) -> Optional[float]:
     bpm = None
 
     try:
-        if hasattr(audio, 'tags') and audio.tags:
+        if hasattr(audio, "tags") and audio.tags:
             # ID3 tags (MP3)
-            if 'TBPM' in audio.tags:
-                bpm_val = str(audio.tags['TBPM'])
+            if "TBPM" in audio.tags:
+                bpm_val = str(audio.tags["TBPM"])
                 bpm = float(bpm_val)
                 logger.debug(f"Found BPM in ID3 tag: {bpm}")
 
             # Vorbis comments (FLAC, OGG) - try multiple tag names
-            elif 'bpm' in audio.tags:
-                val = audio.tags['bpm']
+            elif "bpm" in audio.tags:
+                val = audio.tags["bpm"]
                 bpm_val = val[0] if isinstance(val, list) else val
                 bpm = float(bpm_val)
                 logger.debug(f"Found BPM in vorbis comment: {bpm}")
 
-            elif 'tempo' in audio.tags:
-                val = audio.tags['tempo']
+            elif "tempo" in audio.tags:
+                val = audio.tags["tempo"]
                 bpm_val = val[0] if isinstance(val, list) else val
                 bpm = float(bpm_val)
                 logger.debug(f"Found BPM in tempo tag: {bpm}")
 
             # MP4 tags (M4A, AAC)
-            elif 'tmpo' in audio.tags:
-                val = audio.tags['tmpo']
+            elif "tmpo" in audio.tags:
+                val = audio.tags["tmpo"]
                 bpm_val = val[0] if isinstance(val, list) else val
                 bpm = float(bpm_val)
                 logger.debug(f"Found BPM in MP4 tag: {bpm}")

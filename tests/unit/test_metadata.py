@@ -81,7 +81,16 @@ def test_read_metadata_all_fields_present():
     audio_file = FIXTURES_DIR / "tagged_128bpm.wav"
     metadata = read_metadata(audio_file)
 
-    expected_fields = {"artist", "title", "album", "duration", "bitrate", "sample_rate", "format", "bpm"}
+    expected_fields = {
+        "artist",
+        "title",
+        "album",
+        "duration",
+        "bitrate",
+        "sample_rate",
+        "format",
+        "bpm",
+    }
     assert set(metadata.keys()) == expected_fields
 
 
@@ -97,9 +106,10 @@ def test_bpm_validation_out_of_range():
 
     # Mock invalid BPM scenarios
     from unittest.mock import Mock
+
     mock_audio = Mock()
-    mock_audio.tags = {'TBPM': Mock()}
-    mock_audio.tags['TBPM'].__str__ = Mock(return_value='500')  # Too high
+    mock_audio.tags = {"TBPM": Mock()}
+    mock_audio.tags["TBPM"].__str__ = Mock(return_value="500")  # Too high
 
     result = _get_bpm(mock_audio, audio_file)
     assert result is None  # Should reject invalid BPM
@@ -110,6 +120,7 @@ def test_title_fallback_to_filename():
     audio_file = FIXTURES_DIR / "beat_150bpm.wav"
 
     import mutagen
+
     audio = mutagen.File(audio_file)
 
     title = _get_title(audio, audio_file)
@@ -121,6 +132,7 @@ def test_get_artist_returns_none_for_no_tags():
     audio_file = FIXTURES_DIR / "click_125bpm.wav"
 
     import mutagen
+
     audio = mutagen.File(audio_file)
 
     artist = _get_artist(audio)
@@ -132,6 +144,7 @@ def test_get_album_returns_none_for_no_tags():
     audio_file = FIXTURES_DIR / "click_125bpm.wav"
 
     import mutagen
+
     audio = mutagen.File(audio_file)
 
     album = _get_album(audio)

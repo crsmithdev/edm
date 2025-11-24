@@ -57,4 +57,5 @@ def load_model(model_name: str, model_path: Optional[Path] = None) -> BaseModel:
 
     # TODO: Implement actual model loading
     from edm.exceptions import ModelNotFoundError
+
     raise ModelNotFoundError(f"Model '{model_name}' not implemented yet")

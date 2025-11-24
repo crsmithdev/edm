@@ -36,6 +36,7 @@ class SpotifyTrackInfo:
     danceability : Optional[float]
         Danceability value (0-1).
     """
+
     id: str
     title: str
     artist: str
@@ -54,7 +55,7 @@ class SpotifyClient:
         self,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
-        cache_dir: Optional[Path] = None
+        cache_dir: Optional[Path] = None,
     ):
         """Initialize Spotify client.
 
@@ -118,7 +119,7 @@ class SpotifyClient:
                 client_secret=self.client_secret,
                 cache_handler=spotipy.cache_handler.CacheFileHandler(
                     cache_path=str(self.cache_dir / ".spotify_cache")
-                )
+                ),
             )
 
             self._sp_client = spotipy.Spotify(auth_manager=auth_manager)
@@ -131,8 +132,7 @@ class SpotifyClient:
 
         except ImportError:
             raise ImportError(
-                "spotipy is required for Spotify integration. "
-                "Install with: pip install spotipy"
+                "spotipy is required for Spotify integration. " "Install with: pip install spotipy"
             )
 
     @lru_cache(maxsize=512)
@@ -181,7 +181,7 @@ class SpotifyClient:
                 id=track_id,
                 title=track_data["name"],
                 artist=track_data["artists"][0]["name"] if track_data["artists"] else "",
-                album=track_data["album"]["name"] if track_data.get("album") else ""
+                album=track_data["album"]["name"] if track_data.get("album") else "",
             )
 
             # Get audio features
@@ -247,4 +247,3 @@ class SpotifyClient:
         if cache_file.exists():
             cache_file.unlink()
             logger.info("Cleared Spotify cache")
-
