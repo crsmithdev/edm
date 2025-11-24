@@ -55,6 +55,7 @@
 - [ ] Update `src/cli/main.py`:
   - Initialize structlog configuration on startup
   - Add CLI flag for log level (--log-level DEBUG/INFO/WARNING/ERROR)
+  - Replace --verbose flag with --log-level (--verbose should map to --log-level DEBUG)
   - Add CLI flag for JSON log output (--json-logs)
   - Add CLI flag for log file path (--log-file PATH)
   - Bind global context (command, user, environment)

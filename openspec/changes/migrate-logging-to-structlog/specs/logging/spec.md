@@ -54,6 +54,7 @@ The application SHALL support both human-readable development logging and JSON p
 - **AND** supported levels SHALL be DEBUG, INFO, WARNING, ERROR
 - **AND** default level SHALL be INFO
 - **AND** logs below the configured level SHALL NOT be output
+- **AND** existing --verbose flag SHALL be replaced by --log-level DEBUG for backwards compatibility
 
 ### Requirement: File Logging Support
 
