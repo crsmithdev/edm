@@ -19,15 +19,22 @@ A Python library and command-line tool for analyzing EDM tracks, providing BPM d
 
 ### Prerequisites
 
-- Python 3.9 or higher (tested with Python 3.12)
-- pip or pip3
+- Python 3.12 or higher
 - git
 - ffmpeg (required for madmom audio file loading)
 - System packages (Ubuntu/Debian):
   ```bash
   sudo apt update
-  sudo apt install -y python3-pip python3-venv python3-dev build-essential ffmpeg
+  sudo apt install -y python3-dev build-essential ffmpeg
   ```
+
+### Install uv
+
+First, install [uv](https://github.com/astral-sh/uv), a fast Python package installer and resolver:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
 ### From Source (Recommended for Development)
 
@@ -37,63 +44,45 @@ A Python library and command-line tool for analyzing EDM tracks, providing BPM d
    cd edm
    ```
 
-2. **Create and activate a virtual environment**:
+2. **Install dependencies and create virtual environment**:
+   
+   uv automatically manages virtual environments and installs all dependencies (including madmom from git):
    ```bash
-   python3 -m venv .venv
+   uv sync
+   ```
+   
+   This will:
+   - Create a `.venv` virtual environment
+   - Install all runtime dependencies
+   - Install development dependencies (pytest, ruff, mypy, black)
+   - Install madmom from source (required for accurate BPM detection)
+   - Install the edm package in editable mode
+
+3. **Activate the virtual environment**:
+   ```bash
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
-3. **Install dependencies**:
-   
-   First, install Cython and NumPy (required for building madmom):
-   ```bash
-   pip install Cython numpy
-   ```
-   
-   Then install core dependencies:
-   ```bash
-   pip install librosa pydantic "typer[all]" rich spotipy requests mutagen
-   ```
-   
-   Install madmom from source (required for accurate BPM detection):
-   ```bash
-   pip install git+https://github.com/CPJKU/madmom.git
-   ```
-
-4. **Install the edm package in editable mode**:
-   ```bash
-   pip install --no-deps -e .
-   ```
-
-5. **Verify installation**:
+4. **Verify installation**:
    ```bash
    edm --version
    ```
 
-### Alternative: Install with pip (when dependencies resolve)
+### Alternative: Production Installation
 
-Once all dependencies are available on PyPI for your Python version:
-
-```bash
-pip install -e .
-```
-
-### Development Installation
-
-For development with testing and linting tools:
+For production use without development tools:
 
 ```bash
-pip install -e ".[dev]"
+uv sync --no-dev
 ```
 
-### Why Install madmom from Source?
+### Running Commands with uv
 
-The PyPI version of madmom (0.16.1) has build issues with Python 3.12 due to Cython dependencies. Installing from the GitHub repository (version 0.17.dev0) provides:
-- Python 3.12 compatibility
-- Latest bug fixes and improvements
-- Better performance on modern systems
+You can also run commands directly with uv without activating the virtual environment:
 
-If you encounter issues building madmom, you can use librosa-only mode by passing `use_madmom=False` to the analysis functions, though madmom provides more accurate BPM detection for EDM tracks.
+```bash
+uv run edm analyze track.mp3
+```
 
 ## Quick Start
 
@@ -325,16 +314,16 @@ Before pushing code, you can run the same checks that CI runs:
 
 ```bash
 # Run tests with coverage
-pytest --cov=src --cov-report=term-missing
+uv run pytest --cov=src --cov-report=term-missing
 
 # Run linting
-ruff check src/ tests/
+uv run ruff check src/ tests/
 
 # Run formatting check
-black --check src/ tests/
+uv run black --check src/ tests/
 
 # Run type checking
-mypy src/ --ignore-missing-imports
+uv run mypy src/ --ignore-missing-imports
 ```
 
 ### Skipping CI

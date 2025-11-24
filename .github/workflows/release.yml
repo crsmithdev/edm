@@ -72,10 +72,14 @@ jobs:
           ## Installation
           
           ```bash
+          # Install uv if you haven't already
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          
+          # Clone and install
           git clone https://github.com/${{ github.repository }}.git
           cd edm
           git checkout ${{ steps.get_version.outputs.tag }}
-          pip install -e .
+          uv sync
           ```
         draft: false
         prerelease: false

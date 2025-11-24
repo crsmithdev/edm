@@ -10,7 +10,8 @@
 
 ## 2. Update Documentation
 
-- [ ] Update `README.md` installation section to include uv installation: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- [ ] Update `README.md` installation section to replace `pip` usage with `uv` installation and usage.
+- [ ] Update `README.md` installation to replace `pip` usage with `uv`
 - [ ] Replace `python -m venv .venv` with `uv venv` or note that uv manages it automatically
 - [ ] Replace `pip install` commands with `uv pip install` or `uv sync`
 - [ ] Update development installation instructions
@@ -21,7 +22,7 @@
 - [ ] Replace pip caching with uv caching
 - [ ] Update test runners to use uv-managed environment
 
-## 4. Testing and Validation
+## 5. Testing and Validation
 
 - [ ] Test fresh installation on clean machine/container
 - [ ] Verify all dependencies install correctly
