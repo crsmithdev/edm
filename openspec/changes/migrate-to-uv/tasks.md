@@ -15,8 +15,6 @@
 - [ ] Replace `pip install` commands with `uv pip install` or `uv sync`
 - [ ] Add quick start section for uv installation
 - [ ] Update development installation instructions
-- [ ] Document uv benefits (speed, reliability)
-- [ ] Add troubleshooting section for uv-specific issues
 
 ## 3. Create Helper Scripts (Optional)
 

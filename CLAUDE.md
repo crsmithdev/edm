@@ -19,18 +19,16 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 ## Development Context
 
-### Music Library Location
-Test music files are mounted at: `/mnt/c/music/library`
+- Music files for testing are available in `/mnt/c/music/library/`
+- Dependencies listed in `pyproject.toml` should never be installed by name on the command line
+- Install dev dependencies by default:  `pip install -e ".[dev]"`
+- Use a virtual environment and ensure it is activated (`source .venv/bin/activate`)
+- Always run the CLI with the `--no-color` and `--verbose` flags
 
-This directory contains FLAC audio files for testing the EDM analysis CLI.
+## Interaction
+- Be direct and concise - no preambles, politeness padding, apologies or verbosity
+- Assume I have staff-level engineering experience
 
-### CLI Usage
-1. Always activate the virtual environment first: `source .venv/bin/activate`
-2. Always run the CLI with the `--no-color` option for cleaner output
-3. Example: `edm analyze "/mnt/c/music/library/Artbat - Artefact.flac" --offline --ignore-metadata --no-color --verbose`
-
-### Installation
-When installing dependencies, always install dev dependencies as well:
-```bash
-pip install -e ".[dev]"
-```
+## Source Control
+- Use very terse commit messages and put all commit details in the subect by default
+- Only include a message body if exceeding > 100 characters in the subject
