@@ -1,5 +1,9 @@
 # EDM Track Analysis
 
+[![CI](https://github.com/crsmithdev/edm/actions/workflows/ci.yml/badge.svg)](https://github.com/crsmithdev/edm/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/github/license/crsmithdev/edm)](LICENSE)
+
 A Python library and command-line tool for analyzing EDM tracks, providing BPM detection, structure analysis, and integration with external music services.
 
 ## Features
@@ -310,6 +314,36 @@ vulture src/ tests/ --min-confidence 60
 ```
 
 Higher confidence levels (80-100) reduce false positives but may miss some dead code.
+
+## Continuous Integration
+
+This project uses GitHub Actions for automated testing and quality checks.
+
+### Running Checks Locally
+
+Before pushing code, you can run the same checks that CI runs:
+
+```bash
+# Run tests with coverage
+pytest --cov=src --cov-report=term-missing
+
+# Run linting
+ruff check src/ tests/
+
+# Run formatting check
+black --check src/ tests/
+
+# Run type checking
+mypy src/ --ignore-missing-imports
+```
+
+### Skipping CI
+
+To skip CI on a commit (for documentation-only changes, etc.), include `[skip ci]` in your commit message:
+
+```bash
+git commit -m "Update README [skip ci]"
+```
 
 ## Dependencies
 

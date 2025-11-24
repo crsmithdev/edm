@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Cancel in-progress runs for the same workflow and ref
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg build-essential python3-dev
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install Cython numpy
+        pip install librosa pydantic "typer[all]" rich spotipy requests mutagen python-dotenv
+        pip install git+https://github.com/CPJKU/madmom.git
+        pip install --no-deps -e .
+    
+    - name: Install dev dependencies
+      run: |
+        pip install pytest pytest-cov black ruff mypy
+    
+    - name: Run linting with ruff
+      run: |
+        ruff check src/ tests/
+    
+    - name: Run formatting check with black
+      run: |
+        black --check src/ tests/
+    
+    - name: Run type checking with mypy
+      run: |
+        mypy src/ --ignore-missing-imports
+      continue-on-error: true  # Don't fail on mypy errors initially
+    
+    - name: Run tests with coverage
+      run: |
+        pytest --cov=src --cov-report=term-missing --cov-report=xml --cov-report=json
+    
+    - name: Check coverage threshold
+      run: |
+        python -c "import json; data = json.load(open('coverage.json')); exit(0 if data['totals']['percent_covered'] >= 80 else 1)"
+      continue-on-error: true  # Don't fail on coverage initially
+    
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          coverage.xml
+          coverage.json
+          .coverage
