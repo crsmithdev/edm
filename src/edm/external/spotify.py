@@ -248,23 +248,3 @@ class SpotifyClient:
             cache_file.unlink()
             logger.info("Cleared Spotify cache")
 
-
-def get_bpm_from_spotify(artist: str, title: str) -> Optional[float]:
-    """Convenience function to get BPM from Spotify.
-
-    Parameters
-    ----------
-    artist : str
-        Artist name.
-    title : str
-        Track title.
-
-    Returns
-    -------
-    Optional[float]
-        BPM if found, None otherwise.
-    """
-    client = SpotifyClient()
-    track = client.search_track(artist, title)
-    return track.bpm if track else None
-

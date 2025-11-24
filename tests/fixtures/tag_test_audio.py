@@ -1,7 +1,7 @@
 """Generate test audio files with metadata tags."""
 
 import mutagen
-from mutagen.id3 import ID3, TBPM, TPE1, TIT2, TALB
+from mutagen.id3 import TBPM, TPE1, TIT2, TALB
 from mutagen.flac import FLAC
 from pathlib import Path
 

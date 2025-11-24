@@ -301,6 +301,16 @@ ruff src tests
 mypy src
 ```
 
+### Dead Code Detection
+
+Check for unused code:
+
+```bash
+vulture src/ tests/ --min-confidence 60
+```
+
+Higher confidence levels (80-100) reduce false positives but may miss some dead code.
+
 ## Dependencies
 
 ### Core Libraries
