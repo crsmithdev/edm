@@ -54,7 +54,7 @@ The application SHALL support both human-readable development logging and JSON p
 - **AND** supported levels SHALL be DEBUG, INFO, WARNING, ERROR
 - **AND** default level SHALL be INFO
 - **AND** logs below the configured level SHALL NOT be output
-- **AND** existing --verbose flag SHALL be replaced by --log-level DEBUG for backwards compatibility
+- **AND** existing --verbose flag SHALL be replaced by --log-level DEBUG
 
 ### Requirement: File Logging Support
 
@@ -203,13 +203,6 @@ The application SHALL provide excellent logging development experience with clea
 - **AND** operation flow SHALL be traceable
 - **AND** performance characteristics SHALL be measurable
 - **AND** DEBUG logs SHALL NOT leak sensitive information
-
-#### Scenario: Log documentation
-- **WHEN** developers need to add logging
-- **THEN** documentation SHALL provide clear examples
-- **AND** conventions SHALL be explained
-- **AND** common patterns SHALL be documented
-- **AND** integration with IDE SHALL work well (autocomplete, etc.)
 
 ### Requirement: Security and Privacy
 
