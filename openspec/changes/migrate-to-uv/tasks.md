@@ -2,31 +2,31 @@
 
 ## 1. Setup uv Configuration
 
-- [ ] Add `.python-version` file specifying Python 3.9+ (or preferred version)
-- [ ] Ensure `pyproject.toml` is properly configured (already done)
-- [ ] Generate initial `uv.lock` file with `uv lock`
-- [ ] Add `uv.lock` to git
-- [ ] Add `.venv/` to `.gitignore` (if not already)
+- [x] Add `.python-version` file specifying Python 3.9+ (or preferred version)
+- [x] Ensure `pyproject.toml` is properly configured (already done)
+- [x] Generate initial `uv.lock` file with `uv lock`
+- [x] Add `uv.lock` to git
+- [x] Add `.venv/` to `.gitignore` (if not already)
 
 ## 2. Update Documentation
 
-- [ ] Update `README.md` installation section to replace `pip` usage with `uv` installation and usage.
-- [ ] Update `README.md` installation to replace `pip` usage with `uv`
-- [ ] Replace `python -m venv .venv` with `uv venv` or note that uv manages it automatically
-- [ ] Replace `pip install` commands with `uv pip install` or `uv sync`
-- [ ] Update development installation instructions
+- [x] Update `README.md` installation section to replace `pip` usage with `uv` installation and usage.
+- [x] Update `README.md` installation to replace `pip` usage with `uv`
+- [x] Replace `python -m venv .venv` with `uv venv` or note that uv manages it automatically
+- [x] Replace `pip install` commands with `uv pip install` or `uv sync`
+- [x] Update development installation instructions
 
 ## 3. Update CI/CD (If Exists)
 
-- [ ] Update GitHub Actions workflows to install and use uv
-- [ ] Replace pip caching with uv caching
-- [ ] Update test runners to use uv-managed environment
+- [x] Update GitHub Actions workflows to install and use uv
+- [x] Replace pip caching with uv caching
+- [x] Update test runners to use uv-managed environment
 
-## 5. Testing and Validation
+## 4. Testing and Validation
 
-- [ ] Test fresh installation on clean machine/container
-- [ ] Verify all dependencies install correctly
-- [ ] Ensure development dependencies work
-- [ ] Test that madmom installs from git correctly with uv
-- [ ] Verify CLI entry point works
-- [ ] Run existing test suite
+- [x] Test fresh installation on clean machine/container
+- [x] Verify all dependencies install correctly
+- [x] Ensure development dependencies work
+- [x] Test that madmom installs from git correctly with uv
+- [x] Verify CLI entry point works
+- [x] Run existing test suite

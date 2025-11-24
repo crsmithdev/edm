@@ -20,12 +20,11 @@ A Python library and command-line tool for analyzing EDM tracks, providing BPM d
 ### Prerequisites
 
 - Python 3.12 or higher
-- git
 - ffmpeg (required for madmom audio file loading)
 - System packages (Ubuntu/Debian):
-  ```bash
-  sudo apt update
-  sudo apt install -y python3-dev build-essential ffmpeg
+- ffmpeg
+- python3-dev (Ubuntu)
+- build-essential (Ubuntu)
   ```
 
 ### Install uv
@@ -38,15 +37,13 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ### From Source (Recommended for Development)
 
-1. **Clone the repository**:
+1. **Install uv**      
    ```bash
-   git clone https://github.com/crsmithdev/edm.git
-   cd edm
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
-2. **Install dependencies and create virtual environment**:
+2. **Install dependencies**:
    
-   uv automatically manages virtual environments and installs all dependencies (including madmom from git):
    ```bash
    uv sync
    ```
