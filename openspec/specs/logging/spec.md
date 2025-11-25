@@ -1,7 +1,8 @@
-# Logging Specification
+# logging Specification
 
-## ADDED Requirements
-
+## Purpose
+TBD - created by archiving change migrate-logging-to-structlog. Update Purpose after archive.
+## Requirements
 ### Requirement: Structured Logging with Contextual Data
 
 The application SHALL use structlog for all logging operations to provide structured, machine-parseable logs with contextual information.
@@ -87,11 +88,12 @@ The application SHALL follow consistent conventions for event names and context 
 
 #### Scenario: Event naming convention
 - **WHEN** logging an event
-- **THEN** event names SHALL use snake_case format
+- **THEN** event names SHALL be human-readable phrases (e.g., "BPM analysis started")
+- **AND** event names SHALL NOT use snake_case or machine-style identifiers (e.g., NOT "bpm_analysis_started")
 - **AND** event names SHALL be descriptive and specific
-- **AND** completed actions SHALL use past tense (e.g., "file_analyzed")
-- **AND** ongoing actions SHALL use present progressive (e.g., "analyzing_file")
-- **AND** errors SHALL clearly indicate failure (e.g., "analysis_failed")
+- **AND** completed actions SHALL use past tense (e.g., "File analyzed")
+- **AND** ongoing actions SHALL use present progressive (e.g., "Analyzing file")
+- **AND** errors SHALL clearly indicate failure (e.g., "Analysis failed")
 
 #### Scenario: Standard context fields
 - **WHEN** logging operations on files
@@ -254,3 +256,4 @@ The application SHALL completely migrate from Python's standard logging to struc
 - **AND** configuration SHALL be called once at application startup
 - **AND** all modules SHALL use the configured logging
 - **AND** no module SHALL reconfigure logging independently
+

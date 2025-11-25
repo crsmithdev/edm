@@ -1,10 +1,11 @@
 """Beatport API/scraper client."""
 
-import logging
 from dataclasses import dataclass
 from typing import Optional
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 @dataclass
@@ -37,7 +38,7 @@ class BeatportClient:
 
     def __init__(self):
         """Initialize Beatport client."""
-        logger.info("Initialized Beatport client")
+        logger.info("beatport client initialized")
 
     def search_track(self, artist: str, title: str) -> Optional[BeatportTrackInfo]:
         """Search for a track on Beatport.
@@ -59,7 +60,7 @@ class BeatportClient:
         ExternalServiceError
             If the request fails.
         """
-        logger.info(f"Searching Beatport for: {artist} - {title}")
+        logger.info("searching beatport", artist=artist, title=title)
 
         # TODO: Implement Beatport API or web scraper
         # Placeholder implementation

@@ -1,10 +1,11 @@
 """TuneBat API/scraper client."""
 
-import logging
 from dataclasses import dataclass
 from typing import Optional
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 @dataclass
@@ -34,7 +35,7 @@ class TuneBatClient:
 
     def __init__(self):
         """Initialize TuneBat client."""
-        logger.info("Initialized TuneBat client")
+        logger.info("tunebat client initialized")
 
     def search_track(self, artist: str, title: str) -> Optional[TuneBatTrackInfo]:
         """Search for a track on TuneBat.
@@ -56,7 +57,7 @@ class TuneBatClient:
         ExternalServiceError
             If the request fails.
         """
-        logger.info(f"Searching TuneBat for: {artist} - {title}")
+        logger.info("searching tunebat", artist=artist, title=title)
 
         # TODO: Implement TuneBat API or web scraper
         # Placeholder implementation

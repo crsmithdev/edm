@@ -28,9 +28,24 @@
       "Bash(mkdir:*)",
       "Bash(vulture:*)",
       "Bash(uv pip list:*)",
-      "Bash(uv pip install:*)"
+      "Bash(uv pip install:*)",
+      "Bash(openspec show:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(gh issue view:*)",
+      "Bash(git restore:*)",
+      "Bash(git config:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "SlashCommand(/openspec:archive)",
+      "Bash(openspec archive add-github-actions-cicd:*)",
+      "Bash(openspec archive add-accuracy-evaluation:*)",
+      "Bash(openspec archive migrate-logging-to-structlog:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "model": "claude-opus-4-5-20251101",
+  "outputStyle": "default"
 }

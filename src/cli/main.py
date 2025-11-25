@@ -178,7 +178,7 @@ def analyze(
     )
 
     logger = structlog.get_logger(__name__)
-    logger.debug("cli_started", log_level=effective_log_level, json_logs=json_logs)
+    logger.debug("cli started", log_level=effective_log_level, json_logs=json_logs)
 
     # Disable colors if requested or not a TTY
     if no_color or not sys.stdout.isatty():
@@ -205,7 +205,7 @@ def analyze(
         )
     except Exception as e:
         logger = structlog.get_logger(__name__)
-        logger.error("analysis_failed", error=str(e), exc_info=verbose)
+        logger.error("analysis failed", error=str(e), exc_info=verbose)
         if not quiet:
             console.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(code=1)

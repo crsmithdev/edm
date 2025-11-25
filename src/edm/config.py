@@ -107,7 +107,7 @@ def load_config(config_path: Optional[Path] = None) -> EDMConfig:
         config_path = Path.home() / ".config" / "edm" / "config.toml"
 
     if config_path.exists():
-        logger.info("loading_config", config_path=str(config_path))
+        logger.info("loading config", config_path=str(config_path))
         # TODO: Implement TOML loading with tomli
         # For now, return default config
 

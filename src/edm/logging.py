@@ -167,7 +167,7 @@ def get_logger(name: Optional[str] = None) -> structlog.stdlib.BoundLogger:
     Examples
     --------
     >>> logger = get_logger(__name__)
-    >>> logger.info("processing_started", file_path="track.mp3")
-    >>> logger.error("analysis_failed", error="Invalid file format")
+    >>> logger.info("processing started", file_path="track.mp3")
+    >>> logger.error("analysis failed", error="Invalid file format")
     """
     return structlog.get_logger(name)

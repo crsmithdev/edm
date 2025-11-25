@@ -100,7 +100,7 @@ def analyze_bpm(
     if strategy is None:
         strategy = _build_strategy(ignore_metadata, offline)
 
-    logger.info("bpm_analysis_started", filepath=str(filepath), strategy=strategy)
+    logger.info("starting bpm analysis", filepath=str(filepath), strategy=strategy)
 
     # Try each strategy in order
     for source in strategy:
@@ -124,7 +124,7 @@ def analyze_bpm(
                     return result
 
         except Exception as e:
-            logger.warning("bpm_lookup_failed", source=source, error=str(e))
+            logger.warning("bpm lookup failed", source=source, error=str(e))
             continue
 
     from edm.exceptions import AnalysisError
@@ -173,7 +173,7 @@ def _try_metadata(filepath: Path) -> Optional[BPMResult]:
     Optional[BPMResult]
         BPM result if found in metadata, None otherwise.
     """
-    logger.debug("trying_metadata_lookup", filepath=str(filepath))
+    logger.debug("trying metadata lookup", filepath=str(filepath))
 
     try:
         from edm.io.metadata import read_metadata
@@ -182,7 +182,7 @@ def _try_metadata(filepath: Path) -> Optional[BPMResult]:
         bpm = metadata.get("bpm")
 
         if bpm and _is_valid_bpm(bpm):
-            logger.info("bpm_found_in_metadata", filepath=str(filepath), bpm=bpm)
+            logger.info("found bpm in metadata", filepath=str(filepath), bpm=bpm)
             return BPMResult(
                 bpm=float(bpm),
                 confidence=0.7,  # Metadata confidence
@@ -190,11 +190,11 @@ def _try_metadata(filepath: Path) -> Optional[BPMResult]:
                 method=None,
             )
         else:
-            logger.debug("no_valid_bpm_in_metadata", filepath=str(filepath))
+            logger.debug("no valid bpm in metadata", filepath=str(filepath))
             return None
 
     except Exception as e:
-        logger.warning("metadata_lookup_failed", error=str(e))
+        logger.warning("metadata lookup failed", error=str(e))
         return None
 
 
@@ -211,7 +211,7 @@ def _try_spotify(filepath: Path) -> Optional[BPMResult]:
     Optional[BPMResult]
         BPM result if found on Spotify, None otherwise.
     """
-    logger.debug("trying_spotify_lookup", filepath=str(filepath))
+    logger.debug("trying spotify lookup", filepath=str(filepath))
 
     try:
         from edm.external.spotify import SpotifyClient
@@ -223,7 +223,7 @@ def _try_spotify(filepath: Path) -> Optional[BPMResult]:
         title = metadata.get("title")
 
         if not artist or not title:
-            logger.debug("missing_metadata_for_spotify", filepath=str(filepath))
+            logger.debug("missing metadata for spotify lookup", filepath=str(filepath))
             return None
 
         # Search Spotify
@@ -245,11 +245,11 @@ def _try_spotify(filepath: Path) -> Optional[BPMResult]:
                 method=None,
             )
         else:
-            logger.debug("track_not_found_on_spotify", filepath=str(filepath))
+            logger.debug("track not found on spotify", filepath=str(filepath))
             return None
 
     except Exception as e:
-        logger.warning("spotify_lookup_failed", error=str(e))
+        logger.warning("spotify lookup failed", error=str(e))
         return None
 
 
@@ -270,7 +270,7 @@ def _try_compute(filepath: Path, use_madmom: bool, use_librosa: bool) -> Optiona
     Optional[BPMResult]
         Computed BPM result.
     """
-    logger.debug("computing_bpm", filepath=str(filepath))
+    logger.debug("computing bpm", filepath=str(filepath))
 
     try:
         from edm.analysis.bpm_detector import compute_bpm
@@ -293,7 +293,7 @@ def _try_compute(filepath: Path, use_madmom: bool, use_librosa: bool) -> Optiona
         )
 
     except Exception as e:
-        logger.error("bpm_computation_failed", filepath=str(filepath), error=str(e))
+        logger.error("bpm computation failed", filepath=str(filepath), error=str(e))
         raise
 
 

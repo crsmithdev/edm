@@ -53,7 +53,7 @@ def evaluate_bpm(
         Dictionary containing evaluation results
     """
     logger.info(
-        "starting_bpm_evaluation",
+        "starting bpm evaluation",
         source=str(source_path),
         reference=reference_source,
         sample_size=sample_size,
@@ -95,7 +95,7 @@ def evaluate_bpm(
         )
 
     logger.info(
-        "evaluation_setup_complete",
+        "evaluation setup complete",
         total_files=len(all_files),
         sampled=len(sampled_files),
         with_reference=len(sampled_files),
@@ -109,7 +109,7 @@ def evaluate_bpm(
     for idx, file_path in enumerate(sampled_files, 1):
         ref_value = reference[file_path.resolve()]
 
-        logger.info("evaluating_file", progress=f"{idx}/{len(sampled_files)}", file=file_path.name)
+        logger.info("evaluating file", progress=f"{idx}/{len(sampled_files)}", file=file_path.name)
 
         start_time = time.time()
 
@@ -136,7 +136,7 @@ def evaluate_bpm(
             successful += 1
 
             logger.info(
-                "evaluation_success",
+                "evaluation success",
                 file=file_path.name,
                 reference=ref_value,
                 computed=computed_value,
@@ -160,7 +160,7 @@ def evaluate_bpm(
 
             failed += 1
 
-            logger.error("evaluation_failed", file=file_path.name, error=str(e))
+            logger.error("evaluation failed", file=file_path.name, error=str(e))
 
     # Calculate metrics
     errors = [r["error"] for r in results if r["success"]]
@@ -222,7 +222,7 @@ def evaluate_bpm(
     create_symlinks(output_base)
 
     logger.info(
-        "evaluation_complete", mae=mae, rmse=rmse, accuracy=accuracy, output=str(output_dir)
+        "evaluation complete", mae=mae, rmse=rmse, accuracy=accuracy, output=str(output_dir)
     )
 
     # Print summary to console

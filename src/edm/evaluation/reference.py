@@ -30,7 +30,7 @@ def load_reference_auto(
         ValueError: If reference type is not supported for analysis type
     """
     logger.info(
-        "loading_reference",
+        "loading reference",
         reference_arg=reference_arg,
         analysis_type=analysis_type,
         value_field=value_field,
@@ -101,11 +101,11 @@ def load_reference_csv(path: Path, value_field: str = "bpm") -> Dict[Path, float
                 reference[file_path] = float(row[value_field])
             except ValueError:
                 logger.warning(
-                    "invalid_value", file=str(file_path), value=row[value_field], field=value_field
+                    "invalid value", file=str(file_path), value=row[value_field], field=value_field
                 )
 
     logger.info(
-        "loaded_reference_csv", count=len(reference), path=str(path), value_field=value_field
+        "loaded reference csv", count=len(reference), path=str(path), value_field=value_field
     )
 
     return reference
@@ -137,18 +137,18 @@ def load_reference_json(path: Path, value_field: str = "bpm") -> Dict[Path, Any]
 
     for item in data:
         if "path" not in item:
-            logger.warning("missing_path_field", item=item)
+            logger.warning("missing path field", item=item)
             continue
 
         if value_field not in item:
-            logger.warning("missing_value_field", path=item["path"], field=value_field)
+            logger.warning("missing value field", path=item["path"], field=value_field)
             continue
 
         file_path = Path(item["path"]).resolve()
         reference[file_path] = item[value_field]
 
     logger.info(
-        "loaded_reference_json", count=len(reference), path=str(path), value_field=value_field
+        "loaded reference json", count=len(reference), path=str(path), value_field=value_field
     )
 
     return reference
@@ -171,7 +171,7 @@ def load_spotify_reference(source_path: Path) -> Dict[Path, float]:
 
     files = discover_audio_files(source_path)
 
-    logger.info("fetching_spotify_reference", file_count=len(files))
+    logger.info("fetching spotify reference", file_count=len(files))
 
     for file_path in files:
         try:
@@ -180,18 +180,18 @@ def load_spotify_reference(source_path: Path) -> Dict[Path, float]:
             title = metadata.get("title")
 
             if not artist or not title:
-                logger.debug("missing_metadata", file=str(file_path), artist=artist, title=title)
+                logger.debug("missing metadata", file=str(file_path), artist=artist, title=title)
                 continue
 
             track_info = client.search_track(artist, title)
             if track_info and track_info.get("bpm"):
                 reference[file_path] = float(track_info["bpm"])
-                logger.debug("spotify_lookup_success", file=file_path.name, bpm=track_info["bpm"])
+                logger.debug("spotify lookup success", file=file_path.name, bpm=track_info["bpm"])
 
         except Exception as e:
-            logger.warning("spotify_lookup_failed", file=str(file_path), error=str(e))
+            logger.warning("spotify lookup failed", file=str(file_path), error=str(e))
 
-    logger.info("loaded_spotify_reference", count=len(reference))
+    logger.info("loaded spotify reference", count=len(reference))
 
     return reference
 
@@ -211,7 +211,7 @@ def load_metadata_reference(source_path: Path, value_field: str = "bpm") -> Dict
     reference = {}
     files = discover_audio_files(source_path)
 
-    logger.info("reading_metadata_reference", file_count=len(files), value_field=value_field)
+    logger.info("reading metadata reference", file_count=len(files), value_field=value_field)
 
     for file_path in files:
         try:
@@ -227,14 +227,14 @@ def load_metadata_reference(source_path: Path, value_field: str = "bpm") -> Dict
                     reference[file_path] = metadata[value_field]
 
                 logger.debug(
-                    "metadata_read_success", file=file_path.name, value=reference[file_path]
+                    "metadata read success", file=file_path.name, value=reference[file_path]
                 )
 
         except Exception as e:
             logger.warning(
-                "metadata_read_failed", file=str(file_path), field=value_field, error=str(e)
+                "metadata read failed", file=str(file_path), field=value_field, error=str(e)
             )
 
-    logger.info("loaded_metadata_reference", count=len(reference), value_field=value_field)
+    logger.info("loaded metadata reference", count=len(reference), value_field=value_field)
 
     return reference

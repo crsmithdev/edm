@@ -36,7 +36,7 @@ def discover_audio_files(source_path: Path) -> List[Path]:
     # Sort for reproducibility
     audio_files.sort()
 
-    logger.info("discovered_audio_files", count=len(audio_files), source=str(source_path))
+    logger.info("discovered audio files", count=len(audio_files), source=str(source_path))
     return audio_files
 
 
@@ -58,7 +58,7 @@ def sample_random(files: List[Path], size: int, seed: Optional[int] = None) -> L
     sampled = random.sample(files, sample_size)
 
     logger.info(
-        "sampled_files",
+        "sampled files",
         strategy="random",
         sample_size=sample_size,
         total_files=len(files),
@@ -70,7 +70,7 @@ def sample_random(files: List[Path], size: int, seed: Optional[int] = None) -> L
 
 def sample_full(files: List[Path]) -> List[Path]:
     """Return all files (no sampling)."""
-    logger.info("sampled_files", strategy="full", total_files=len(files))
+    logger.info("sampled files", strategy="full", total_files=len(files))
     return files
 
 
@@ -171,7 +171,7 @@ def get_git_commit() -> str:
         )
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
-        logger.warning("git_commit_unavailable")
+        logger.warning("git commit unavailable")
         return "unknown"
 
 
@@ -183,7 +183,7 @@ def get_git_branch() -> str:
         )
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
-        logger.warning("git_branch_unavailable")
+        logger.warning("git branch unavailable")
         return "unknown"
 
 
@@ -199,7 +199,7 @@ def save_results_json(results: dict, output_path: Path) -> None:
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
 
-    logger.info("saved_results_json", path=str(output_path))
+    logger.info("saved results json", path=str(output_path))
 
 
 def save_results_markdown(results: dict, output_path: Path) -> None:
@@ -267,7 +267,7 @@ def save_results_markdown(results: dict, output_path: Path) -> None:
     with open(output_path, "w") as f:
         f.write("\n".join(lines))
 
-    logger.info("saved_results_markdown", path=str(output_path))
+    logger.info("saved results markdown", path=str(output_path))
 
 
 def save_error_distribution_plot(
@@ -283,7 +283,7 @@ def save_error_distribution_plot(
     try:
         import matplotlib.pyplot as plt
     except ImportError:
-        logger.debug("matplotlib_unavailable", msg="Skipping plot generation")
+        logger.debug("matplotlib unavailable", msg="skipping plot generation")
         return
 
     plt.figure(figsize=(10, 6))
@@ -297,7 +297,7 @@ def save_error_distribution_plot(
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
 
-    logger.info("saved_error_plot", path=str(output_path))
+    logger.info("saved error plot", path=str(output_path))
 
 
 def create_symlinks(output_path: Path) -> None:
@@ -322,12 +322,12 @@ def create_symlinks(output_path: Path) -> None:
     # Create new symlinks
     if json_path.exists():
         latest_json.symlink_to(json_path.name)
-        logger.debug("created_symlink", link=str(latest_json), target=json_path.name)
+        logger.debug("created symlink", link=str(latest_json), target=json_path.name)
 
     if md_path.exists():
         latest_md.symlink_to(md_path.name)
-        logger.debug("created_symlink", link=str(latest_md), target=md_path.name)
+        logger.debug("created symlink", link=str(latest_md), target=md_path.name)
 
     if png_path.exists():
         latest_png.symlink_to(png_path.name)
-        logger.debug("created_symlink", link=str(latest_png), target=png_path.name)
+        logger.debug("created symlink", link=str(latest_png), target=png_path.name)

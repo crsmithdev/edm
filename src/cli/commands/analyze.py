@@ -68,12 +68,12 @@ def analyze_command(
     audio_files = collect_audio_files(files, recursive)
 
     if not audio_files:
-        logger.warning("no_audio_files_found", paths=[str(f) for f in files])
+        logger.warning("no audio files found", paths=[str(f) for f in files])
         console.print("[yellow]No audio files found[/yellow]")
         return
 
     logger.info(
-        "analysis_starting",
+        "starting analysis",
         file_count=len(audio_files),
         run_bpm=run_bpm,
         run_structure=run_structure,
@@ -108,7 +108,7 @@ def analyze_command(
                 progress.update(task, advance=1)
 
             except (AudioFileError, AnalysisError) as e:
-                logger.error("file_analysis_failed", filepath=str(filepath), error=str(e))
+                logger.error("file analysis failed", filepath=str(filepath), error=str(e))
                 if not quiet:
                     console.print(f"[red]Error analyzing {filepath.name}:[/red] {e}")
                 results.append(
@@ -127,7 +127,7 @@ def analyze_command(
     # Display timing summary
     if not quiet and len(audio_files) > 0:
         logger.info(
-            "analysis_complete",
+            "analysis complete",
             total_files=len(audio_files),
             total_time=round(total_time, 2),
             avg_time=round(total_time / len(audio_files), 2) if audio_files else 0,
@@ -194,7 +194,7 @@ def analyze_file(
     dict
         Analysis results.
     """
-    logger.info("analyzing_file", filepath=str(filepath))
+    logger.info("analyzing file", filepath=str(filepath))
     result = {}
 
     if run_bpm:
