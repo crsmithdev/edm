@@ -166,8 +166,8 @@ def compute_bpm_librosa(filepath: Path, hop_length: int = 512) -> ComputedBPM:
         # Compute tempo
         tempo, beats = librosa.beat.beat_track(y=y, sr=sr, hop_length=hop_length)
 
-        # librosa returns tempo as numpy scalar
-        bpm = float(tempo)
+        # librosa returns tempo as numpy array, extract scalar
+        bpm = float(tempo.item()) if hasattr(tempo, "item") else float(tempo)
 
         # Librosa's confidence is not directly available, estimate from beat consistency
         if len(beats) > 1:

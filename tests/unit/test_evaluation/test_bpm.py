@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
+from edm.analysis.bpm import BPMResult
 from edm.evaluation.evaluators.bpm import evaluate_bpm
 
 
@@ -28,8 +29,8 @@ def test_evaluate_bpm_basic(mock_discover, mock_load_ref, mock_analyze, tmp_path
 
     # Mock BPM analysis
     mock_analyze.side_effect = [
-        {"bpm": 127.8, "confidence": 0.95},
-        {"bpm": 139.5, "confidence": 0.92},
+        BPMResult(bpm=127.8, confidence=0.95, source="computed"),
+        BPMResult(bpm=139.5, confidence=0.92, source="computed"),
     ]
 
     # Run evaluation
@@ -90,7 +91,7 @@ def test_evaluate_bpm_with_failures(mock_discover, mock_load_ref, mock_analyze, 
 
     # Mock BPM analysis - one success, one failure
     mock_analyze.side_effect = [
-        {"bpm": 127.8, "confidence": 0.95},
+        BPMResult(bpm=127.8, confidence=0.95, source="computed"),
         Exception("Analysis failed"),
     ]
 
@@ -127,7 +128,7 @@ def test_evaluate_bpm_full_dataset(mock_discover, mock_load_ref, mock_analyze, t
     mock_load_ref.return_value = {f: 128.0 for f in mock_files}
 
     # Mock BPM analysis
-    mock_analyze.return_value = {"bpm": 127.8, "confidence": 0.95}
+    mock_analyze.return_value = BPMResult(bpm=127.8, confidence=0.95, source="computed")
 
     # Run evaluation with --full flag
     output_dir = tmp_path / "results"
@@ -187,7 +188,7 @@ def test_evaluate_bpm_output_files_created(mock_discover, mock_load_ref, mock_an
     mock_load_ref.return_value = {Path("/music/track1.mp3").resolve(): 128.0}
 
     # Mock BPM analysis
-    mock_analyze.return_value = {"bpm": 127.8, "confidence": 0.95}
+    mock_analyze.return_value = BPMResult(bpm=127.8, confidence=0.95, source="computed")
 
     # Run evaluation
     output_dir = tmp_path / "results"
