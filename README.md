@@ -1,6 +1,8 @@
 # EDM Track Analysis
 
 [![CI](https://github.com/crsmithdev/edm/actions/workflows/ci.yml/badge.svg)](https://github.com/crsmithdev/edm/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/crsmithdev/edm/graph/badge.svg)](https://codecov.io/gh/crsmithdev/edm)
+[![GitHub release](https://img.shields.io/github/v/release/crsmithdev/edm)](https://github.com/crsmithdev/edm/releases)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 
 A Python library and command-line tool for analyzing EDM tracks, providing BPM detection, structure analysis, and integration with external music services.
@@ -40,13 +42,12 @@ A Python library and command-line tool for analyzing EDM tracks, providing BPM d
    ```bash
    uv pip install --reinstall --no-cache "madmom @ git+https://github.com/CPJKU/madmom.git"
    ```
-   
-   Note: This step is necessary to avoid a wheel caching issue that causes incomplete builds of madmom.
 
 4. **Verify installation**:
    ```bash
    uv run edm --version
    ```
+   
 ## Quick start
 
 Print usage information

@@ -114,10 +114,10 @@ def test_calculate_error_distribution():
     dist = calculate_error_distribution(errors)
 
     assert dist["[-10, -5)"] >= 1  # -12.0, -7.0
-    assert dist["[-5, 0)"] >= 2     # -3.0, -1.0
-    assert dist["[0, 5)"] >= 3      # 0.5, 2.0, 3.5
-    assert dist["[5, 10)"] >= 2     # 6.0, 8.0
-    assert dist["[10+)"] >= 1       # 15.0
+    assert dist["[-5, 0)"] >= 2  # -3.0, -1.0
+    assert dist["[0, 5)"] >= 3  # 0.5, 2.0, 3.5
+    assert dist["[5, 10)"] >= 2  # 6.0, 8.0
+    assert dist["[10+)"] >= 1  # 15.0
 
     # Empty list
     assert calculate_error_distribution([]) == {}

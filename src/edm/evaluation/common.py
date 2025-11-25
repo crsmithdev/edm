@@ -57,11 +57,13 @@ def sample_random(files: List[Path], size: int, seed: Optional[int] = None) -> L
     sample_size = min(size, len(files))
     sampled = random.sample(files, sample_size)
 
-    logger.info("sampled_files",
-                strategy="random",
-                sample_size=sample_size,
-                total_files=len(files),
-                seed=seed)
+    logger.info(
+        "sampled_files",
+        strategy="random",
+        sample_size=sample_size,
+        total_files=len(files),
+        seed=seed,
+    )
 
     return sampled
 
@@ -83,7 +85,7 @@ def calculate_rmse(errors: List[float]) -> float:
     """Calculate Root Mean Square Error."""
     if not errors:
         return 0.0
-    return (sum(e ** 2 for e in errors) / len(errors)) ** 0.5
+    return (sum(e**2 for e in errors) / len(errors)) ** 0.5
 
 
 def calculate_accuracy_within_tolerance(errors: List[float], tolerance: float) -> float:
@@ -155,7 +157,7 @@ def identify_outliers(results: List[dict], n: int = 10) -> List[dict]:
     sorted_results = sorted(
         [r for r in results if r.get("success", False)],
         key=lambda r: abs(r.get("error", 0)),
-        reverse=True
+        reverse=True,
     )
 
     return sorted_results[:n]
@@ -165,10 +167,7 @@ def get_git_commit() -> str:
     """Get current git commit hash."""
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            capture_output=True,
-            text=True,
-            check=True
+            ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -180,10 +179,7 @@ def get_git_branch() -> str:
     """Get current git branch name."""
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            capture_output=True,
-            text=True,
-            check=True
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -224,30 +220,34 @@ def save_results_markdown(results: dict, output_path: Path) -> None:
         "",
         f"**Date**: {metadata['timestamp']}",
         f"**Commit**: {metadata['git_commit']}",
-        f"**Sample**: {metadata['sample_size']} files ({metadata['sampling_strategy']}"
+        f"**Sample**: {metadata['sample_size']} files ({metadata['sampling_strategy']}",
     ]
 
     if metadata.get("sampling_seed"):
         lines[-1] += f", seed={metadata['sampling_seed']}"
     lines[-1] += ")"
 
-    lines.extend([
-        "",
-        "## Summary Metrics",
-        f"- MAE: {summary['mean_absolute_error']:.2f}",
-        f"- RMSE: {summary['root_mean_square_error']:.2f}",
-        f"- Accuracy (±{metadata['tolerance']}): {summary['accuracy_within_tolerance']:.1f}%",
-        f"- Successful: {summary['successful']} / {summary['total_files']}",
-        f"- Failed: {summary['failed']}",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Summary Metrics",
+            f"- MAE: {summary['mean_absolute_error']:.2f}",
+            f"- RMSE: {summary['root_mean_square_error']:.2f}",
+            f"- Accuracy (±{metadata['tolerance']}): {summary['accuracy_within_tolerance']:.1f}%",
+            f"- Successful: {summary['successful']} / {summary['total_files']}",
+            f"- Failed: {summary['failed']}",
+            "",
+        ]
+    )
 
     if outliers:
-        lines.extend([
-            "## Worst Outliers",
-            "| File | Reference | Computed | Error |",
-            "|------|-----------|----------|-------|",
-        ])
+        lines.extend(
+            [
+                "## Worst Outliers",
+                "| File | Reference | Computed | Error |",
+                "|------|-----------|----------|-------|",
+            ]
+        )
 
         for outlier in outliers[:10]:
             file_name = Path(outlier["file"]).name
@@ -260,10 +260,7 @@ def save_results_markdown(results: dict, output_path: Path) -> None:
 
     # Error distribution
     if "error_distribution" in summary:
-        lines.extend([
-            "## Error Distribution",
-            ""
-        ])
+        lines.extend(["## Error Distribution", ""])
         for bin_range, count in summary["error_distribution"].items():
             lines.append(f"- {bin_range}: {count} files")
 
@@ -273,8 +270,9 @@ def save_results_markdown(results: dict, output_path: Path) -> None:
     logger.info("saved_results_markdown", path=str(output_path))
 
 
-def save_error_distribution_plot(errors: List[float], output_path: Path,
-                                 analysis_type: str = "BPM") -> None:
+def save_error_distribution_plot(
+    errors: List[float], output_path: Path, analysis_type: str = "BPM"
+) -> None:
     """Save error distribution plot (optional matplotlib visualization).
 
     Args:

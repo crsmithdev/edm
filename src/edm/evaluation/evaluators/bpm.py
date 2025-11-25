@@ -52,12 +52,14 @@ def evaluate_bpm(
     Returns:
         Dictionary containing evaluation results
     """
-    logger.info("starting_bpm_evaluation",
-                source=str(source_path),
-                reference=reference_source,
-                sample_size=sample_size,
-                full=full,
-                tolerance=tolerance)
+    logger.info(
+        "starting_bpm_evaluation",
+        source=str(source_path),
+        reference=reference_source,
+        sample_size=sample_size,
+        full=full,
+        tolerance=tolerance,
+    )
 
     # Discover audio files
     all_files = discover_audio_files(source_path)
@@ -77,7 +79,7 @@ def evaluate_bpm(
         reference_arg=reference_source,
         analysis_type="bpm",
         source_path=source_path,
-        value_field="bpm"
+        value_field="bpm",
     )
 
     if not reference:
@@ -92,10 +94,12 @@ def evaluate_bpm(
             f"Sampled {len(sampled_files)} files but found 0 with reference."
         )
 
-    logger.info("evaluation_setup_complete",
-                total_files=len(all_files),
-                sampled=len(sampled_files),
-                with_reference=len(sampled_files))
+    logger.info(
+        "evaluation_setup_complete",
+        total_files=len(all_files),
+        sampled=len(sampled_files),
+        with_reference=len(sampled_files),
+    )
 
     # Evaluate each file
     results = []
@@ -105,9 +109,7 @@ def evaluate_bpm(
     for idx, file_path in enumerate(sampled_files, 1):
         ref_value = reference[file_path.resolve()]
 
-        logger.info("evaluating_file",
-                   progress=f"{idx}/{len(sampled_files)}",
-                   file=file_path.name)
+        logger.info("evaluating_file", progress=f"{idx}/{len(sampled_files)}", file=file_path.name)
 
         start_time = time.time()
 
@@ -119,42 +121,46 @@ def evaluate_bpm(
 
             error = computed_value - ref_value
 
-            results.append({
-                "file": str(file_path),
-                "reference": ref_value,
-                "computed": computed_value,
-                "error": error,
-                "success": True,
-                "computation_time": computation_time,
-                "error_message": None,
-            })
+            results.append(
+                {
+                    "file": str(file_path),
+                    "reference": ref_value,
+                    "computed": computed_value,
+                    "error": error,
+                    "success": True,
+                    "computation_time": computation_time,
+                    "error_message": None,
+                }
+            )
 
             successful += 1
 
-            logger.info("evaluation_success",
-                       file=file_path.name,
-                       reference=ref_value,
-                       computed=computed_value,
-                       error=error)
+            logger.info(
+                "evaluation_success",
+                file=file_path.name,
+                reference=ref_value,
+                computed=computed_value,
+                error=error,
+            )
 
         except Exception as e:
             computation_time = time.time() - start_time
 
-            results.append({
-                "file": str(file_path),
-                "reference": ref_value,
-                "computed": None,
-                "error": None,
-                "success": False,
-                "computation_time": computation_time,
-                "error_message": str(e),
-            })
+            results.append(
+                {
+                    "file": str(file_path),
+                    "reference": ref_value,
+                    "computed": None,
+                    "error": None,
+                    "success": False,
+                    "computation_time": computation_time,
+                    "error_message": str(e),
+                }
+            )
 
             failed += 1
 
-            logger.error("evaluation_failed",
-                        file=file_path.name,
-                        error=str(e))
+            logger.error("evaluation_failed", file=file_path.name, error=str(e))
 
     # Calculate metrics
     errors = [r["error"] for r in results if r["success"]]
@@ -215,11 +221,9 @@ def evaluate_bpm(
     # Create symlinks
     create_symlinks(output_base)
 
-    logger.info("evaluation_complete",
-                mae=mae,
-                rmse=rmse,
-                accuracy=accuracy,
-                output=str(output_dir))
+    logger.info(
+        "evaluation_complete", mae=mae, rmse=rmse, accuracy=accuracy, output=str(output_dir)
+    )
 
     # Print summary to console
     print("\n" + "=" * 60)
@@ -237,7 +241,7 @@ def evaluate_bpm(
     print("Results saved to:")
     print(f"  - {output_base.with_suffix('.json')}")
     print(f"  - {output_base.with_suffix('.md')}")
-    if output_base.with_suffix('.png').exists():
+    if output_base.with_suffix(".png").exists():
         print(f"  - {output_base.with_suffix('.png')}")
     print(f"  - {output_dir / 'latest.json'} (symlink)")
     print(f"  - {output_dir / 'latest.md'} (symlink)")

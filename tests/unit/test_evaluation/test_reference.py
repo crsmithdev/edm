@@ -141,7 +141,7 @@ def test_load_reference_auto_csv(tmp_path):
         reference_arg=str(csv_path),
         analysis_type="bpm",
         source_path=Path("/music"),
-        value_field="bpm"
+        value_field="bpm",
     )
 
     assert len(reference) == 1
@@ -161,7 +161,7 @@ def test_load_reference_auto_json(tmp_path):
         reference_arg=str(json_path),
         analysis_type="bpm",
         source_path=Path("/music"),
-        value_field="bpm"
+        value_field="bpm",
     )
 
     assert len(reference) == 1
@@ -174,7 +174,7 @@ def test_load_reference_auto_spotify_unsupported():
             reference_arg="spotify",
             analysis_type="drops",
             source_path=Path("/music"),
-            value_field="drops"
+            value_field="drops",
         )
 
 
@@ -185,7 +185,7 @@ def test_load_reference_auto_metadata_unsupported():
             reference_arg="metadata",
             analysis_type="drops",
             source_path=Path("/music"),
-            value_field="drops"
+            value_field="drops",
         )
 
 
@@ -200,5 +200,5 @@ def test_load_reference_auto_invalid_format(tmp_path):
             reference_arg=str(invalid_file),
             analysis_type="bpm",
             source_path=Path("/music"),
-            value_field="bpm"
+            value_field="bpm",
         )

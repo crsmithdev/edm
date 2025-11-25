@@ -9,9 +9,7 @@ import structlog
 from structlog.typing import EventDict, WrappedLogger
 
 
-def add_log_level_name(
-    logger: WrappedLogger, method_name: str, event_dict: EventDict
-) -> EventDict:
+def add_log_level_name(logger: WrappedLogger, method_name: str, event_dict: EventDict) -> EventDict:
     """Add the log level name to the event dict."""
     if method_name == "debug":
         event_dict["level"] = "DEBUG"
