@@ -1,12 +1,12 @@
 """BPM computation using madmom and librosa."""
 
-import structlog
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
 import librosa
 import numpy as np
+import structlog
 
 logger = structlog.get_logger(__name__)
 

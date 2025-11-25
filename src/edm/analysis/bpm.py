@@ -1,10 +1,11 @@
 """BPM detection and analysis with cascading lookup strategy."""
 
-import structlog
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Literal, Optional
+
+import structlog
 
 logger = structlog.get_logger(__name__)
 

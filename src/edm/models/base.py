@@ -28,7 +28,7 @@ class BaseModel(ABC):
         pass
 
 
-def load_model(model_name: str, model_path: Optional[Path] = None) -> BaseModel:
+def load_model(model_name: str, _model_path: Optional[Path] = None) -> BaseModel:
     """Load a pre-trained model.
 
     Parameters

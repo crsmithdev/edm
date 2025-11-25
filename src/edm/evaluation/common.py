@@ -3,9 +3,8 @@
 import json
 import random
 import subprocess
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import structlog
 
@@ -104,12 +103,11 @@ def calculate_accuracy_within_tolerance(errors: List[float], tolerance: float) -
     return (within_tolerance / len(errors)) * 100.0
 
 
-def calculate_error_distribution(errors: List[float], bins: int = 5) -> Dict[str, int]:
+def calculate_error_distribution(errors: List[float]) -> Dict[str, int]:
     """Calculate error distribution histogram.
 
     Args:
         errors: List of error values
-        bins: Number of bins (approximate)
 
     Returns:
         Dictionary mapping bin range to count

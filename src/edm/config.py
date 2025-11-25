@@ -1,9 +1,9 @@
 """Configuration management."""
 
-import structlog
 from pathlib import Path
 from typing import Optional
 
+import structlog
 from pydantic import BaseModel, Field
 
 logger = structlog.get_logger(__name__)

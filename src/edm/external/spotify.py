@@ -1,12 +1,13 @@
 """Spotify API integration for track metadata and BPM lookup."""
 
-import structlog
 import os
 import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Optional
+
+import structlog
 
 logger = structlog.get_logger(__name__)
 

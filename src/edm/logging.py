@@ -110,19 +110,6 @@ def configure_logging(
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(numeric_level)
 
-        # File logs always use JSON format for structured output
-        file_processors = [
-            structlog.contextvars.merge_contextvars,
-            structlog.stdlib.add_logger_name,
-            add_log_level_name,
-            structlog.stdlib.PositionalArgumentsFormatter(),
-            structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.format_exc_info,
-            structlog.processors.dict_tracebacks,
-            structlog.processors.JSONRenderer(),
-        ]
-
         # Create a formatter that processes through structlog
         class StructlogFormatter(logging.Formatter):
             def __init__(self, processors):
@@ -159,6 +146,7 @@ def configure_logging(
 
                 return json.dumps(event_dict)
 
+        # File logs always use JSON format for structured output
         file_handler.setFormatter(StructlogFormatter([structlog.processors.JSONRenderer()]))
 
         # Add file handler to root logger
