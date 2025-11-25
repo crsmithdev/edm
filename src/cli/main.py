@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from rich.console import Console
 
 from cli.commands.analyze import analyze_command
+from cli.commands.evaluate import evaluate_app
 from edm import __version__ as lib_version
 from edm.logging import configure_logging
 
@@ -21,6 +22,10 @@ app = typer.Typer(
     help="EDM track analysis CLI",
     add_completion=False,
 )
+
+# Add subcommands
+app.add_typer(evaluate_app, name="evaluate")
+
 console = Console()
 
 

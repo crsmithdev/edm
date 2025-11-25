@@ -36,21 +36,29 @@ A Python library and command-line tool for analyzing EDM tracks, providing BPM d
    uv sync
    ```
 
-3. **Activate the virtual environment**:
+3. **Install madmom from source**:
    ```bash
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   uv pip install --reinstall --no-cache "madmom @ git+https://github.com/CPJKU/madmom.git"
    ```
+   
+   Note: This step is necessary to avoid a wheel caching issue that causes incomplete builds of madmom.
 
 4. **Verify installation**:
    ```bash
-   edm --version
+   uv run edm --version
    ```
 ## Quick start
 
 Print usage information
 ```bash
-edm --help
+uv run edm --help
 ```
+
+Analyze an audio file:
+```bash
+uv run edm analyze path/to/audio/file.wav
+```
+
 ## Configuration
 
 ### Spotify API Credentials
@@ -61,6 +69,47 @@ To enable Spotify BPM lookup, set your API credentials in a `.env` file in the p
 SPOTIFY_CLIENT_ID=your_client_id_here
 SPOTIFY_CLIENT_SECRET=your_client_secret_here
 ```
+
+## Accuracy Evaluation
+
+The project includes an internal accuracy evaluation framework for testing and validating analysis algorithms against reference data.
+
+### Basic Usage
+
+Evaluate BPM accuracy using CSV reference file:
+```bash
+uv run edm evaluate bpm --source ~/music --reference tests/fixtures/reference/bpm_tagged.csv
+```
+
+Evaluate using Spotify API (requires credentials):
+```bash
+uv run edm evaluate bpm --source ~/music --reference spotify
+```
+
+Evaluate using file metadata (ID3 tags):
+```bash
+uv run edm evaluate bpm --source ~/music --reference metadata
+```
+
+### Options
+
+- `--source`: Directory containing audio files
+- `--reference`: Reference source ('spotify', 'metadata', or path to CSV/JSON)
+- `--sample-size N`: Number of files to sample (default: 100)
+- `--full`: Evaluate all files
+- `--seed N`: Random seed for reproducible sampling
+- `--tolerance N`: BPM tolerance for accuracy (default: 2.5)
+- `--output DIR`: Output directory for results
+
+### Results
+
+Results are saved to `benchmarks/results/accuracy/bpm/` in both JSON and Markdown formats:
+
+- `latest.json` - Machine-readable full results
+- `latest.md` - Human-readable summary
+- Timestamped files with git commit hash for version tracking
+
+See [benchmarks/results/README.md](benchmarks/results/README.md) for details.
 
 ## Development
 
