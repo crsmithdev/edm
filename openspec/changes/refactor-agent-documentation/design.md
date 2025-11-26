@@ -135,7 +135,7 @@ Check CLAUDE.md, docs/*.md, and openspec/project.md for overlapping content.
 - Reduces total documentation volume
 
 ### Decision: Preserve all content, just reorganize
-Don't delete guidelines, only move and enhance them.
+Don't delete guidelines, only move and enhance them. Be conservative - when in doubt, keep content.
 
 **Migration checklist:**
 - [ ] Every line in current CLAUDE.md Python sections accounted for
@@ -147,6 +147,23 @@ Don't delete guidelines, only move and enhance them.
 - Prevents accidental loss of important guidelines
 - Ensures agents still have access to all information
 - Low-risk refactoring
+- Better to keep slightly verbose than lose useful information
+
+### Decision: Interactive execution with user approval
+Execute changes interactively, presenting each change for user approval before applying.
+
+**Process:**
+1. Analyze section to be changed
+2. Present current vs proposed change
+3. Wait for user approval/modification
+4. Apply approved change
+5. Move to next section
+
+**Rationale:**
+- User maintains control over documentation changes
+- Prevents unintended removal of important content
+- Allows for adjustments based on user feedback
+- More conservative approach for documentation refactoring
 
 ## Structure
 
