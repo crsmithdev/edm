@@ -7,6 +7,8 @@ from typing import Literal
 
 import structlog
 
+from edm.io.audio import AudioData, load_audio
+
 logger = structlog.get_logger(__name__)
 
 
@@ -220,13 +222,19 @@ def _try_spotify(filepath: Path) -> BPMResult | None:
         return None
 
 
-def _try_compute(filepath: Path, use_madmom: bool, use_librosa: bool) -> BPMResult | None:
+def _try_compute(
+    filepath: Path,
+    use_madmom: bool,
+    use_librosa: bool,
+    audio: AudioData | None = None,
+) -> BPMResult | None:
     """Try to compute BPM from audio analysis.
 
     Args:
         filepath: Path to the audio file.
         use_madmom: Prefer madmom for computation.
         use_librosa: Use librosa for computation.
+        audio: Pre-loaded audio data as (y, sr) tuple.
 
     Returns:
         Computed BPM result.
@@ -236,7 +244,11 @@ def _try_compute(filepath: Path, use_madmom: bool, use_librosa: bool) -> BPMResu
     try:
         from edm.analysis.bpm_detector import compute_bpm
 
-        result = compute_bpm(filepath, prefer_madmom=use_madmom)
+        # Load audio with caching if not already provided
+        if audio is None:
+            audio = load_audio(filepath)
+
+        result = compute_bpm(filepath, prefer_madmom=use_madmom, audio=audio)
 
         logger.info(
             "bpm_computed",

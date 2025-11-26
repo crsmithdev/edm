@@ -8,6 +8,8 @@ import librosa
 import numpy as np
 import structlog
 
+from edm.io.audio import AudioData, load_audio
+
 logger = structlog.get_logger(__name__)
 
 
@@ -118,12 +120,17 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
         raise AnalysisError(f"BPM computation failed: {e}")
 
 
-def compute_bpm_librosa(filepath: Path, hop_length: int = 512) -> ComputedBPM:
+def compute_bpm_librosa(
+    filepath: Path,
+    hop_length: int = 512,
+    audio: AudioData | None = None,
+) -> ComputedBPM:
     """Compute BPM using librosa's tempo detection.
 
     Args:
         filepath: Path to the audio file.
         hop_length: Hop length for analysis (default: 512).
+        audio: Pre-loaded audio data as (y, sr) tuple. If provided, skips loading from disk.
 
     Returns:
         Computed BPM result.
@@ -135,12 +142,19 @@ def compute_bpm_librosa(filepath: Path, hop_length: int = 512) -> ComputedBPM:
         >>> result = compute_bpm_librosa(Path("track.mp3"))
         >>> print(f"BPM: {result.bpm:.1f}")
         BPM: 128.0
+
+        >>> # With pre-loaded audio
+        >>> y, sr = load_audio(Path("track.mp3"))
+        >>> result = compute_bpm_librosa(Path("track.mp3"), audio=(y, sr))
     """
     logger.info("computing bpm with librosa", filepath=str(filepath))
 
     try:
-        # Load audio
-        y, sr = librosa.load(str(filepath), sr=None)
+        # Use provided audio or load from cache
+        if audio is not None:
+            y, sr = audio
+        else:
+            y, sr = load_audio(filepath)
 
         # Compute tempo
         tempo, beats = librosa.beat.beat_track(y=y, sr=sr, hop_length=hop_length)
@@ -212,7 +226,11 @@ def _adjust_bpm_to_edm_range(bpm: float, alternatives: list[float]) -> float:
 
 
 def compute_bpm(
-    filepath: Path, prefer_madmom: bool = True, madmom_fps: int = 100, librosa_hop_length: int = 512
+    filepath: Path,
+    prefer_madmom: bool = True,
+    madmom_fps: int = 100,
+    librosa_hop_length: int = 512,
+    audio: AudioData | None = None,
 ) -> ComputedBPM:
     """Compute BPM using available methods.
 
@@ -223,6 +241,7 @@ def compute_bpm(
         prefer_madmom: Try madmom first if True (default: True).
         madmom_fps: Frames per second for madmom (default: 100).
         librosa_hop_length: Hop length for librosa (default: 512).
+        audio: Pre-loaded audio data as (y, sr) tuple. If provided, skips loading from disk.
 
     Returns:
         Computed BPM result.
@@ -232,13 +251,14 @@ def compute_bpm(
     """
     if prefer_madmom:
         try:
+            # madmom loads its own audio, doesn't support pre-loaded
             return compute_bpm_madmom(filepath, fps=madmom_fps)
         except Exception as e:
             logger.warning("madmom failed, falling back to librosa", error=str(e))
-            return compute_bpm_librosa(filepath, hop_length=librosa_hop_length)
+            return compute_bpm_librosa(filepath, hop_length=librosa_hop_length, audio=audio)
     else:
         try:
-            return compute_bpm_librosa(filepath, hop_length=librosa_hop_length)
+            return compute_bpm_librosa(filepath, hop_length=librosa_hop_length, audio=audio)
         except Exception as e:
             logger.warning("librosa failed, trying madmom", error=str(e))
             return compute_bpm_madmom(filepath, fps=madmom_fps)

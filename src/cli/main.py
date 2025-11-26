@@ -11,6 +11,7 @@ from rich.console import Console
 from cli.commands.analyze import analyze_command
 from cli.commands.evaluate import evaluate_app
 from edm import __version__ as lib_version
+from edm.io.audio import clear_audio_cache, set_cache_size
 from edm.logging import configure_logging
 
 # Load environment variables from .env file
@@ -129,6 +130,11 @@ def analyze(
         "--no-color",
         help="Disable colored output",
     ),
+    cache_size: int = typer.Option(
+        10,
+        "--cache-size",
+        help="Number of audio files to cache in memory (0 to disable)",
+    ),
 ):
     """Analyze EDM tracks for BPM, structure, and other features.
 
@@ -188,6 +194,10 @@ def analyze(
     if types:
         analysis_types = [t.strip() for t in types.split(",")]
 
+    # Configure audio cache
+    set_cache_size(cache_size)
+    logger.debug("audio cache configured", cache_size=cache_size)
+
     # Run analysis command
     try:
         analyze_command(
@@ -208,6 +218,9 @@ def analyze(
         if not quiet:
             console.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(code=1)
+    finally:
+        # Clear cache to free memory
+        clear_audio_cache()
 
 
 if __name__ == "__main__":
