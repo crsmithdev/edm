@@ -71,68 +71,11 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 - Before requesting review
 - DO NOT push broken tests or failing lints
 
-# Code Style
+# Detailed Guidelines
 
-- **Formatter/Linter**: Ruff (`ruff check --fix . && ruff format .`)
-- **Line length**: 88 characters
-- **Quotes**: Double quotes preferred
-- **Imports**: stdlib → third-party → local, sorted alphabetically within groups
-
-# Type Hints
-
-- Always use type hints for function signatures
-- Use modern syntax: `list[str]` not `List[str]`, `str | None` not `Optional[str]`
-- Use `TypeAlias` for complex types to improve readability
-- Run `mypy --strict` for type checking
-
-# Project Structure
-
-Use `src/` layout with `pyproject.toml` for packaging. Keep `__init__.py` minimal. Group tests in `tests/` mirroring src structure.
-
-# Dependencies
-
-- **Preferred**: uv (fast) or pip with venv
-- Define all deps in `pyproject.toml` under `[project.dependencies]`
-- Dev deps go in `[project.optional-dependencies.dev]`
-
-# Testing
-
-- Use pytest with fixtures in `conftest.py`
-- Name test files `test_*.py`, test functions `test_*`
-- Group related tests in classes prefixed with `Test`
-- Use `pytest.raises` for exception testing with `match=` for message validation
-
-# Error Handling
-
-- Create a base `ProjectError` exception, derive specific exceptions from it
-- Be specific in except clauses—never bare `except:`
-- Use `raise ... from e` to preserve exception chains
-
-# Async
-
-- Prefer `httpx` over `requests` for HTTP (supports async)
-- Use `asyncio.TaskGroup` (3.11+) for concurrent tasks
-- Avoid mixing sync and async code paths
-
-# Data Validation
-
-- Use Pydantic v2 for data models and validation
-- Prefer `model_validator` over `root_validator`
-- Use `Field()` for constraints and documentation
-
-# Logging
-
-- Use `logging` stdlib, configure once at entry point
-- Use `logger = logging.getLogger(__name__)` per module
-- Prefer f-strings in log calls only when level is enabled (or use lazy %)
-- Log in natural language (prefer "start bpm analysis" over "start_bpm_analysis")
-- Use appropriate and consistent capitalization and punctuation in log messages
-
-# Documentation
-
-- Docstrings: Google style, on public functions/classes
-- Keep docstrings to one line when possible
-- Type hints replace type info in docstrings
+- **Python style**: See `docs/python-style.md`
+- **Testing**: See `docs/testing.md`
+- **Project structure**: See `docs/project-structure.md`
 
 # Quality Checkpoints
 
