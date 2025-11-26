@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Python Guidelines Separation
 The project SHALL separate Python-specific coding standards from language-agnostic workflow guidance, with CLAUDE.md containing workflow and high-level tool selection, and docs/python-style.md containing Python-specific syntax, configuration, and examples.
