@@ -73,6 +73,10 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 # Detailed Guidelines
 
+- **Agent navigation**: See `docs/agent-guide.md` (primary entry point for agents)
+- **Architecture**: See `docs/architecture.md`
+- **CLI reference**: See `docs/cli-reference.md`
+- **Development**: See `docs/development.md`
 - **Python style**: See `docs/python-style.md`
 - **Testing**: See `docs/testing.md`
 - **Project structure**: See `docs/project-structure.md`
