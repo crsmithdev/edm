@@ -1,19 +1,17 @@
 ## 1. Documentation Audit
-- [ ] 1.1 Identify all duplicated content between CLAUDE.md and docs/python-style.md
-- [ ] 1.2 Identify duplication across CLAUDE.md, docs/*.md, and openspec/project.md
-- [ ] 1.3 Identify verbose or unnecessary content in agent documentation (be conservative)
-- [ ] 1.4 Document findings and create consolidation plan
+- [ ] 1.1 Identify all duplicated Python content between CLAUDE.md and docs/python-style.md
+- [ ] 1.2 Create migration checklist for all Python guidelines
 
 ## 2. CLAUDE.md Refactoring (Interactive with User Approval)
-- [ ] 2.1 Present current "Code Style" section vs proposed change, get approval
-- [ ] 2.2 Present current "Type Hints" section vs proposed change, get approval
-- [ ] 2.3 Present current "Testing" section vs proposed change, get approval
-- [ ] 2.4 Present current "Error Handling" section vs proposed change, get approval
-- [ ] 2.5 Present current "Async" section vs proposed change, get approval
-- [ ] 2.6 Present current "Data Validation" section vs proposed change, get approval
-- [ ] 2.7 Present current "Logging" section vs proposed change, get approval
-- [ ] 2.8 Present current "Documentation" section vs proposed change, get approval
-- [ ] 2.9 Present navigation section addition, get approval
+- [ ] 2.1 Present current Python "Code Style" section vs proposed change, get approval
+- [ ] 2.2 Present current Python "Type Hints" section vs proposed change, get approval
+- [ ] 2.3 Present current Python "Testing" section vs proposed change, get approval
+- [ ] 2.4 Present current Python "Error Handling" section vs proposed change, get approval
+- [ ] 2.5 Present current Python "Async" section vs proposed change, get approval
+- [ ] 2.6 Present current Python "Data Validation" section vs proposed change, get approval
+- [ ] 2.7 Present current Python "Logging" section vs proposed change, get approval
+- [ ] 2.8 Present current Python "Documentation" section vs proposed change, get approval
+- [ ] 2.9 Present "Detailed Guidelines" navigation addition, get approval
 - [ ] 2.10 Apply approved changes to CLAUDE.md
 
 ## 3. docs/python-style.md Expansion
@@ -26,19 +24,9 @@
 - [ ] 3.7 Add configuration examples (Ruff, mypy)
 - [ ] 3.8 Ensure all content from CLAUDE.md is preserved with better examples
 
-## 4. Cross-Document Deduplication (Interactive with User Approval)
-- [ ] 4.1 Identify duplication between docs/python-style.md and docs/testing.md
-- [ ] 4.2 Present proposed deduplication for docs/testing.md, get approval
-- [ ] 4.3 Identify duplication between docs/python-style.md and docs/project-structure.md
-- [ ] 4.4 Present proposed deduplication for docs/project-structure.md, get approval
-- [ ] 4.5 Identify duplication between CLAUDE.md and openspec/project.md
-- [ ] 4.6 Present proposed deduplication for openspec/project.md, get approval
-- [ ] 4.7 Apply approved deduplication changes
-
-## 5. Validation
-- [ ] 5.1 Verify CLAUDE.md contains only language-agnostic and high-level guidance
-- [ ] 5.2 Verify docs/python-style.md has all Python-specific details with examples
-- [ ] 5.3 Verify no content is lost during refactoring
-- [ ] 5.4 Verify navigation links work and are complete
-- [ ] 5.5 Verify single source of truth for each guideline
-- [ ] 5.6 Test that agents can still find necessary information efficiently
+## 4. Validation
+- [ ] 4.1 Verify CLAUDE.md contains only language-agnostic and high-level guidance
+- [ ] 4.2 Verify docs/python-style.md has all Python-specific details with examples
+- [ ] 4.3 Verify no Python content is lost during refactoring
+- [ ] 4.4 Verify navigation link to python-style.md works
+- [ ] 4.5 Verify single source of truth for Python guidelines

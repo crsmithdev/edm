@@ -1,22 +1,20 @@
 ## Context
 CLAUDE.md currently contains extensive Python-specific coding standards (lines 74-135) that duplicate nearly all content in docs/python-style.md. This creates maintenance burden (changes must be made in two places) and violates single source of truth principles. Additionally, mixing language-agnostic workflow guidance with Python-specific syntax makes CLAUDE.md harder to navigate and maintain.
 
-This proposal establishes clear documentation boundaries and eliminates duplication across agent documentation.
+This proposal splits Python guidelines cleanly between the two files.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Establish single source of truth for each guideline
-- Separate language-agnostic from language-specific guidance
+- Establish single source of truth for Python guidelines
+- Separate language-agnostic from Python-specific guidance
 - Reduce CLAUDE.md length while preserving all information
-- Add code examples to docs/python-style.md
-- Eliminate duplication across all agent documentation
-- Improve navigation with clear links
+- Add code examples to docs/python-style.md for every guideline
 
 **Non-Goals:**
 - Change the actual coding standards (keep existing rules)
 - Create new documentation files (work with existing structure)
-- Document undocumented areas (only refactor existing content)
+- Audit other documentation files (only CLAUDE.md and python-style.md)
 - Change OpenSpec workflow (documentation refactoring only)
 
 ## Decisions
@@ -88,51 +86,22 @@ def process(items: List[str], count: Optional[int] = None) -> Dict[str, int]:
 - Shows both good and bad examples
 - Reduces ambiguity
 
-### Decision: Navigation section in CLAUDE.md
-Add clear navigation to detailed guides at top of CLAUDE.md.
+### Decision: Add inline navigation in CLAUDE.md
+Add reference to docs/python-style.md where Python details are removed from CLAUDE.md.
 
-**Structure:**
+**Example:**
 ```markdown
-# Development Guidelines
+# Detailed Guidelines
 
-For detailed coding standards and examples, see:
-- **Python style**: `docs/python-style.md` - Syntax, tools, code examples
-- **Testing patterns**: `docs/testing.md` - pytest, fixtures, coverage
-- **Project structure**: `docs/project-structure.md` - Directory layout, packaging
-
-## Tool Selection
-- **Formatter/Linter**: Ruff (see python-style.md for configuration)
-- **Type Checking**: mypy strict mode (see python-style.md for usage)
-- **Testing**: pytest (see testing.md for patterns)
-...
+- **Python style**: See `docs/python-style.md`
+- **Testing**: See `docs/testing.md`
+- **Project structure**: See `docs/project-structure.md`
 ```
 
 **Rationale:**
-- Agents see navigation immediately
-- Clear signposting to detailed guides
-- Tool selection at high level, details elsewhere
-- Follows same pattern as document-agent-guide proposal
-
-### Decision: Audit all agent documentation for duplication
-Check CLAUDE.md, docs/*.md, and openspec/project.md for overlapping content.
-
-**Audit areas:**
-- CLAUDE.md vs docs/python-style.md (known duplication)
-- CLAUDE.md vs docs/testing.md (potential overlap on pytest)
-- CLAUDE.md vs docs/project-structure.md (potential overlap on src/ layout)
-- CLAUDE.md vs openspec/project.md (potential overlap on tech stack, conventions)
-- docs/python-style.md vs docs/testing.md (potential overlap)
-
-**Consolidation rules:**
-1. Keep content in most specific location (python-style.md over CLAUDE.md)
-2. If truly relevant to multiple audiences, keep in most general location with link from specific
-3. Remove verbose explanations not useful to agents
-4. Keep actionable guidelines, remove "why this is good" philosophy
-
-**Rationale:**
-- Prevents duplication from creeping back
-- Establishes clear ownership per topic
-- Reduces total documentation volume
+- Clear signposting to detailed Python guide
+- Maintains high-level tool selection in CLAUDE.md
+- Follows existing pattern in CLAUDE.md
 
 ### Decision: Preserve all content, just reorganize
 Don't delete guidelines, only move and enhance them. Be conservative - when in doubt, keep content.
@@ -284,52 +253,38 @@ from edm.config import settings
 
 ## Risks / Trade-offs
 
-**Risk:** Agents may not follow links and miss details
-- **Mitigation:** Clear navigation at top of CLAUDE.md
+**Risk:** Agents may not follow link to python-style.md and miss details
+- **Mitigation:** Link clearly labeled in CLAUDE.md "Detailed Guidelines" section
 - **Mitigation:** Agents already efficient at reading multiple files
-- **Mitigation:** Critical info (tool selection) still in CLAUDE.md at high level
-
-**Risk:** Breaking existing agent muscle memory
-- **Mitigation:** Tool selection still in CLAUDE.md, just less detail
-- **Mitigation:** Gradual adoption - old patterns still work
-- **Mitigation:** Navigation makes new structure discoverable
-
-**Trade-off:** More files to maintain vs cleaner separation
-- **Decision:** Cleaner separation wins - already have the files
-- **Pro:** Single source of truth reduces overall maintenance
-- **Con:** Must keep links accurate
-- **Mitigation:** Links are simple, rarely change
+- **Mitigation:** High-level tool selection still in CLAUDE.md
 
 **Risk:** Losing content during migration
 - **Mitigation:** Explicit checklist in tasks.md
+- **Mitigation:** Interactive execution with user approval for each section
 - **Mitigation:** Validation step verifies all content preserved
+- **Mitigation:** Conservative approach - when in doubt, keep content
 - **Mitigation:** Git history preserves old version
 
 ## Migration Plan
 
 ### Phase 1: Audit
-1. Document all duplicated content
-2. Document unnecessary verbose content
-3. Create migration checklist
+1. Document Python content duplication between CLAUDE.md and docs/python-style.md
+2. Create migration checklist
 
 ### Phase 2: Expand docs/python-style.md
-4. Add code examples for all guidelines
-5. Add detailed explanations
-6. Ensure all CLAUDE.md Python content is covered
+3. Add code examples for all guidelines
+4. Add detailed explanations
+5. Ensure all CLAUDE.md Python content is covered
 
-### Phase 3: Refactor CLAUDE.md
-7. Add navigation section at top
-8. Replace detailed Python content with tool selection + links
-9. Verify length reduction (target ~180 lines)
+### Phase 3: Refactor CLAUDE.md (Interactive)
+6. Present each section change for user approval
+7. Replace detailed Python content with links to python-style.md
+8. Apply approved changes
 
-### Phase 4: Cross-Document Deduplication
-10. Remove duplication across all docs
-11. Consolidate overlapping content
-
-### Phase 5: Validation
-12. Verify all content preserved
-13. Verify single source of truth
-14. Test agent navigation
+### Phase 4: Validation
+9. Verify all content preserved
+10. Verify single source of truth for Python guidelines
+11. Verify navigation links work
 
 ## Open Questions
 None - clear separation of concerns and straightforward refactoring.
