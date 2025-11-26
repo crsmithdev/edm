@@ -56,9 +56,9 @@ def test_analyze_bpm_click_tracks(bpm, tolerance):
     assert 0.0 <= result.confidence <= 1.0
 
     # Check BPM accuracy (5% tolerance is standard for tempo detection)
-    assert (
-        abs(result.bpm - bpm) <= tolerance
-    ), f"BPM detection failed: expected {bpm}±{tolerance}, got {result.bpm}"
+    assert abs(result.bpm - bpm) <= tolerance, (
+        f"BPM detection failed: expected {bpm}±{tolerance}, got {result.bpm}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -82,9 +82,9 @@ def test_analyze_bpm_beat_patterns(bpm, tolerance):
 
     assert isinstance(result, BPMResult)
     assert result.source == "computed"
-    assert (
-        abs(result.bpm - bpm) <= tolerance
-    ), f"BPM detection on beat pattern failed: expected {bpm}±{tolerance}, got {result.bpm}"
+    assert abs(result.bpm - bpm) <= tolerance, (
+        f"BPM detection on beat pattern failed: expected {bpm}±{tolerance}, got {result.bpm}"
+    )
 
 
 def test_analyze_bpm_returns_high_confidence():
@@ -96,6 +96,6 @@ def test_analyze_bpm_returns_high_confidence():
     result = analyze_bpm(audio_file, offline=True, ignore_metadata=True)
 
     # Synthetic audio should yield high confidence
-    assert (
-        result.confidence > 0.7
-    ), f"Expected high confidence for synthetic audio, got {result.confidence}"
+    assert result.confidence > 0.7, (
+        f"Expected high confidence for synthetic audio, got {result.confidence}"
+    )

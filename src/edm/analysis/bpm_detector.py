@@ -63,7 +63,9 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
         beats = proc(act)
 
         if len(beats) < 2:
-            logger.warning("insufficient beats detected, trying tempo estimator", beat_count=len(beats))
+            logger.warning(
+                "insufficient beats detected, trying tempo estimator", beat_count=len(beats)
+            )
             # Fallback to tempo estimator
             tempo_estimator = madmom.features.tempo.TempoEstimationProcessor(fps=fps)
             tempo_act = madmom.features.tempo.RNNTempoProcessor()(str(filepath))
@@ -218,7 +220,11 @@ def _adjust_bpm_to_edm_range(bpm: float, alternatives: list[float]) -> float:
     # Check if any alternative is in preferred range
     for alt_bpm in alternatives:
         if preferred_min <= alt_bpm <= preferred_max:
-            logger.debug("adjusting bpm for edm range preference", original_bpm=round(bpm, 1), adjusted_bpm=round(alt_bpm, 1))
+            logger.debug(
+                "adjusting bpm for edm range preference",
+                original_bpm=round(bpm, 1),
+                adjusted_bpm=round(alt_bpm, 1),
+            )
             return alt_bpm
 
     # No alternative in range, return original

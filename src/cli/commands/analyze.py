@@ -6,15 +6,98 @@ from pathlib import Path
 
 import structlog
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
 from rich.table import Table
 
 from edm.analysis.bpm import analyze_bpm
 from edm.analysis.structure import analyze_structure
 from edm.config import load_config
 from edm.exceptions import AnalysisError, AudioFileError
+from edm.processing.parallel import ParallelProcessor
 
 logger = structlog.get_logger(__name__)
+
+
+# Worker function for parallel execution (must be top-level for pickling)
+def _analyze_file_worker(args: tuple) -> dict:
+    """Worker function for parallel file analysis.
+
+    Args:
+        args: Tuple of (filepath, run_bpm, run_structure, offline, ignore_metadata).
+
+    Returns:
+        Analysis result dict with file path and timing.
+    """
+    filepath, run_bpm, run_structure, offline, ignore_metadata = args
+
+    # Convert string back to Path if needed (for pickling)
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
+
+    start_time = time.time()
+
+    try:
+        result = _analyze_file_impl(filepath, run_bpm, run_structure, offline, ignore_metadata)
+        elapsed = time.time() - start_time
+        result["file"] = str(filepath)
+        result["time"] = elapsed
+        return result
+
+    except (AudioFileError, AnalysisError) as e:
+        return {
+            "file": str(filepath),
+            "error": str(e),
+            "time": time.time() - start_time,
+        }
+    except Exception as e:
+        return {
+            "file": str(filepath),
+            "error": f"Unexpected error: {e}",
+            "time": time.time() - start_time,
+        }
+
+
+def _analyze_file_impl(
+    filepath: Path, run_bpm: bool, run_structure: bool, offline: bool, ignore_metadata: bool
+) -> dict:
+    """Analyze a single audio file (implementation).
+
+    Args:
+        filepath: Path to the audio file.
+        run_bpm: Run BPM analysis.
+        run_structure: Run structure analysis.
+        offline: Skip network lookups.
+        ignore_metadata: Skip metadata reading.
+
+    Returns:
+        Analysis results.
+    """
+    result = {}
+
+    if run_bpm:
+        bpm_result = analyze_bpm(filepath, offline=offline, ignore_metadata=ignore_metadata)
+        result["bpm"] = round(bpm_result.bpm, 1)
+        result["bpm_confidence"] = round(bpm_result.confidence, 2)
+        result["bpm_source"] = bpm_result.source
+        result["bpm_method"] = bpm_result.method
+        result["bpm_computation_time"] = round(bpm_result.computation_time, 3)
+        if bpm_result.alternatives:
+            result["bpm_alternatives"] = [round(alt, 1) for alt in bpm_result.alternatives]
+
+    if run_structure:
+        structure_result = analyze_structure(filepath)
+        result["duration"] = round(structure_result.duration, 1)
+        result["sections"] = len(structure_result.sections)
+        result["structure"] = [
+            {
+                "label": s.label,
+                "start": round(s.start_time, 1),
+                "end": round(s.end_time, 1),
+            }
+            for s in structure_result.sections
+        ]
+
+    return result
 
 
 def analyze_command(
@@ -28,6 +111,7 @@ def analyze_command(
     ignore_metadata: bool,
     quiet: bool,
     console: Console,
+    workers: int = 1,
 ):
     """Execute the analyze command.
 
@@ -42,6 +126,7 @@ def analyze_command(
         ignore_metadata: Skip reading metadata from files.
         quiet: Suppress non-essential output.
         console: Rich console for output.
+        workers: Number of parallel workers (default: 1 for sequential).
     """
     # Load configuration
     load_config(config_path)
@@ -66,45 +151,30 @@ def analyze_command(
         run_bpm=run_bpm,
         run_structure=run_structure,
         offline=offline,
+        workers=workers,
     )
     if not quiet:
         console.print(f"Found {len(audio_files)} file(s) to analyze")
+        if workers > 1:
+            console.print(f"Using {workers} parallel workers")
 
-    # Analyze each file
-    results = []
-    total_time = 0.0
+    # Prepare args for each file
+    args_list = [
+        (str(filepath), run_bpm, run_structure, offline, ignore_metadata)
+        for filepath in audio_files
+    ]
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-        disable=quiet,
-    ) as progress:
-        task = progress.add_task("Analyzing...", total=len(audio_files))
+    # Process files
+    start_time = time.time()
 
-        for filepath in audio_files:
-            try:
-                start_time = time.time()
-                result = analyze_file(filepath, run_bpm, run_structure, offline, ignore_metadata)
-                elapsed = time.time() - start_time
-                total_time += elapsed
+    if workers == 1:
+        # Sequential processing with progress bar
+        results = _process_sequential(args_list, console, quiet)
+    else:
+        # Parallel processing
+        results = _process_parallel(args_list, workers, console, quiet)
 
-                result["file"] = str(filepath)
-                result["time"] = elapsed
-                results.append(result)
-
-                progress.update(task, advance=1)
-
-            except (AudioFileError, AnalysisError) as e:
-                logger.error("file analysis failed", filepath=str(filepath), error=str(e))
-                if not quiet:
-                    console.print(f"[red]Error analyzing {filepath.name}:[/red] {e}")
-                results.append(
-                    {
-                        "file": str(filepath),
-                        "error": str(e),
-                    }
-                )
+    total_time = time.time() - start_time
 
     # Display results
     if format == "json" or output:
@@ -119,10 +189,114 @@ def analyze_command(
             total_files=len(audio_files),
             total_time=round(total_time, 2),
             avg_time=round(total_time / len(audio_files), 2) if audio_files else 0,
+            workers=workers,
         )
         console.print(f"\nTotal time: {total_time:.2f}s")
         if len(audio_files) > 1:
             console.print(f"Average time per track: {total_time / len(audio_files):.2f}s")
+        if workers > 1:
+            # Calculate speedup estimate
+            sum_individual = sum(r.get("time", 0) for r in results)
+            if sum_individual > 0:
+                speedup = sum_individual / total_time
+                console.print(f"Parallel speedup: {speedup:.1f}x")
+
+
+def _process_sequential(
+    args_list: list[tuple],
+    console: Console,
+    quiet: bool,
+) -> list[dict]:
+    """Process files sequentially with progress bar.
+
+    Args:
+        args_list: List of argument tuples for each file.
+        console: Rich console for output.
+        quiet: Suppress progress output.
+
+    Returns:
+        List of analysis results.
+    """
+    results = []
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+        disable=quiet,
+    ) as progress:
+        task = progress.add_task("Analyzing...", total=len(args_list))
+
+        for args in args_list:
+            result = _analyze_file_worker(args)
+            results.append(result)
+
+            if "error" in result and not quiet:
+                filepath = Path(result["file"])
+                console.print(f"[red]Error analyzing {filepath.name}:[/red] {result['error']}")
+
+            progress.update(task, advance=1)
+
+    return results
+
+
+def _process_parallel(
+    args_list: list[tuple],
+    workers: int,
+    console: Console,
+    quiet: bool,
+) -> list[dict]:
+    """Process files in parallel with progress bar.
+
+    Args:
+        args_list: List of argument tuples for each file.
+        workers: Number of parallel workers.
+        console: Rich console for output.
+        quiet: Suppress progress output.
+
+    Returns:
+        List of analysis results.
+    """
+    results = []
+    completed = [0]  # Use list to allow mutation in callback
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        console=console,
+        disable=quiet,
+    ) as progress:
+        task = progress.add_task(f"Analyzing ({workers} workers)...", total=len(args_list))
+
+        def progress_callback(count: int):
+            # Update progress bar
+            advance = count - completed[0]
+            if advance > 0:
+                progress.update(task, advance=advance)
+                completed[0] = count
+
+        processor = ParallelProcessor(
+            worker_fn=_analyze_file_worker,
+            workers=workers,
+            progress_callback=progress_callback,
+        )
+
+        try:
+            results = processor.process(args_list)
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Analysis interrupted[/yellow]")
+            raise
+
+    # Report errors after processing
+    if not quiet:
+        for result in results:
+            if "error" in result:
+                filepath = Path(result["file"])
+                console.print(f"[red]Error analyzing {filepath.name}:[/red] {result['error']}")
+
+    return results
 
 
 def collect_audio_files(paths: list[Path], recursive: bool) -> list[Path]:
@@ -170,32 +344,7 @@ def analyze_file(
         Analysis results.
     """
     logger.info("analyzing file", filepath=str(filepath))
-    result = {}
-
-    if run_bpm:
-        bpm_result = analyze_bpm(filepath, offline=offline, ignore_metadata=ignore_metadata)
-        result["bpm"] = round(bpm_result.bpm, 1)
-        result["bpm_confidence"] = round(bpm_result.confidence, 2)
-        result["bpm_source"] = bpm_result.source
-        result["bpm_method"] = bpm_result.method
-        result["bpm_computation_time"] = round(bpm_result.computation_time, 3)
-        if bpm_result.alternatives:
-            result["bpm_alternatives"] = [round(alt, 1) for alt in bpm_result.alternatives]
-
-    if run_structure:
-        structure_result = analyze_structure(filepath)
-        result["duration"] = round(structure_result.duration, 1)
-        result["sections"] = len(structure_result.sections)
-        result["structure"] = [
-            {
-                "label": s.label,
-                "start": round(s.start_time, 1),
-                "end": round(s.end_time, 1),
-            }
-            for s in structure_result.sections
-        ]
-
-    return result
+    return _analyze_file_impl(filepath, run_bpm, run_structure, offline, ignore_metadata)
 
 
 def output_json(results: list[dict], output_path: Path | None, console: Console, quiet: bool):

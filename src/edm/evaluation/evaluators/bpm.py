@@ -25,8 +25,159 @@ from edm.evaluation.common import (
     save_results_markdown,
 )
 from edm.evaluation.reference import load_reference_auto
+from edm.processing.parallel import ParallelProcessor
 
 logger = structlog.get_logger(__name__)
+
+
+# Worker function for parallel execution (must be top-level for pickling)
+def _evaluate_file_worker(args: tuple) -> dict:
+    """Worker function for parallel BPM evaluation.
+
+    Args:
+        args: Tuple of (filepath, ref_value).
+
+    Returns:
+        Evaluation result dict with file path, reference, computed, error, and timing.
+    """
+    filepath, ref_value = args
+
+    # Convert string back to Path if needed (for pickling)
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
+
+    start_time = time.time()
+
+    try:
+        # Compute BPM using analysis module (force computation by ignoring metadata and going offline)
+        bpm_result = analyze_bpm(filepath, ignore_metadata=True, offline=True)
+        computed_value = bpm_result.bpm
+        computation_time = time.time() - start_time
+
+        error = computed_value - ref_value
+
+        return {
+            "file": str(filepath),
+            "reference": ref_value,
+            "computed": computed_value,
+            "error": error,
+            "success": True,
+            "computation_time": computation_time,
+            "error_message": None,
+        }
+
+    except Exception as e:
+        computation_time = time.time() - start_time
+
+        return {
+            "file": str(filepath),
+            "reference": ref_value,
+            "computed": None,
+            "error": None,
+            "success": False,
+            "computation_time": computation_time,
+            "error_message": str(e),
+        }
+
+
+def _evaluate_sequential(args_list: list[tuple]) -> list[dict]:
+    """Evaluate files sequentially.
+
+    Args:
+        args_list: List of (filepath, ref_value) tuples.
+
+    Returns:
+        List of evaluation results.
+    """
+    results = []
+
+    for idx, args in enumerate(args_list, 1):
+        filepath = args[0]
+        if isinstance(filepath, str):
+            filepath = Path(filepath)
+
+        logger.info(
+            "evaluating file",
+            progress=f"{idx}/{len(args_list)}",
+            file=filepath.name,
+        )
+
+        result = _evaluate_file_worker(args)
+        results.append(result)
+
+        if result["success"]:
+            logger.info(
+                "evaluation success",
+                file=filepath.name,
+                reference=result["reference"],
+                computed=result["computed"],
+                error=result["error"],
+            )
+        else:
+            logger.error(
+                "evaluation failed",
+                file=filepath.name,
+                error=result["error_message"],
+            )
+
+    return results
+
+
+def _evaluate_parallel(args_list: list[tuple], workers: int) -> list[dict]:
+    """Evaluate files in parallel.
+
+    Args:
+        args_list: List of (filepath, ref_value) tuples.
+        workers: Number of parallel workers.
+
+    Returns:
+        List of evaluation results.
+    """
+    logger.info("starting parallel evaluation", workers=workers, files=len(args_list))
+
+    completed = [0]  # Use list to allow mutation in callback
+
+    def progress_callback(count: int):
+        advance = count - completed[0]
+        if advance > 0:
+            completed[0] = count
+            logger.info(
+                "parallel progress",
+                completed=count,
+                total=len(args_list),
+            )
+
+    processor = ParallelProcessor(
+        worker_fn=_evaluate_file_worker,
+        workers=workers,
+        progress_callback=progress_callback,
+    )
+
+    try:
+        results = processor.process(args_list)
+    except KeyboardInterrupt:
+        logger.warning("evaluation interrupted")
+        raise
+
+    # Log summary for each result
+    for result in results:
+        filepath = Path(result["file"])
+        if result["success"]:
+            logger.info(
+                "evaluation success",
+                file=filepath.name,
+                reference=result["reference"],
+                computed=result["computed"],
+                error=result["error"],
+            )
+        else:
+            logger.error(
+                "evaluation failed",
+                file=filepath.name,
+                error=result["error_message"],
+            )
+
+    return results
 
 
 def evaluate_bpm(
@@ -37,6 +188,7 @@ def evaluate_bpm(
     seed: int | None = None,
     full: bool = False,
     tolerance: float = 2.5,
+    workers: int = 1,
 ) -> dict[str, Any]:
     """Evaluate BPM detection accuracy.
 
@@ -48,6 +200,7 @@ def evaluate_bpm(
         seed: Random seed for reproducibility
         full: Use all files instead of sampling
         tolerance: BPM tolerance for accuracy calculation
+        workers: Number of parallel workers (default: 1 = sequential)
 
     Returns:
         Dictionary containing evaluation results
@@ -59,6 +212,7 @@ def evaluate_bpm(
         sample_size=sample_size,
         full=full,
         tolerance=tolerance,
+        workers=workers,
     )
 
     # Discover audio files
@@ -101,66 +255,18 @@ def evaluate_bpm(
         with_reference=len(sampled_files),
     )
 
-    # Evaluate each file
-    results = []
-    successful = 0
-    failed = 0
+    # Prepare args for each file
+    args_list = [(str(file_path), reference[file_path.resolve()]) for file_path in sampled_files]
 
-    for idx, file_path in enumerate(sampled_files, 1):
-        ref_value = reference[file_path.resolve()]
+    # Process files (sequential or parallel)
+    if workers == 1:
+        results = _evaluate_sequential(args_list)
+    else:
+        results = _evaluate_parallel(args_list, workers)
 
-        logger.info("evaluating file", progress=f"{idx}/{len(sampled_files)}", file=file_path.name)
-
-        start_time = time.time()
-
-        try:
-            # Compute BPM using analysis module (force computation by ignoring metadata and going offline)
-            bpm_result = analyze_bpm(file_path, ignore_metadata=True, offline=True)
-            computed_value = bpm_result.bpm
-            computation_time = time.time() - start_time
-
-            error = computed_value - ref_value
-
-            results.append(
-                {
-                    "file": str(file_path),
-                    "reference": ref_value,
-                    "computed": computed_value,
-                    "error": error,
-                    "success": True,
-                    "computation_time": computation_time,
-                    "error_message": None,
-                }
-            )
-
-            successful += 1
-
-            logger.info(
-                "evaluation success",
-                file=file_path.name,
-                reference=ref_value,
-                computed=computed_value,
-                error=error,
-            )
-
-        except Exception as e:
-            computation_time = time.time() - start_time
-
-            results.append(
-                {
-                    "file": str(file_path),
-                    "reference": ref_value,
-                    "computed": None,
-                    "error": None,
-                    "success": False,
-                    "computation_time": computation_time,
-                    "error_message": str(e),
-                }
-            )
-
-            failed += 1
-
-            logger.error("evaluation failed", file=file_path.name, error=str(e))
+    # Count successful and failed evaluations
+    successful = sum(1 for r in results if r["success"])
+    failed = sum(1 for r in results if not r["success"])
 
     # Calculate metrics
     errors = [r["error"] for r in results if r["success"]]

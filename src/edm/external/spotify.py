@@ -113,7 +113,7 @@ class SpotifyClient:
 
         except ImportError:
             raise ImportError(
-                "spotipy is required for Spotify integration. " "Install with: pip install spotipy"
+                "spotipy is required for Spotify integration. Install with: pip install spotipy"
             )
 
     @lru_cache(maxsize=512)

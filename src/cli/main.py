@@ -135,6 +135,12 @@ def analyze(
         "--cache-size",
         help="Number of audio files to cache in memory (0 to disable)",
     ),
+    workers: int = typer.Option(
+        1,
+        "--workers",
+        "-w",
+        help="Number of parallel workers for analysis (default: 1 = sequential)",
+    ),
 ):
     """Analyze EDM tracks for BPM, structure, and other features.
 
@@ -211,6 +217,7 @@ def analyze(
             ignore_metadata=ignore_metadata,
             quiet=quiet,
             console=console,
+            workers=workers,
         )
     except Exception as e:
         logger = structlog.get_logger(__name__)

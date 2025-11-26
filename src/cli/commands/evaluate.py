@@ -51,6 +51,12 @@ def evaluate_bpm_command(
         "--tolerance",
         help="BPM tolerance for accuracy calculation",
     ),
+    workers: int = typer.Option(
+        1,
+        "--workers",
+        "-w",
+        help="Number of parallel workers for evaluation (default: 1 = sequential)",
+    ),
 ):
     """Evaluate BPM detection accuracy.
 
@@ -63,6 +69,8 @@ def evaluate_bpm_command(
         edm evaluate bpm --source ~/music --reference metadata
 
         edm evaluate bpm --source ~/music --reference metadata --full --seed 42
+
+        edm evaluate bpm --source ~/music --reference metadata --workers 4  # Parallel
     """
     try:
         evaluate_bpm(
@@ -73,6 +81,7 @@ def evaluate_bpm_command(
             seed=seed,
             full=full,
             tolerance=tolerance,
+            workers=workers,
         )
     except Exception as e:
         typer.echo(f"Error: {e}", err=True)
