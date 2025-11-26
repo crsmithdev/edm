@@ -23,7 +23,8 @@ classifiers = [
 dependencies = [
     "numpy>=1.24.0",
     "librosa>=0.10.0",
-    "madmom @ git+https://github.com/CPJKU/madmom.git",
+    "beat-this @ git+https://github.com/CPJKU/beat_this.git",
+    "torch>=2.0.0",
     "essentia>=2.1b5",
     "pydantic>=2.0.0",
     "typer[all]>=0.9.0",

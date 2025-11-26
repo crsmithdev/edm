@@ -13,11 +13,11 @@ FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
 def test_bpm_result_dataclass():
     """Test BPMResult dataclass creation."""
-    result = BPMResult(bpm=128.0, confidence=0.95, source="computed", method="madmom")
+    result = BPMResult(bpm=128.0, confidence=0.95, source="computed", method="beat-this")
     assert result.bpm == 128.0
     assert result.confidence == 0.95
     assert result.source == "computed"
-    assert result.method == "madmom"
+    assert result.method == "beat-this"
 
 
 def test_analyze_bpm_nonexistent_file():
@@ -52,7 +52,7 @@ def test_analyze_bpm_click_tracks(bpm, tolerance):
     # Check result structure
     assert isinstance(result, BPMResult)
     assert result.source == "computed"
-    assert result.method in ["madmom-dbn", "librosa"]  # Should use one of these
+    assert result.method in ["beat-this", "librosa"]  # Should use one of these
     assert 0.0 <= result.confidence <= 1.0
 
     # Check BPM accuracy (5% tolerance is standard for tempo detection)

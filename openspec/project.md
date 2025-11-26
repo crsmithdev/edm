@@ -13,8 +13,8 @@ An ML-powered system for comprehensive musical and structural analysis of EDM tr
 ## Tech Stack
 
 ### Core Audio Processing
-- **librosa** - Spectral features, onset detection, tempo tracking
-- **madmom** - Primary BPM detector (trained on electronic music, DBN tracker)
+- **librosa** - Spectral features, onset detection, tempo tracking (fallback BPM detector)
+- **beat_this** - Primary BPM detector (ISMIR 2024, neural network beat tracker from CPJKU)
 - **essentia** - EDM-specific algorithms for key detection, danceability, energy analysis
 
 ### Machine Learning
@@ -106,7 +106,7 @@ edm/
 ### EDM-Specific Knowledge
 
 **Beat Detection Philosophy:**
-- Always use Madmom's DBN tracker as primary (trained on electronic music)
+- Use beat_this neural network as primary (ISMIR 2024, state-of-the-art accuracy)
 - Detect and lock to kick drums - kick is ground truth in EDM
 - Validate beat grids against structural boundaries (drops align with downbeats)
 - Check tempo stability - real EDM doesn't drift significantly

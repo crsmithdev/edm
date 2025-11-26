@@ -1,4 +1,4 @@
-"""BPM computation using madmom and librosa."""
+"""BPM computation using beat_this and librosa."""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,13 +20,13 @@ class ComputedBPM:
     Attributes:
         bpm: Detected BPM value.
         confidence: Confidence score between 0 and 1.
-        method: Detection method used ('madmom-dbn' or 'librosa').
+        method: Detection method used ('beat-this' or 'librosa').
         alternatives: Alternative BPM candidates (for tempo multiplicity).
     """
 
     bpm: float
     confidence: float
-    method: Literal["madmom-dbn", "librosa"]
+    method: Literal["beat-this", "librosa"]
     alternatives: list[float] = None
 
     def __post_init__(self):
@@ -34,12 +34,12 @@ class ComputedBPM:
             self.alternatives = []
 
 
-def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
-    """Compute BPM using madmom's DBN beat tracker.
+def compute_bpm_beat_this(filepath: Path, device: str | None = None) -> ComputedBPM:
+    """Compute BPM using beat_this neural network beat tracker.
 
     Args:
         filepath: Path to the audio file.
-        fps: Frames per second for analysis (default: 100).
+        device: Device for inference ('cuda', 'cpu', or None for auto-detect).
 
     Returns:
         Computed BPM result with confidence and alternatives.
@@ -48,43 +48,33 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
         AnalysisError: If BPM computation fails.
 
     Examples:
-        >>> result = compute_bpm_madmom(Path("track.mp3"))
+        >>> result = compute_bpm_beat_this(Path("track.mp3"))
         >>> print(f"BPM: {result.bpm:.1f} (confidence: {result.confidence:.2f})")
         BPM: 128.0 (confidence: 0.95)
     """
-    logger.info("computing bpm with madmom", filepath=str(filepath))
+    logger.info("computing bpm with beat_this", filepath=str(filepath))
 
     try:
-        import madmom
+        import torch
+        from beat_this.inference import File2Beats
 
-        # Use RNNBeatProcessor and DBNBeatTrackingProcessor
-        proc = madmom.features.beats.DBNBeatTrackingProcessor(fps=fps)
-        act = madmom.features.beats.RNNBeatProcessor()(str(filepath))
-        beats = proc(act)
+        # Auto-detect device if not specified
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        logger.debug("beat_this using device", device=device)
+
+        # Initialize beat tracker
+        file2beats = File2Beats(checkpoint_path="final0", device=device)
+
+        # Get beat positions
+        beats, _downbeats = file2beats(str(filepath))
 
         if len(beats) < 2:
-            logger.warning(
-                "insufficient beats detected, trying tempo estimator", beat_count=len(beats)
-            )
-            # Fallback to tempo estimator
-            tempo_estimator = madmom.features.tempo.TempoEstimationProcessor(fps=fps)
-            tempo_act = madmom.features.tempo.RNNTempoProcessor()(str(filepath))
-            tempos = tempo_estimator(tempo_act)
+            logger.warning("insufficient beats detected", beat_count=len(beats))
+            from edm.exceptions import AnalysisError
 
-            if len(tempos) > 0:
-                bpm = float(tempos[0][0])
-                confidence = float(tempos[0][1])
-                alternatives = [float(t[0]) for t in tempos[1:3]] if len(tempos) > 1 else []
-
-                # Validate BPM range
-                bpm = _adjust_bpm_to_edm_range(bpm, alternatives)
-
-                logger.info("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
-                return ComputedBPM(
-                    bpm=bpm, confidence=confidence, method="madmom-dbn", alternatives=alternatives
-                )
-            else:
-                raise ValueError("No tempo detected")
+            raise AnalysisError(f"Insufficient beats detected: {len(beats)}")
 
         # Calculate BPM from beat intervals
         intervals = np.diff(beats)
@@ -107,16 +97,16 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
 
         logger.info("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
         return ComputedBPM(
-            bpm=bpm, confidence=confidence, method="madmom-dbn", alternatives=alternatives
+            bpm=bpm, confidence=confidence, method="beat-this", alternatives=alternatives
         )
 
-    except ImportError:
-        logger.error("madmom not installed, cannot compute bpm")
+    except ImportError as e:
+        logger.error("beat_this not installed", error=str(e))
         from edm.exceptions import AnalysisError
 
-        raise AnalysisError("madmom library not installed")
+        raise AnalysisError("beat_this library not installed")
     except Exception as e:
-        logger.error("madmom bpm computation failed", error=str(e))
+        logger.error("beat_this bpm computation failed", error=str(e))
         from edm.exceptions import AnalysisError
 
         raise AnalysisError(f"BPM computation failed: {e}")
@@ -234,20 +224,22 @@ def _adjust_bpm_to_edm_range(bpm: float, alternatives: list[float]) -> float:
 def compute_bpm(
     filepath: Path,
     prefer_madmom: bool = True,
-    madmom_fps: int = 100,
     librosa_hop_length: int = 512,
     audio: AudioData | None = None,
+    device: str | None = None,
 ) -> ComputedBPM:
     """Compute BPM using available methods.
 
-    Tries madmom first if preferred and available, falls back to librosa.
+    Tries beat_this first if preferred and available, falls back to librosa.
 
     Args:
         filepath: Path to the audio file.
-        prefer_madmom: Try madmom first if True (default: True).
-        madmom_fps: Frames per second for madmom (default: 100).
+        prefer_madmom: Use neural network (beat_this) if True, librosa if False.
+            Parameter name kept for backward compatibility.
         librosa_hop_length: Hop length for librosa (default: 512).
-        audio: Pre-loaded audio data as (y, sr) tuple. If provided, skips loading from disk.
+        audio: Pre-loaded audio data as (y, sr) tuple. If provided, skips loading
+            from disk (only used by librosa fallback).
+        device: Device for beat_this inference ('cuda', 'cpu', or None for auto).
 
     Returns:
         Computed BPM result.
@@ -257,14 +249,14 @@ def compute_bpm(
     """
     if prefer_madmom:
         try:
-            # madmom loads its own audio, doesn't support pre-loaded
-            return compute_bpm_madmom(filepath, fps=madmom_fps)
+            # beat_this loads its own audio
+            return compute_bpm_beat_this(filepath, device=device)
         except Exception as e:
-            logger.warning("madmom failed, falling back to librosa", error=str(e))
+            logger.warning("beat_this failed, falling back to librosa", error=str(e))
             return compute_bpm_librosa(filepath, hop_length=librosa_hop_length, audio=audio)
     else:
         try:
             return compute_bpm_librosa(filepath, hop_length=librosa_hop_length, audio=audio)
         except Exception as e:
-            logger.warning("librosa failed, trying madmom", error=str(e))
-            return compute_bpm_madmom(filepath, fps=madmom_fps)
+            logger.warning("librosa failed, trying beat_this", error=str(e))
+            return compute_bpm_beat_this(filepath, device=device)

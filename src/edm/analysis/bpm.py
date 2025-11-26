@@ -20,7 +20,7 @@ class BPMResult:
         bpm: Detected BPM value.
         confidence: Confidence score between 0 and 1.
         source: Source of the BPM data.
-        method: Detection method used (e.g., 'madmom-dbn', 'librosa').
+        method: Detection method used (e.g., 'beat-this', 'librosa').
         computation_time: Time spent computing/fetching BPM in seconds.
         alternatives: Alternative BPM candidates (for tempo multiplicity).
     """
@@ -52,7 +52,8 @@ def analyze_bpm(
 
     Args:
         filepath: Path to the audio file.
-        use_madmom: Use madmom for BPM detection (default: True).
+        use_madmom: Use neural network (beat_this) for BPM detection (default: True).
+            Parameter name kept for backward compatibility.
         use_librosa: Use librosa for BPM detection (default: False).
         strategy: Custom lookup strategy. If None, uses default based on flags.
         ignore_metadata: Skip metadata lookup (default: False).
@@ -74,7 +75,7 @@ def analyze_bpm(
         >>> # Force computation
         >>> result = analyze_bpm(Path("track.mp3"), offline=True, ignore_metadata=True)
         >>> print(f"BPM: {result.bpm:.1f} (computed using {result.method})")
-        BPM: 128.0 (computed using madmom-dbn)
+        BPM: 128.0 (computed using beat-this)
     """
     start_time = time.time()
 
@@ -232,7 +233,7 @@ def _try_compute(
 
     Args:
         filepath: Path to the audio file.
-        use_madmom: Prefer madmom for computation.
+        use_madmom: Prefer neural network (beat_this) for computation.
         use_librosa: Use librosa for computation.
         audio: Pre-loaded audio data as (y, sr) tuple.
 
