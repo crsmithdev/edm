@@ -2,7 +2,6 @@
 
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 import structlog
 import typer
@@ -39,7 +38,7 @@ def version_callback(value: bool):
 
 @app.callback()
 def main(
-    _version: Optional[bool] = typer.Option(
+    _version: bool | None = typer.Option(
         None,
         "--version",
         "-v",
@@ -54,18 +53,18 @@ def main(
 
 @app.command()
 def analyze(
-    files: List[Path] = typer.Argument(
+    files: list[Path] = typer.Argument(
         ...,
         help="Audio files to analyze",
         exists=True,
     ),
-    types: Optional[str] = typer.Option(
+    types: str | None = typer.Option(
         None,
         "--types",
         "-t",
         help="Comma-separated list of analysis types (bpm,grid,structure)",
     ),
-    output: Optional[Path] = typer.Option(
+    output: Path | None = typer.Option(
         None,
         "--output",
         "-o",
@@ -77,7 +76,7 @@ def analyze(
         "-f",
         help="Output format (table, json)",
     ),
-    config: Optional[Path] = typer.Option(
+    config: Path | None = typer.Option(
         None,
         "--config",
         "-c",
@@ -104,7 +103,7 @@ def analyze(
         "--log-level",
         help="Set log level (DEBUG, INFO, WARNING, ERROR)",
     ),
-    log_file: Optional[Path] = typer.Option(
+    log_file: Path | None = typer.Option(
         None,
         "--log-file",
         help="Write logs to file (JSON format)",

@@ -3,7 +3,6 @@
 import json
 import time
 from pathlib import Path
-from typing import List, Optional
 
 import structlog
 from rich.console import Console
@@ -19,11 +18,11 @@ logger = structlog.get_logger(__name__)
 
 
 def analyze_command(
-    files: List[Path],
-    analysis_types: Optional[List[str]],
-    output: Optional[Path],
+    files: list[Path],
+    analysis_types: list[str] | None,
+    output: Path | None,
     format: str,
-    config_path: Optional[Path],
+    config_path: Path | None,
     recursive: bool,
     offline: bool,
     ignore_metadata: bool,
@@ -32,28 +31,17 @@ def analyze_command(
 ):
     """Execute the analyze command.
 
-    Parameters
-    ----------
-    files : List[Path]
-        Audio files or directories to analyze.
-    analysis_types : Optional[List[str]]
-        Types of analysis to perform.
-    output : Optional[Path]
-        Output file path for JSON results.
-    format : str
-        Output format (table or json).
-    config_path : Optional[Path]
-        Configuration file path.
-    recursive : bool
-        Recursively process directories.
-    offline : bool
-        Skip network lookups (Spotify API).
-    ignore_metadata : bool
-        Skip reading metadata from files.
-    quiet : bool
-        Suppress non-essential output.
-    console : Console
-        Rich console for output.
+    Args:
+        files: Audio files or directories to analyze.
+        analysis_types: Types of analysis to perform.
+        output: Output file path for JSON results.
+        format: Output format (table or json).
+        config_path: Configuration file path.
+        recursive: Recursively process directories.
+        offline: Skip network lookups (Spotify API).
+        ignore_metadata: Skip reading metadata from files.
+        quiet: Suppress non-essential output.
+        console: Rich console for output.
     """
     # Load configuration
     load_config(config_path)
@@ -137,19 +125,14 @@ def analyze_command(
             console.print(f"Average time per track: {total_time / len(audio_files):.2f}s")
 
 
-def collect_audio_files(paths: List[Path], recursive: bool) -> List[Path]:
+def collect_audio_files(paths: list[Path], recursive: bool) -> list[Path]:
     """Collect all audio files from the given paths.
 
-    Parameters
-    ----------
-    paths : List[Path]
-        Files or directories to process.
-    recursive : bool
-        Recursively search directories.
+    Args:
+        paths: Files or directories to process.
+        recursive: Recursively search directories.
 
-    Returns
-    -------
-    List[Path]
+    Returns:
         List of audio file paths.
     """
     audio_extensions = {".mp3", ".wav", ".flac", ".m4a", ".ogg"}
@@ -176,22 +159,14 @@ def analyze_file(
 ) -> dict:
     """Analyze a single audio file.
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
-    run_bpm : bool
-        Run BPM analysis.
-    run_structure : bool
-        Run structure analysis.
-    offline : bool
-        Skip network lookups.
-    ignore_metadata : bool
-        Skip metadata reading.
+    Args:
+        filepath: Path to the audio file.
+        run_bpm: Run BPM analysis.
+        run_structure: Run structure analysis.
+        offline: Skip network lookups.
+        ignore_metadata: Skip metadata reading.
 
-    Returns
-    -------
-    dict
+    Returns:
         Analysis results.
     """
     logger.info("analyzing file", filepath=str(filepath))
@@ -223,19 +198,14 @@ def analyze_file(
     return result
 
 
-def output_json(results: List[dict], output_path: Optional[Path], console: Console, quiet: bool):
+def output_json(results: list[dict], output_path: Path | None, console: Console, quiet: bool):
     """Output results as JSON.
 
-    Parameters
-    ----------
-    results : List[dict]
-        Analysis results.
-    output_path : Optional[Path]
-        File to write JSON to (None for stdout).
-    console : Console
-        Rich console for output.
-    quiet : bool
-        Suppress output messages.
+    Args:
+        results: Analysis results.
+        output_path: File to write JSON to (None for stdout).
+        console: Rich console for output.
+        quiet: Suppress output messages.
     """
     json_str = json.dumps(results, indent=2)
 
@@ -247,17 +217,13 @@ def output_json(results: List[dict], output_path: Optional[Path], console: Conso
         console.print(json_str)
 
 
-def output_table(results: List[dict], console: Console, quiet: bool):
+def output_table(results: list[dict], console: Console, quiet: bool):
     """Output results as a Rich table.
 
-    Parameters
-    ----------
-    results : List[dict]
-        Analysis results.
-    console : Console
-        Rich console for output.
-    quiet : bool
-        Suppress output messages.
+    Args:
+        results: Analysis results.
+        console: Rich console for output.
+        quiet: Suppress output messages.
     """
     if quiet:
         return

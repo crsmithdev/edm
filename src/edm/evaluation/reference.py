@@ -3,7 +3,7 @@
 import csv
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import structlog
 
@@ -14,7 +14,7 @@ logger = structlog.get_logger(__name__)
 
 def load_reference_auto(
     reference_arg: str, analysis_type: str, source_path: Path, value_field: str = "bpm"
-) -> Dict[Path, Any]:
+) -> dict[Path, Any]:
     """Auto-detect and load reference based on argument and analysis type.
 
     Args:
@@ -69,7 +69,7 @@ def load_reference_auto(
         )
 
 
-def load_reference_csv(path: Path, value_field: str = "bpm") -> Dict[Path, float]:
+def load_reference_csv(path: Path, value_field: str = "bpm") -> dict[Path, float]:
     """Load reference data from CSV file.
 
     Expected format:
@@ -111,7 +111,7 @@ def load_reference_csv(path: Path, value_field: str = "bpm") -> Dict[Path, float
     return reference
 
 
-def load_reference_json(path: Path, value_field: str = "bpm") -> Dict[Path, Any]:
+def load_reference_json(path: Path, value_field: str = "bpm") -> dict[Path, Any]:
     """Load reference data from JSON file.
 
     Expected format:
@@ -154,7 +154,7 @@ def load_reference_json(path: Path, value_field: str = "bpm") -> Dict[Path, Any]
     return reference
 
 
-def load_spotify_reference(source_path: Path) -> Dict[Path, float]:
+def load_spotify_reference(source_path: Path) -> dict[Path, float]:
     """Load BPM data from Spotify API for discovered files.
 
     Args:
@@ -196,7 +196,7 @@ def load_spotify_reference(source_path: Path) -> Dict[Path, float]:
     return reference
 
 
-def load_metadata_reference(source_path: Path, value_field: str = "bpm") -> Dict[Path, Any]:
+def load_metadata_reference(source_path: Path, value_field: str = "bpm") -> dict[Path, Any]:
     """Load reference data from file metadata (ID3/Vorbis/MP4 tags).
 
     Args:

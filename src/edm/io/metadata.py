@@ -1,7 +1,7 @@
 """Audio file metadata reading."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import structlog
 from mutagen import File as MutagenFile
@@ -9,35 +9,28 @@ from mutagen import File as MutagenFile
 logger = structlog.get_logger(__name__)
 
 
-def read_metadata(filepath: Path) -> Dict[str, Any]:
+def read_metadata(filepath: Path) -> dict[str, Any]:
     """Read metadata from an audio file.
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
+    Args:
+        filepath: Path to the audio file.
 
-    Returns
-    -------
-    Dict[str, Any]
+    Returns:
         Dictionary containing metadata fields like artist, title, album,
         duration, bitrate, sample_rate, bpm, etc.
 
-    Raises
-    ------
-    AudioFileError
-        If the file cannot be read.
+    Raises:
+        AudioFileError: If the file cannot be read.
 
-    Examples
-    --------
-    >>> from pathlib import Path
-    >>> metadata = read_metadata(Path("track.mp3"))
-    >>> print(f"{metadata['artist']} - {metadata['title']}")
-    Artist Name - Track Title
-    >>> print(f"BPM: {metadata.get('bpm', 'Unknown')}")
-    BPM: 128.0
+    Examples:
+        >>> from pathlib import Path
+        >>> metadata = read_metadata(Path("track.mp3"))
+        >>> print(f"{metadata['artist']} - {metadata['title']}")
+        Artist Name - Track Title
+        >>> print(f"BPM: {metadata.get('bpm', 'Unknown')}")
+        BPM: 128.0
     """
-    logger.info(f"Reading metadata from {filepath}")
+    logger.info("reading metadata", filepath=str(filepath))
 
     if not filepath.exists():
         from edm.exceptions import AudioFileError
@@ -60,17 +53,17 @@ def read_metadata(filepath: Path) -> Dict[str, Any]:
             "bpm": _get_bpm(audio, filepath),
         }
 
-        logger.debug(f"Extracted metadata: {metadata}")
+        logger.debug("extracted metadata", metadata=metadata)
         return metadata
 
     except Exception as e:
-        logger.error(f"Failed to read metadata from {filepath}: {e}")
+        logger.error("failed to read metadata", filepath=str(filepath), error=str(e))
         from edm.exceptions import AudioFileError
 
         raise AudioFileError(f"Failed to read metadata: {e}")
 
 
-def _get_artist(audio) -> Optional[str]:
+def _get_artist(audio) -> str | None:
     """Extract artist from audio file."""
     if hasattr(audio, "tags") and audio.tags:
         # ID3 tags (MP3)
@@ -104,7 +97,7 @@ def _get_title(audio, filepath: Path) -> str:
     return filepath.stem
 
 
-def _get_album(audio) -> Optional[str]:
+def _get_album(audio) -> str | None:
     """Extract album from audio file."""
     if hasattr(audio, "tags") and audio.tags:
         # ID3 tags (MP3)
@@ -121,21 +114,16 @@ def _get_album(audio) -> Optional[str]:
     return None
 
 
-def _get_bpm(audio, filepath: Path) -> Optional[float]:
+def _get_bpm(audio, filepath: Path) -> float | None:
     """Extract BPM from audio file metadata.
 
     Supports ID3v2 (MP3), MP4 (M4A, AAC), and FLAC formats.
 
-    Parameters
-    ----------
-    audio : mutagen.FileType
-        Mutagen audio file object.
-    filepath : Path
-        Path to the audio file (for logging).
+    Args:
+        audio: Mutagen audio file object.
+        filepath: Path to the audio file (for logging).
 
-    Returns
-    -------
-    Optional[float]
+    Returns:
         BPM value if found and valid, None otherwise.
     """
     bpm = None
@@ -146,37 +134,37 @@ def _get_bpm(audio, filepath: Path) -> Optional[float]:
             if "TBPM" in audio.tags:
                 bpm_val = str(audio.tags["TBPM"])
                 bpm = float(bpm_val)
-                logger.debug(f"Found BPM in ID3 tag: {bpm}")
+                logger.debug("found bpm in id3 tag", bpm=bpm)
 
             # Vorbis comments (FLAC, OGG) - try multiple tag names
             elif "bpm" in audio.tags:
                 val = audio.tags["bpm"]
                 bpm_val = val[0] if isinstance(val, list) else val
                 bpm = float(bpm_val)
-                logger.debug(f"Found BPM in vorbis comment: {bpm}")
+                logger.debug("found bpm in vorbis comment", bpm=bpm)
 
             elif "tempo" in audio.tags:
                 val = audio.tags["tempo"]
                 bpm_val = val[0] if isinstance(val, list) else val
                 bpm = float(bpm_val)
-                logger.debug(f"Found BPM in tempo tag: {bpm}")
+                logger.debug("found bpm in tempo tag", bpm=bpm)
 
             # MP4 tags (M4A, AAC)
             elif "tmpo" in audio.tags:
                 val = audio.tags["tmpo"]
                 bpm_val = val[0] if isinstance(val, list) else val
                 bpm = float(bpm_val)
-                logger.debug(f"Found BPM in MP4 tag: {bpm}")
+                logger.debug("found bpm in mp4 tag", bpm=bpm)
 
         # Validate BPM range
         if bpm is not None:
             if bpm <= 0 or bpm > 300:
-                logger.warning(f"Invalid BPM value {bpm} in {filepath}, ignoring")
+                logger.warning("invalid bpm value, ignoring", bpm=bpm, filepath=str(filepath))
                 return None
 
             return bpm
 
     except (ValueError, TypeError) as e:
-        logger.warning(f"Failed to parse BPM from {filepath}: {e}")
+        logger.warning("failed to parse bpm", filepath=str(filepath), error=str(e))
 
     return None

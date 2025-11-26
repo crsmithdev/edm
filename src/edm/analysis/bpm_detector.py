@@ -15,16 +15,11 @@ logger = structlog.get_logger(__name__)
 class ComputedBPM:
     """Result of computed BPM detection.
 
-    Attributes
-    ----------
-    bpm : float
-        Detected BPM value.
-    confidence : float
-        Confidence score between 0 and 1.
-    method : str
-        Detection method used ('madmom-dbn' or 'librosa').
-    alternatives : list[float]
-        Alternative BPM candidates (for tempo multiplicity).
+    Attributes:
+        bpm: Detected BPM value.
+        confidence: Confidence score between 0 and 1.
+        method: Detection method used ('madmom-dbn' or 'librosa').
+        alternatives: Alternative BPM candidates (for tempo multiplicity).
     """
 
     bpm: float
@@ -40,30 +35,22 @@ class ComputedBPM:
 def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
     """Compute BPM using madmom's DBN beat tracker.
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
-    fps : int, optional
-        Frames per second for analysis (default: 100).
+    Args:
+        filepath: Path to the audio file.
+        fps: Frames per second for analysis (default: 100).
 
-    Returns
-    -------
-    ComputedBPM
+    Returns:
         Computed BPM result with confidence and alternatives.
 
-    Raises
-    ------
-    AnalysisError
-        If BPM computation fails.
+    Raises:
+        AnalysisError: If BPM computation fails.
 
-    Examples
-    --------
-    >>> result = compute_bpm_madmom(Path("track.mp3"))
-    >>> print(f"BPM: {result.bpm:.1f} (confidence: {result.confidence:.2f})")
-    BPM: 128.0 (confidence: 0.95)
+    Examples:
+        >>> result = compute_bpm_madmom(Path("track.mp3"))
+        >>> print(f"BPM: {result.bpm:.1f} (confidence: {result.confidence:.2f})")
+        BPM: 128.0 (confidence: 0.95)
     """
-    logger.info(f"Computing BPM with madmom for {filepath}")
+    logger.info("computing bpm with madmom", filepath=str(filepath))
 
     try:
         import madmom
@@ -74,7 +61,7 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
         beats = proc(act)
 
         if len(beats) < 2:
-            logger.warning(f"Insufficient beats detected ({len(beats)}), trying tempo estimator")
+            logger.warning("insufficient beats detected, trying tempo estimator", beat_count=len(beats))
             # Fallback to tempo estimator
             tempo_estimator = madmom.features.tempo.TempoEstimationProcessor(fps=fps)
             tempo_act = madmom.features.tempo.RNNTempoProcessor()(str(filepath))
@@ -88,7 +75,7 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
                 # Validate BPM range
                 bpm = _adjust_bpm_to_edm_range(bpm, alternatives)
 
-                logger.info(f"Detected BPM: {bpm:.1f} (confidence: {confidence:.2f})")
+                logger.info("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
                 return ComputedBPM(
                     bpm=bpm, confidence=confidence, method="madmom-dbn", alternatives=alternatives
                 )
@@ -114,18 +101,18 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
         # Adjust to EDM range
         bpm = _adjust_bpm_to_edm_range(bpm, alternatives)
 
-        logger.info(f"Detected BPM: {bpm:.1f} (confidence: {confidence:.2f})")
+        logger.info("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
         return ComputedBPM(
             bpm=bpm, confidence=confidence, method="madmom-dbn", alternatives=alternatives
         )
 
     except ImportError:
-        logger.error("madmom not installed, cannot compute BPM")
+        logger.error("madmom not installed, cannot compute bpm")
         from edm.exceptions import AnalysisError
 
         raise AnalysisError("madmom library not installed")
     except Exception as e:
-        logger.error(f"madmom BPM computation failed: {e}")
+        logger.error("madmom bpm computation failed", error=str(e))
         from edm.exceptions import AnalysisError
 
         raise AnalysisError(f"BPM computation failed: {e}")
@@ -134,30 +121,22 @@ def compute_bpm_madmom(filepath: Path, fps: int = 100) -> ComputedBPM:
 def compute_bpm_librosa(filepath: Path, hop_length: int = 512) -> ComputedBPM:
     """Compute BPM using librosa's tempo detection.
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
-    hop_length : int, optional
-        Hop length for analysis (default: 512).
+    Args:
+        filepath: Path to the audio file.
+        hop_length: Hop length for analysis (default: 512).
 
-    Returns
-    -------
-    ComputedBPM
+    Returns:
         Computed BPM result.
 
-    Raises
-    ------
-    AnalysisError
-        If BPM computation fails.
+    Raises:
+        AnalysisError: If BPM computation fails.
 
-    Examples
-    --------
-    >>> result = compute_bpm_librosa(Path("track.mp3"))
-    >>> print(f"BPM: {result.bpm:.1f}")
-    BPM: 128.0
+    Examples:
+        >>> result = compute_bpm_librosa(Path("track.mp3"))
+        >>> print(f"BPM: {result.bpm:.1f}")
+        BPM: 128.0
     """
-    logger.info(f"Computing BPM with librosa for {filepath}")
+    logger.info("computing bpm with librosa", filepath=str(filepath))
 
     try:
         # Load audio
@@ -190,13 +169,13 @@ def compute_bpm_librosa(filepath: Path, hop_length: int = 512) -> ComputedBPM:
         # Adjust to EDM range
         bpm = _adjust_bpm_to_edm_range(bpm, alternatives)
 
-        logger.info(f"Detected BPM: {bpm:.1f} (confidence: {confidence:.2f})")
+        logger.info("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
         return ComputedBPM(
             bpm=bpm, confidence=confidence, method="librosa", alternatives=alternatives
         )
 
     except Exception as e:
-        logger.error(f"librosa BPM computation failed: {e}")
+        logger.error("librosa bpm computation failed", error=str(e))
         from edm.exceptions import AnalysisError
 
         raise AnalysisError(f"BPM computation failed: {e}")
@@ -208,16 +187,11 @@ def _adjust_bpm_to_edm_range(bpm: float, alternatives: list[float]) -> float:
     If BPM is outside this range and there's an alternative within it,
     prefer the alternative.
 
-    Parameters
-    ----------
-    bpm : float
-        Primary BPM value.
-    alternatives : list[float]
-        Alternative BPM candidates.
+    Args:
+        bpm: Primary BPM value.
+        alternatives: Alternative BPM candidates.
 
-    Returns
-    -------
-    float
+    Returns:
         Adjusted BPM value.
     """
     # Preferred EDM range
@@ -230,7 +204,7 @@ def _adjust_bpm_to_edm_range(bpm: float, alternatives: list[float]) -> float:
     # Check if any alternative is in preferred range
     for alt_bpm in alternatives:
         if preferred_min <= alt_bpm <= preferred_max:
-            logger.debug(f"Adjusting BPM from {bpm:.1f} to {alt_bpm:.1f} (EDM range preference)")
+            logger.debug("adjusting bpm for edm range preference", original_bpm=round(bpm, 1), adjusted_bpm=round(alt_bpm, 1))
             return alt_bpm
 
     # No alternative in range, return original
@@ -244,36 +218,27 @@ def compute_bpm(
 
     Tries madmom first if preferred and available, falls back to librosa.
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
-    prefer_madmom : bool, optional
-        Try madmom first if True (default: True).
-    madmom_fps : int, optional
-        Frames per second for madmom (default: 100).
-    librosa_hop_length : int, optional
-        Hop length for librosa (default: 512).
+    Args:
+        filepath: Path to the audio file.
+        prefer_madmom: Try madmom first if True (default: True).
+        madmom_fps: Frames per second for madmom (default: 100).
+        librosa_hop_length: Hop length for librosa (default: 512).
 
-    Returns
-    -------
-    ComputedBPM
+    Returns:
         Computed BPM result.
 
-    Raises
-    ------
-    AnalysisError
-        If all computation methods fail.
+    Raises:
+        AnalysisError: If all computation methods fail.
     """
     if prefer_madmom:
         try:
             return compute_bpm_madmom(filepath, fps=madmom_fps)
         except Exception as e:
-            logger.warning(f"madmom failed, falling back to librosa: {e}")
+            logger.warning("madmom failed, falling back to librosa", error=str(e))
             return compute_bpm_librosa(filepath, hop_length=librosa_hop_length)
     else:
         try:
             return compute_bpm_librosa(filepath, hop_length=librosa_hop_length)
         except Exception as e:
-            logger.warning(f"librosa failed, trying madmom: {e}")
+            logger.warning("librosa failed, trying madmom", error=str(e))
             return compute_bpm_madmom(filepath, fps=madmom_fps)

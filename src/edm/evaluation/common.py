@@ -4,7 +4,6 @@ import json
 import random
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import structlog
 
@@ -14,7 +13,7 @@ logger = structlog.get_logger(__name__)
 AUDIO_EXTENSIONS = {".mp3", ".flac", ".wav", ".m4a", ".aac", ".ogg"}
 
 
-def discover_audio_files(source_path: Path) -> List[Path]:
+def discover_audio_files(source_path: Path) -> list[Path]:
     """Discover all audio files recursively in source directory.
 
     Args:
@@ -29,7 +28,7 @@ def discover_audio_files(source_path: Path) -> List[Path]:
     if not source_path.is_dir():
         raise NotADirectoryError(f"Source path is not a directory: {source_path}")
 
-    audio_files = []
+    audio_files: list[Path] = []
     for ext in AUDIO_EXTENSIONS:
         audio_files.extend(source_path.rglob(f"*{ext}"))
 
@@ -40,7 +39,7 @@ def discover_audio_files(source_path: Path) -> List[Path]:
     return audio_files
 
 
-def sample_random(files: List[Path], size: int, seed: Optional[int] = None) -> List[Path]:
+def sample_random(files: list[Path], size: int, seed: int | None = None) -> list[Path]:
     """Sample random subset of files with optional seed for reproducibility.
 
     Args:
@@ -68,27 +67,27 @@ def sample_random(files: List[Path], size: int, seed: Optional[int] = None) -> L
     return sampled
 
 
-def sample_full(files: List[Path]) -> List[Path]:
+def sample_full(files: list[Path]) -> list[Path]:
     """Return all files (no sampling)."""
     logger.info("sampled files", strategy="full", total_files=len(files))
     return files
 
 
-def calculate_mae(errors: List[float]) -> float:
+def calculate_mae(errors: list[float]) -> float:
     """Calculate Mean Absolute Error."""
     if not errors:
         return 0.0
     return sum(abs(e) for e in errors) / len(errors)
 
 
-def calculate_rmse(errors: List[float]) -> float:
+def calculate_rmse(errors: list[float]) -> float:
     """Calculate Root Mean Square Error."""
     if not errors:
         return 0.0
     return (sum(e**2 for e in errors) / len(errors)) ** 0.5
 
 
-def calculate_accuracy_within_tolerance(errors: List[float], tolerance: float) -> float:
+def calculate_accuracy_within_tolerance(errors: list[float], tolerance: float) -> float:
     """Calculate percentage of values within tolerance.
 
     Args:
@@ -105,7 +104,7 @@ def calculate_accuracy_within_tolerance(errors: List[float], tolerance: float) -
     return (within_tolerance / len(errors)) * 100.0
 
 
-def calculate_error_distribution(errors: List[float]) -> Dict[str, int]:
+def calculate_error_distribution(errors: list[float]) -> dict[str, int]:
     """Calculate error distribution histogram.
 
     Args:
@@ -143,7 +142,7 @@ def calculate_error_distribution(errors: List[float]) -> Dict[str, int]:
     return distribution
 
 
-def identify_outliers(results: List[dict], n: int = 10) -> List[dict]:
+def identify_outliers(results: list[dict], n: int = 10) -> list[dict]:
     """Identify worst N outliers by absolute error.
 
     Args:
@@ -271,7 +270,7 @@ def save_results_markdown(results: dict, output_path: Path) -> None:
 
 
 def save_error_distribution_plot(
-    errors: List[float], output_path: Path, analysis_type: str = "BPM"
+    errors: list[float], output_path: Path, analysis_type: str = "BPM"
 ) -> None:
     """Save error distribution plot (optional matplotlib visualization).
 

@@ -1,7 +1,6 @@
 """TuneBat API/scraper client."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 import structlog
 
@@ -12,22 +11,17 @@ logger = structlog.get_logger(__name__)
 class TuneBatTrackInfo:
     """Track information from TuneBat.
 
-    Attributes
-    ----------
-    title : str
-        Track title.
-    artist : str
-        Artist name.
-    bpm : Optional[float]
-        BPM value.
-    key : Optional[str]
-        Musical key.
+    Attributes:
+        title: Track title.
+        artist: Artist name.
+        bpm: BPM value.
+        key: Musical key.
     """
 
     title: str
     artist: str
-    bpm: Optional[float] = None
-    key: Optional[str] = None
+    bpm: float | None = None
+    key: str | None = None
 
 
 class TuneBatClient:
@@ -37,25 +31,18 @@ class TuneBatClient:
         """Initialize TuneBat client."""
         logger.info("tunebat client initialized")
 
-    def search_track(self, artist: str, title: str) -> Optional[TuneBatTrackInfo]:
+    def search_track(self, artist: str, title: str) -> TuneBatTrackInfo | None:
         """Search for a track on TuneBat.
 
-        Parameters
-        ----------
-        artist : str
-            Artist name.
-        title : str
-            Track title.
+        Args:
+            artist: Artist name.
+            title: Track title.
 
-        Returns
-        -------
-        TuneBatTrackInfo or None
+        Returns:
             Track information if found, None otherwise.
 
-        Raises
-        ------
-        ExternalServiceError
-            If the request fails.
+        Raises:
+            ExternalServiceError: If the request fails.
         """
         logger.info("searching tunebat", artist=artist, title=title)
 

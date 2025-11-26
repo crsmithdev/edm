@@ -3,7 +3,7 @@
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Literal
 
 import structlog
 
@@ -14,28 +14,21 @@ logger = structlog.get_logger(__name__)
 class BPMResult:
     """Result of BPM analysis.
 
-    Attributes
-    ----------
-    bpm : float
-        Detected BPM value.
-    confidence : float
-        Confidence score between 0 and 1.
-    source : Literal['metadata', 'spotify', 'computed']
-        Source of the BPM data.
-    method : Optional[str]
-        Detection method used (e.g., 'madmom-dbn', 'librosa').
-    computation_time : float
-        Time spent computing/fetching BPM in seconds.
-    alternatives : List[float]
-        Alternative BPM candidates (for tempo multiplicity).
+    Attributes:
+        bpm: Detected BPM value.
+        confidence: Confidence score between 0 and 1.
+        source: Source of the BPM data.
+        method: Detection method used (e.g., 'madmom-dbn', 'librosa').
+        computation_time: Time spent computing/fetching BPM in seconds.
+        alternatives: Alternative BPM candidates (for tempo multiplicity).
     """
 
     bpm: float
     confidence: float
     source: Literal["metadata", "spotify", "computed"]
-    method: Optional[str] = None
+    method: str | None = None
     computation_time: float = 0.0
-    alternatives: List[float] = None
+    alternatives: list[float] = None
 
     def __post_init__(self):
         if self.alternatives is None:
@@ -47,7 +40,7 @@ def analyze_bpm(
     *,
     use_madmom: bool = True,
     use_librosa: bool = False,
-    strategy: Optional[List[str]] = None,
+    strategy: list[str] | None = None,
     ignore_metadata: bool = False,
     offline: bool = False,
 ) -> BPMResult:
@@ -55,44 +48,31 @@ def analyze_bpm(
 
     Default strategy: metadata → spotify → computed
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
-    use_madmom : bool, optional
-        Use madmom for BPM detection (default: True).
-    use_librosa : bool, optional
-        Use librosa for BPM detection (default: False).
-    strategy : Optional[List[str]], optional
-        Custom lookup strategy. If None, uses default based on flags.
-    ignore_metadata : bool, optional
-        Skip metadata lookup (default: False).
-    offline : bool, optional
-        Skip network calls/Spotify API (default: False).
+    Args:
+        filepath: Path to the audio file.
+        use_madmom: Use madmom for BPM detection (default: True).
+        use_librosa: Use librosa for BPM detection (default: False).
+        strategy: Custom lookup strategy. If None, uses default based on flags.
+        ignore_metadata: Skip metadata lookup (default: False).
+        offline: Skip network calls/Spotify API (default: False).
 
-    Returns
-    -------
-    BPMResult
+    Returns:
         BPM analysis result with confidence score and source.
 
-    Raises
-    ------
-    AudioFileError
-        If the audio file cannot be loaded.
-    AnalysisError
-        If BPM detection fails with all methods.
+    Raises:
+        AudioFileError: If the audio file cannot be loaded.
+        AnalysisError: If BPM detection fails with all methods.
 
-    Examples
-    --------
-    >>> from pathlib import Path
-    >>> result = analyze_bpm(Path("track.mp3"))
-    >>> print(f"BPM: {result.bpm:.1f} from {result.source}")
-    BPM: 128.0 from metadata
+    Examples:
+        >>> from pathlib import Path
+        >>> result = analyze_bpm(Path("track.mp3"))
+        >>> print(f"BPM: {result.bpm:.1f} from {result.source}")
+        BPM: 128.0 from metadata
 
-    >>> # Force computation
-    >>> result = analyze_bpm(Path("track.mp3"), offline=True, ignore_metadata=True)
-    >>> print(f"BPM: {result.bpm:.1f} (computed using {result.method})")
-    BPM: 128.0 (computed using madmom-dbn)
+        >>> # Force computation
+        >>> result = analyze_bpm(Path("track.mp3"), offline=True, ignore_metadata=True)
+        >>> print(f"BPM: {result.bpm:.1f} (computed using {result.method})")
+        BPM: 128.0 (computed using madmom-dbn)
     """
     start_time = time.time()
 
@@ -132,19 +112,14 @@ def analyze_bpm(
     raise AnalysisError(f"All BPM lookup strategies failed for {filepath}")
 
 
-def _build_strategy(ignore_metadata: bool, offline: bool) -> List[str]:
+def _build_strategy(ignore_metadata: bool, offline: bool) -> list[str]:
     """Build lookup strategy based on flags.
 
-    Parameters
-    ----------
-    ignore_metadata : bool
-        Skip metadata lookup.
-    offline : bool
-        Skip network calls.
+    Args:
+        ignore_metadata: Skip metadata lookup.
+        offline: Skip network calls.
 
-    Returns
-    -------
-    List[str]
+    Returns:
         Ordered list of strategies to try.
     """
     strategy = []
@@ -160,17 +135,13 @@ def _build_strategy(ignore_metadata: bool, offline: bool) -> List[str]:
     return strategy
 
 
-def _try_metadata(filepath: Path) -> Optional[BPMResult]:
+def _try_metadata(filepath: Path) -> BPMResult | None:
     """Try to get BPM from file metadata.
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
+    Args:
+        filepath: Path to the audio file.
 
-    Returns
-    -------
-    Optional[BPMResult]
+    Returns:
         BPM result if found in metadata, None otherwise.
     """
     logger.debug("trying metadata lookup", filepath=str(filepath))
@@ -198,17 +169,13 @@ def _try_metadata(filepath: Path) -> Optional[BPMResult]:
         return None
 
 
-def _try_spotify(filepath: Path) -> Optional[BPMResult]:
+def _try_spotify(filepath: Path) -> BPMResult | None:
     """Try to get BPM from Spotify API.
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
+    Args:
+        filepath: Path to the audio file.
 
-    Returns
-    -------
-    Optional[BPMResult]
+    Returns:
         BPM result if found on Spotify, None otherwise.
     """
     logger.debug("trying spotify lookup", filepath=str(filepath))
@@ -253,21 +220,15 @@ def _try_spotify(filepath: Path) -> Optional[BPMResult]:
         return None
 
 
-def _try_compute(filepath: Path, use_madmom: bool, use_librosa: bool) -> Optional[BPMResult]:
+def _try_compute(filepath: Path, use_madmom: bool, use_librosa: bool) -> BPMResult | None:
     """Try to compute BPM from audio analysis.
 
-    Parameters
-    ----------
-    filepath : Path
-        Path to the audio file.
-    use_madmom : bool
-        Prefer madmom for computation.
-    use_librosa : bool
-        Use librosa for computation.
+    Args:
+        filepath: Path to the audio file.
+        use_madmom: Prefer madmom for computation.
+        use_librosa: Use librosa for computation.
 
-    Returns
-    -------
-    Optional[BPMResult]
+    Returns:
         Computed BPM result.
     """
     logger.debug("computing bpm", filepath=str(filepath))
@@ -300,14 +261,10 @@ def _try_compute(filepath: Path, use_madmom: bool, use_librosa: bool) -> Optiona
 def _is_valid_bpm(bpm: float) -> bool:
     """Check if BPM value is in valid range.
 
-    Parameters
-    ----------
-    bpm : float
-        BPM value to validate.
+    Args:
+        bpm: BPM value to validate.
 
-    Returns
-    -------
-    bool
+    Returns:
         True if BPM is valid, False otherwise.
     """
     return 40.0 <= bpm <= 200.0

@@ -1,25 +1,21 @@
 """Spectral feature extraction."""
 
-import logging
 from dataclasses import dataclass
 
 import numpy as np
+import structlog
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @dataclass
 class SpectralFeatures:
     """Spectral features extracted from audio.
 
-    Attributes
-    ----------
-    centroid : np.ndarray
-        Spectral centroid over time.
-    rolloff : np.ndarray
-        Spectral rolloff over time.
-    flux : np.ndarray
-        Spectral flux over time.
+    Attributes:
+        centroid: Spectral centroid over time.
+        rolloff: Spectral rolloff over time.
+        flux: Spectral flux over time.
     """
 
     centroid: np.ndarray
@@ -30,24 +26,18 @@ class SpectralFeatures:
 def extract_spectral_features(audio_data: np.ndarray, sample_rate: int) -> SpectralFeatures:
     """Extract spectral features from audio.
 
-    Parameters
-    ----------
-    audio_data : np.ndarray
-        Audio samples.
-    sample_rate : int
-        Sample rate in Hz.
+    Args:
+        audio_data: Audio samples.
+        sample_rate: Sample rate in Hz.
 
-    Returns
-    -------
-    SpectralFeatures
+    Returns:
         Extracted spectral features.
 
-    Examples
-    --------
-    >>> features = extract_spectral_features(audio, sr)
-    >>> print(f"Mean centroid: {features.centroid.mean():.1f} Hz")
+    Examples:
+        >>> features = extract_spectral_features(audio, sr)
+        >>> print(f"Mean centroid: {features.centroid.mean():.1f} Hz")
     """
-    logger.debug(f"Extracting spectral features from {len(audio_data)} samples")
+    logger.debug("extracting spectral features", sample_count=len(audio_data))
 
     # TODO: Implement actual feature extraction with librosa
     # Placeholder implementation

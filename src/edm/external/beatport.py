@@ -1,7 +1,6 @@
 """Beatport API/scraper client."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 import structlog
 
@@ -12,25 +11,19 @@ logger = structlog.get_logger(__name__)
 class BeatportTrackInfo:
     """Track information from Beatport.
 
-    Attributes
-    ----------
-    title : str
-        Track title.
-    artist : str
-        Artist name.
-    bpm : Optional[float]
-        BPM value.
-    key : Optional[str]
-        Musical key.
-    genre : Optional[str]
-        Genre.
+    Attributes:
+        title: Track title.
+        artist: Artist name.
+        bpm: BPM value.
+        key: Musical key.
+        genre: Genre.
     """
 
     title: str
     artist: str
-    bpm: Optional[float] = None
-    key: Optional[str] = None
-    genre: Optional[str] = None
+    bpm: float | None = None
+    key: str | None = None
+    genre: str | None = None
 
 
 class BeatportClient:
@@ -40,25 +33,18 @@ class BeatportClient:
         """Initialize Beatport client."""
         logger.info("beatport client initialized")
 
-    def search_track(self, artist: str, title: str) -> Optional[BeatportTrackInfo]:
+    def search_track(self, artist: str, title: str) -> BeatportTrackInfo | None:
         """Search for a track on Beatport.
 
-        Parameters
-        ----------
-        artist : str
-            Artist name.
-        title : str
-            Track title.
+        Args:
+            artist: Artist name.
+            title: Track title.
 
-        Returns
-        -------
-        BeatportTrackInfo or None
+        Returns:
             Track information if found, None otherwise.
 
-        Raises
-        ------
-        ExternalServiceError
-            If the request fails.
+        Raises:
+            ExternalServiceError: If the request fails.
         """
         logger.info("searching beatport", artist=artist, title=title)
 

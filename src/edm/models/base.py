@@ -1,11 +1,12 @@
 """Base model classes and loading utilities."""
 
-import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 class BaseModel(ABC):
@@ -15,45 +16,33 @@ class BaseModel(ABC):
     def predict(self, data: Any) -> Any:
         """Make a prediction.
 
-        Parameters
-        ----------
-        data : Any
-            Input data for the model.
+        Args:
+            data: Input data for the model.
 
-        Returns
-        -------
-        Any
+        Returns:
             Model prediction.
         """
         pass
 
 
-def load_model(model_name: str, _model_path: Optional[Path] = None) -> BaseModel:
+def load_model(model_name: str, _model_path: Path | None = None) -> BaseModel:
     """Load a pre-trained model.
 
-    Parameters
-    ----------
-    model_name : str
-        Name or identifier of the model.
-    model_path : Path, optional
-        Custom path to model file.
+    Args:
+        model_name: Name or identifier of the model.
+        model_path: Custom path to model file.
 
-    Returns
-    -------
-    BaseModel
+    Returns:
         Loaded model instance.
 
-    Raises
-    ------
-    ModelNotFoundError
-        If the model cannot be found.
+    Raises:
+        ModelNotFoundError: If the model cannot be found.
 
-    Examples
-    --------
-    >>> model = load_model("bpm-detector")
-    >>> prediction = model.predict(audio_features)
+    Examples:
+        >>> model = load_model("bpm-detector")
+        >>> prediction = model.predict(audio_features)
     """
-    logger.info(f"Loading model: {model_name}")
+    logger.info("loading model", model_name=model_name)
 
     # TODO: Implement actual model loading
     from edm.exceptions import ModelNotFoundError

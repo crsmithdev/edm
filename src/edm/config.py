@@ -1,7 +1,6 @@
 """Configuration management."""
 
 from pathlib import Path
-from typing import Optional
 
 import structlog
 from pydantic import BaseModel, Field
@@ -12,16 +11,11 @@ logger = structlog.get_logger(__name__)
 class AnalysisConfig(BaseModel):
     """Configuration for track analysis.
 
-    Attributes
-    ----------
-    detect_bpm : bool
-        Enable BPM detection.
-    detect_structure : bool
-        Enable structure detection.
-    use_madmom : bool
-        Use madmom for BPM detection.
-    use_librosa : bool
-        Use librosa for BPM detection.
+    Attributes:
+        detect_bpm: Enable BPM detection.
+        detect_structure: Enable structure detection.
+        use_madmom: Use madmom for BPM detection.
+        use_librosa: Use librosa for BPM detection.
     """
 
     detect_bpm: bool = True
@@ -33,22 +27,16 @@ class AnalysisConfig(BaseModel):
 class ExternalServicesConfig(BaseModel):
     """Configuration for external services.
 
-    Attributes
-    ----------
-    spotify_client_id : Optional[str]
-        Spotify API client ID.
-    spotify_client_secret : Optional[str]
-        Spotify API client secret.
-    enable_beatport : bool
-        Enable Beatport lookups.
-    enable_tunebat : bool
-        Enable TuneBat lookups.
-    cache_ttl : int
-        Cache time-to-live in seconds.
+    Attributes:
+        spotify_client_id: Spotify API client ID.
+        spotify_client_secret: Spotify API client secret.
+        enable_beatport: Enable Beatport lookups.
+        enable_tunebat: Enable TuneBat lookups.
+        cache_ttl: Cache time-to-live in seconds.
     """
 
-    spotify_client_id: Optional[str] = Field(None, env="SPOTIFY_CLIENT_ID")
-    spotify_client_secret: Optional[str] = Field(None, env="SPOTIFY_CLIENT_SECRET")
+    spotify_client_id: str | None = Field(None, env="SPOTIFY_CLIENT_ID")
+    spotify_client_secret: str | None = Field(None, env="SPOTIFY_CLIENT_SECRET")
     enable_beatport: bool = True
     enable_tunebat: bool = True
     cache_ttl: int = 3600  # 1 hour
@@ -57,51 +45,39 @@ class ExternalServicesConfig(BaseModel):
 class EDMConfig(BaseModel):
     """Main configuration for EDM library.
 
-    Attributes
-    ----------
-    analysis : AnalysisConfig
-        Analysis configuration.
-    external_services : ExternalServicesConfig
-        External services configuration.
-    log_level : str
-        Logging level (DEBUG, INFO, WARNING, ERROR).
-    log_file : Optional[Path]
-        Path to log file.
+    Attributes:
+        analysis: Analysis configuration.
+        external_services: External services configuration.
+        log_level: Logging level (DEBUG, INFO, WARNING, ERROR).
+        log_file: Path to log file.
     """
 
     analysis: AnalysisConfig = Field(default_factory=AnalysisConfig)
     external_services: ExternalServicesConfig = Field(default_factory=ExternalServicesConfig)
     log_level: str = "INFO"
-    log_file: Optional[Path] = None
+    log_file: Path | None = None
 
     class Config:
         env_prefix = "EDM_"
 
 
-def load_config(config_path: Optional[Path] = None) -> EDMConfig:
+def load_config(config_path: Path | None = None) -> EDMConfig:
     """Load configuration from file.
 
-    Parameters
-    ----------
-    config_path : Path, optional
-        Path to TOML configuration file. If not provided, looks for
-        config in default location (~/.config/edm/config.toml).
+    Args:
+        config_path: Path to TOML configuration file. If not provided, looks for
+            config in default location (~/.config/edm/config.toml).
 
-    Returns
-    -------
-    EDMConfig
+    Returns:
         Loaded and validated configuration.
 
-    Raises
-    ------
-    ConfigurationError
-        If configuration file is invalid.
+    Raises:
+        ConfigurationError: If configuration file is invalid.
 
-    Examples
-    --------
-    >>> config = load_config()
-    >>> print(f"Log level: {config.log_level}")
-    Log level: INFO
+    Examples:
+        >>> config = load_config()
+        >>> print(f"Log level: {config.log_level}")
+        Log level: INFO
     """
     if config_path is None:
         config_path = Path.home() / ".config" / "edm" / "config.toml"
@@ -118,9 +94,7 @@ def load_config(config_path: Optional[Path] = None) -> EDMConfig:
 def get_default_log_dir() -> Path:
     """Get the default log directory.
 
-    Returns
-    -------
-    Path
+    Returns:
         Path to log directory (~/.local/share/edm/logs/).
     """
     log_dir = Path.home() / ".local" / "share" / "edm" / "logs"

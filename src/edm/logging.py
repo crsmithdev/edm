@@ -3,7 +3,6 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 import structlog
 from structlog.typing import EventDict, WrappedLogger
@@ -27,27 +26,21 @@ def add_log_level_name(logger: WrappedLogger, method_name: str, event_dict: Even
 def configure_logging(
     level: str = "INFO",
     json_format: bool = False,
-    log_file: Optional[Path] = None,
+    log_file: Path | None = None,
     no_color: bool = False,
 ) -> None:
     """Configure structlog for the application.
 
-    Parameters
-    ----------
-    level : str
-        Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-    json_format : bool
-        If True, output logs in JSON format. Otherwise, use human-readable format.
-    log_file : Path, optional
-        If provided, also write logs to this file.
-    no_color : bool
-        If True, disable colored output.
+    Args:
+        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        json_format: If True, output logs in JSON format. Otherwise, use human-readable format.
+        log_file: If provided, also write logs to this file.
+        no_color: If True, disable colored output.
 
-    Examples
-    --------
-    >>> configure_logging(level="DEBUG")
-    >>> configure_logging(level="INFO", json_format=True)
-    >>> configure_logging(level="INFO", log_file=Path("app.log"))
+    Examples:
+        >>> configure_logging(level="DEBUG")
+        >>> configure_logging(level="INFO", json_format=True)
+        >>> configure_logging(level="INFO", log_file=Path("app.log"))
     """
     # Convert level string to logging level
     numeric_level = getattr(logging, level.upper(), logging.INFO)
@@ -151,23 +144,18 @@ def configure_logging(
         logging.getLogger().addHandler(file_handler)
 
 
-def get_logger(name: Optional[str] = None) -> structlog.stdlib.BoundLogger:
+def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
     """Get a structlog logger.
 
-    Parameters
-    ----------
-    name : str, optional
-        Logger name. If not provided, uses the caller's module name.
+    Args:
+        name: Logger name. If not provided, uses the caller's module name.
 
-    Returns
-    -------
-    structlog.stdlib.BoundLogger
+    Returns:
         Configured structlog logger.
 
-    Examples
-    --------
-    >>> logger = get_logger(__name__)
-    >>> logger.info("processing started", file_path="track.mp3")
-    >>> logger.error("analysis failed", error="Invalid file format")
+    Examples:
+        >>> logger = get_logger(__name__)
+        >>> logger.info("processing started", file_path="track.mp3")
+        >>> logger.error("analysis failed", error="Invalid file format")
     """
     return structlog.get_logger(name)

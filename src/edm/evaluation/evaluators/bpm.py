@@ -3,7 +3,7 @@
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import structlog
 
@@ -33,11 +33,11 @@ def evaluate_bpm(
     source_path: Path,
     reference_source: str,
     sample_size: int = 100,
-    output_dir: Optional[Path] = None,
-    seed: Optional[int] = None,
+    output_dir: Path | None = None,
+    seed: int | None = None,
     full: bool = False,
     tolerance: float = 2.5,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Evaluate BPM detection accuracy.
 
     Args:

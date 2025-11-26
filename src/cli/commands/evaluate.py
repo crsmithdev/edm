@@ -1,7 +1,6 @@
 """Evaluate command - accuracy evaluation for analysis algorithms."""
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -30,14 +29,14 @@ def evaluate_bpm_command(
         "--sample-size",
         help="Number of files to sample (ignored if --full)",
     ),
-    output: Optional[Path] = typer.Option(
+    output: Path | None = typer.Option(
         None,
         "--output",
         help="Output directory (default: benchmarks/results/accuracy/bpm/)",
         file_okay=False,
         dir_okay=True,
     ),
-    seed: Optional[int] = typer.Option(
+    seed: int | None = typer.Option(
         None,
         "--seed",
         help="Random seed for reproducible sampling",
