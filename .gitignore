@@ -19,6 +19,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.python-version
+uv.lock
 
 # Virtual environments
 .venv/
@@ -53,3 +55,4 @@ Thumbs.db
 # Cache
 .cache/
 *.cache
+.mypy_cache
