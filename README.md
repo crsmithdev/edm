@@ -1,13 +1,11 @@
-[Powered by the SongBPM API](https://getsongbpm.com)
-
 # EDM Track Analysis
 
 [![CI](https://github.com/crsmithdev/edm/actions/workflows/ci.yml/badge.svg)](https://github.com/crsmithdev/edm/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/crsmithdev/edm/graph/badge.svg)](https://codecov.io/gh/crsmithdev/edm)
+[![codecov](https://codecov.io/gh/crsmithdev/edm/branch/main/graph/badge.svg)](https://codecov.io/gh/crsmithdev/edm)
 [![GitHub release](https://img.shields.io/github/v/release/crsmithdev/edm)](https://github.com/crsmithdev/edm/releases)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 
-A Python library and CLI for analyzing EDM tracks, providing BPM detection, structure analysis, and integration with external music services.
+A Python library and CLI for analyzing EDM tracks, providing BPM detection and structure analysis using neural network-based audio processing.
 
 ## Installation
 
@@ -42,6 +40,15 @@ uv run edm analyze track.mp3 --types bpm,structure
 # Save results to JSON
 uv run edm analyze *.mp3 --output results.json
 ```
+
+## BPM Detection
+
+BPM detection uses a cascading strategy:
+
+1. **Metadata** - Read BPM from file tags (fastest)
+2. **Computed** - Neural network analysis using beat_this (most accurate)
+
+The tool works fully offline with no external API dependencies.
 
 ## Performance
 
@@ -79,15 +86,6 @@ Each worker loads one audio file into memory. Budget approximately:
 - On 8-core system with 16GB RAM: 8 workers uses ~1.6GB
 - Adjust `--workers` if running low on memory
 
-## Configuration
-
-Set Spotify API credentials in `.env`:
-
-```bash
-SPOTIFY_CLIENT_ID=your_client_id
-SPOTIFY_CLIENT_SECRET=your_client_secret
-```
-
 ## Documentation
 
 - [CLI Reference](docs/cli-reference.md) - Complete command documentation
@@ -103,4 +101,3 @@ uv run mypy src/                           # Type check
 ```
 
 See [development.md](docs/development.md) for details.
-

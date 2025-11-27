@@ -37,14 +37,13 @@ jobs:
       run: |
         uv run ruff check src/ tests/
 
-    - name: Run formatting check with black
+    - name: Run formatting check with ruff
       run: |
-        uv run black --check src/ tests/
+        uv run ruff format --check src/ tests/
 
     - name: Run type checking with mypy
       run: |
         uv run mypy src/ --ignore-missing-imports
-      continue-on-error: true  # Don't fail on mypy errors initially
 
   test:
     name: Test (${{ matrix.os }})
@@ -94,7 +93,6 @@ jobs:
     - name: Check coverage threshold
       run: |
         uv run python -c "import json; data = json.load(open('coverage.json')); exit(0 if data['totals']['percent_covered'] >= 80 else 1)"
-      continue-on-error: true  # Don't fail on coverage initially
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
