@@ -24,7 +24,7 @@ def add_log_level_name(logger: WrappedLogger, method_name: str, event_dict: Even
 
 
 def configure_logging(
-    level: str = "INFO",
+    level: str = "WARNING",
     json_format: bool = False,
     log_file: Path | None = None,
     no_color: bool = False,
@@ -43,18 +43,23 @@ def configure_logging(
         >>> configure_logging(level="INFO", log_file=Path("app.log"))
     """
     # Convert level string to logging level
-    numeric_level = getattr(logging, level.upper(), logging.INFO)
+    numeric_level = getattr(logging, level.upper(), logging.WARNING)
 
     # Configure standard library logging to work with structlog
     logging.basicConfig(
         format="%(message)s",
         level=numeric_level,
         stream=sys.stderr,
+        force=True,  # Force reconfiguration (Python 3.8+)
     )
+
+    # Suppress noisy third-party loggers
+    logging.getLogger("numba").setLevel(logging.WARNING)
 
     # Common processors for all configurations
     processors = [
         structlog.contextvars.merge_contextvars,
+        structlog.stdlib.filter_by_level,  # Filter logs by configured level
         structlog.stdlib.add_logger_name,
         add_log_level_name,
         structlog.stdlib.PositionalArgumentsFormatter(),

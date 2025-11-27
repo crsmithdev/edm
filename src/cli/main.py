@@ -101,7 +101,7 @@ def analyze(
         help="Skip reading metadata from audio files",
     ),
     log_level: str = typer.Option(
-        "INFO",
+        "WARNING",
         "--log-level",
         help="Set log level (DEBUG, INFO, WARNING, ERROR)",
     ),
@@ -188,6 +188,11 @@ def analyze(
         log_file=log_file,
         no_color=no_color,
     )
+
+    # Configure worker process logging
+    from edm.processing.parallel import set_worker_log_level
+
+    set_worker_log_level(effective_log_level)
 
     logger = structlog.get_logger(__name__)
     logger.debug("cli started", log_level=effective_log_level, json_logs=json_logs)

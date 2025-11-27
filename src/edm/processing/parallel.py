@@ -1,5 +1,6 @@
 """Parallel processing utilities using multiprocessing."""
 
+import logging
 import multiprocessing
 import os
 import signal
@@ -10,8 +11,29 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
+# Environment variable for worker process log level
+_LOG_LEVEL_ENV_VAR = "EDM_WORKER_LOG_LEVEL"
+
 # Maximum allowed workers to prevent resource exhaustion
 MAX_WORKERS = 32
+
+
+def set_worker_log_level(level: str) -> None:
+    """Set the log level for worker processes.
+
+    Args:
+        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+    """
+    os.environ[_LOG_LEVEL_ENV_VAR] = level.upper()
+
+
+def get_worker_log_level() -> str:
+    """Get the configured log level for worker processes.
+
+    Returns:
+        Log level string (defaults to WARNING).
+    """
+    return os.environ.get(_LOG_LEVEL_ENV_VAR, "WARNING")
 
 
 def get_default_workers() -> int:
@@ -66,8 +88,14 @@ def _init_worker():
 
     Sets up signal handlers to ignore SIGINT in workers,
     allowing the main process to handle Ctrl+C gracefully.
+    Also configures logging to match the main process.
     """
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    # Configure logging for worker process
+    from edm.logging import configure_logging
+
+    configure_logging(level=get_worker_log_level())
 
 
 class ParallelProcessor:
