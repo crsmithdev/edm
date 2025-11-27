@@ -38,7 +38,7 @@ Analyzes EDM tracks for BPM, structure, and other features.
 | `--recursive`, `-r` | FLAG | - | Recursively analyze directories |
 | `--offline` | FLAG | - | Skip network lookups (Spotify API) |
 | `--ignore-metadata` | FLAG | - | Skip reading metadata from audio files |
-| `--log-level` | TEXT | `INFO` | Log level: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+| `--log-level` | TEXT | `WARNING` | Log level: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 | `--log-file` | PATH | - | Write logs to file (JSON format) |
 | `--json-logs` | FLAG | - | Output logs in JSON format |
 | `--verbose` | FLAG | - | Equivalent to `--log-level DEBUG` |

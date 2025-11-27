@@ -1,6 +1,5 @@
-"""Audio feature extraction."""
+"""Feature extraction module (not yet implemented).
 
-from edm.features.spectral import extract_spectral_features
-from edm.features.temporal import extract_temporal_features
-
-__all__ = ["extract_spectral_features", "extract_temporal_features"]
+This module is reserved for future audio feature extraction implementations.
+Current analysis uses librosa and beat_this directly.
+"""

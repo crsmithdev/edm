@@ -26,9 +26,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Install dependencies
 uv sync
 
-# Install madmom from source
-uv pip install --reinstall --no-cache "madmom @ git+https://github.com/CPJKU/madmom.git"
-
 # Verify
 uv run edm --version
 ```

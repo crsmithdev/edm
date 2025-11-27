@@ -19,7 +19,7 @@ uv run ruff check --fix . && ruff format .
 
 ### Line Length
 
-88 characters (Black/Ruff default)
+100 characters (configured in pyproject.toml)
 
 ### Quotes
 
@@ -67,7 +67,7 @@ from pathlib import Path
 
 ## Type Hints
 
-Always use type hints for function signatures. Use modern Python 3.10+ syntax throughout:
+Always use type hints for function signatures. Use modern Python 3.12+ syntax throughout:
 
 **Good:**
 ```python
@@ -191,7 +191,7 @@ def fetch_data(url: str) -> dict:
 
 ### Concurrent Tasks
 
-Use `asyncio.TaskGroup` (Python 3.11+) for concurrent tasks:
+Use `asyncio.TaskGroup` (Python 3.12+) for concurrent tasks:
 
 **Good:**
 ```python

@@ -5,7 +5,7 @@
 ### Prerequisites
 
 - Python 3.12+
-- ffmpeg (required for madmom audio loading)
+- ffmpeg (required for audio loading)
 - System packages (Ubuntu/Debian): `python3-dev`, `build-essential`
 
 ### Installation
@@ -16,9 +16,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install dependencies
 uv sync
-
-# Install madmom from source (required)
-uv pip install --reinstall --no-cache "madmom @ git+https://github.com/CPJKU/madmom.git"
 
 # Verify
 uv run edm --version

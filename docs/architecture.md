@@ -13,8 +13,8 @@ src/
 └── edm/                   # Core library
     ├── analysis/          # Audio analysis
     │   ├── bpm.py         # Cascading BPM strategy (metadata → spotify → computed)
-    │   ├── bpm_detector.py # BPM computation (madmom, librosa)
-    │   └── structure.py   # Structure detection (intro, drop, etc.)
+    │   ├── bpm_detector.py # BPM computation (beat_this, librosa)
+    │   └── structure.py   # Structure detection (intro, drop, etc.) [PLACEHOLDER]
     ├── evaluation/        # Accuracy evaluation framework
     │   ├── common.py      # Shared utilities, metrics (MAE, RMSE)
     │   ├── reference.py   # Reference data sources
@@ -38,23 +38,23 @@ src/
 
 ## Key Components
 
-### BPM Detection (`src/edm/analysis/bpm.py:45`)
+### BPM Detection (`src/edm/analysis/bpm.py:40`)
 
 Uses a cascading lookup strategy:
 
 1. **Metadata** (fastest) - Read BPM from ID3/FLAC/MP4 tags
 2. **Spotify** (professional accuracy) - Query Spotify API using artist/title
-3. **Computed** (fallback) - Analyze audio with madmom or librosa
+3. **Computed** (fallback) - Analyze audio with beat_this or librosa
 
 Control via CLI flags:
 - `--offline`: Skip Spotify (metadata → computed)
 - `--ignore-metadata`: Skip metadata (spotify → computed)
 - Both flags: Force computation only
 
-### BPM Computation (`src/edm/analysis/bpm_detector.py:40`)
+### BPM Computation (`src/edm/analysis/bpm_detector.py:224`)
 
 Two methods available:
-- **madmom** (default): DBN beat tracker with RNN preprocessing, high accuracy for EDM
+- **beat_this** (default): Neural network beat tracker (ISMIR 2024), high accuracy for EDM
 - **librosa**: Standard tempo detection, used as fallback
 
 Both methods:
@@ -86,7 +86,7 @@ Tests analysis accuracy against reference data:
 
 Results saved to `benchmarks/results/accuracy/bpm/` with `latest.*` symlinks.
 
-### Logging (`src/edm/logging.py:27`)
+### Logging (`src/edm/logging.py:26`)
 
 Uses structlog with:
 - Console output (colored, human-readable) for development
@@ -133,12 +133,12 @@ Reference Source → Reference Values         Computed Values
 
 ## Design Decisions
 
-### Why madmom for BPM?
+### Why beat_this for BPM?
 
-- Specifically designed for music analysis
-- DBN beat tracking excels at EDM's consistent rhythms
-- Higher accuracy than librosa for electronic music
-- Trade-off: Slower, requires more dependencies
+- Neural network beat tracker from ISMIR 2024
+- Designed specifically for accurate beat tracking in music
+- Outperforms madmom and librosa for EDM detection
+- Trade-off: Slower, resource-intensive during initialization
 
 ### Why cascading BPM strategy?
 
@@ -166,7 +166,7 @@ Reference Source → Reference Values         Computed Values
 | Component | Library | Purpose |
 |-----------|---------|---------|
 | CLI | typer + rich | Modern CLI with colors/tables |
-| Audio Analysis | madmom, librosa | BPM detection, audio loading |
+| Audio Analysis | beat_this, librosa | BPM detection, audio loading |
 | Audio I/O | mutagen | Metadata reading |
 | HTTP Client | requests, spotipy | External API calls |
 | Config | pydantic | Validation, env vars |
@@ -174,3 +174,41 @@ Reference Source → Reference Values         Computed Values
 | Testing | pytest | Test framework |
 | Linting | ruff | Fast linting |
 | Type Checking | mypy | Static analysis |
+
+## Placeholder / Unimplemented Features
+
+The following features are documented but currently return hardcoded/placeholder values:
+
+### Structure Analysis (`src/edm/analysis/structure.py`)
+
+**Status:** Placeholder implementation only
+
+- Always returns the same hardcoded sections (intro, buildup, drop)
+- Does not analyze actual audio content
+- Returns actual audio duration (since fix) but sections are static
+- **TODO:** Implement actual structure detection algorithm
+
+### External Service Integrations
+
+#### Beatport (`src/edm/external/beatport.py`)
+
+**Status:** Not implemented
+
+- Always returns `None`
+- **TODO:** Implement Beatport API integration or web scraper
+
+#### TuneBat (`src/edm/external/tunebat.py`)
+
+**Status:** Not implemented
+
+- Always returns `None`
+- **TODO:** Implement TuneBat API integration or web scraper
+
+### Configuration File Support (`src/edm/config.py`)
+
+**Status:** Partial implementation
+
+- TOML configuration file path is recognized and logged
+- File loading and parsing is not yet implemented
+- Code currently returns default configuration regardless of file contents
+- **TODO:** Complete TOML parsing and configuration loading

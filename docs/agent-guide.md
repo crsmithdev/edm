@@ -8,12 +8,12 @@ Navigation index for AI agents working in this codebase.
 
 Read together:
 - `src/edm/analysis/bpm.py` - Cascading strategy (metadata → spotify → computed)
-- `src/edm/analysis/bpm_detector.py` - Computation (madmom, librosa)
+- `src/edm/analysis/bpm_detector.py` - Computation (beat_this, librosa)
 - `tests/test_analysis/test_bpm.py` - Test cases
 
 Key functions:
-- `analyze_bpm()` at `src/edm/analysis/bpm.py:45`
-- `compute_bpm()` at `src/edm/analysis/bpm_detector.py:240`
+- `analyze_bpm()` at `src/edm/analysis/bpm.py:40`
+- `compute_bpm()` at `src/edm/analysis/bpm_detector.py:224`
 
 ### Add or Modify External Service Integration
 

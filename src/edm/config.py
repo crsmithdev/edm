@@ -14,13 +14,13 @@ class AnalysisConfig(BaseModel):
     Attributes:
         detect_bpm: Enable BPM detection.
         detect_structure: Enable structure detection.
-        use_madmom: Use madmom for BPM detection.
+        use_madmom: Use beat_this for BPM detection (legacy parameter name).
         use_librosa: Use librosa for BPM detection.
     """
 
     detect_bpm: bool = True
     detect_structure: bool = True
-    use_madmom: bool = True
+    use_madmom: bool = True  # Legacy name - controls beat_this library
     use_librosa: bool = False
 
 
@@ -64,12 +64,17 @@ class EDMConfig(BaseModel):
 def load_config(config_path: Path | None = None) -> EDMConfig:
     """Load configuration from file.
 
+    **NOTE:** TOML configuration file loading is not yet implemented.
+    This function currently only loads configuration from environment
+    variables and returns default configuration regardless of file contents.
+
     Args:
         config_path: Path to TOML configuration file. If not provided, looks for
             config in default location (~/.config/edm/config.toml).
 
     Returns:
-        Loaded and validated configuration.
+        Loaded and validated configuration (currently always returns default config
+        with environment variable overrides only).
 
     Examples:
         >>> config = load_config()
@@ -82,7 +87,7 @@ def load_config(config_path: Path | None = None) -> EDMConfig:
     if config_path.exists():
         logger.info("loading config", config_path=str(config_path))
         # TODO: Implement TOML loading with tomli
-        # For now, return default config
+        # Currently this logs the path but does not actually parse or load the file
 
-    # Load from environment variables
+    # Load from environment variables only
     return EDMConfig()

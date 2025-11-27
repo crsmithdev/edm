@@ -42,13 +42,18 @@ class StructureResult:
 def analyze_structure(filepath: Path) -> StructureResult:
     """Analyze the structure of an EDM track.
 
+    **NOTE:** This is a placeholder implementation. It returns hardcoded sections
+    and does NOT analyze actual audio content. All tracks return the same
+    three sections (intro, buildup, drop) regardless of actual structure.
+
     Detects sections like intro, buildup, drop, breakdown, and outro.
 
     Args:
         filepath: Path to the audio file.
 
     Returns:
-        Detected structure with sections and timing.
+        Detected structure with sections and timing. Currently returns hardcoded
+        placeholder sections; duration is read from actual audio file.
 
     Raises:
         AudioFileError: If the audio file cannot be loaded.
@@ -75,8 +80,8 @@ def analyze_structure(filepath: Path) -> StructureResult:
         logger.warning("failed to read audio duration, using placeholder", filepath=str(filepath), error=str(e))
         duration = 180.0
 
-    # TODO: Implement actual structure detection
-    # Placeholder implementation
+    # PLACEHOLDER: Hardcoded sections - does not analyze actual audio content
+    # TODO: Implement actual structure detection algorithm
     return StructureResult(
         sections=[
             Section(label="intro", start_time=0.0, end_time=30.0, confidence=0.9),

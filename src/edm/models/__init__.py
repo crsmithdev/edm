@@ -1,5 +1,5 @@
-"""ML model management."""
+"""Model management module (not yet implemented).
 
-from edm.models.base import BaseModel, load_model
-
-__all__ = ["BaseModel", "load_model"]
+This module is reserved for future ML model loading and management.
+Current analysis uses beat_this with its own model loading.
+"""

@@ -25,7 +25,11 @@ class TuneBatTrackInfo:
 
 
 class TuneBatClient:
-    """Client for TuneBat data."""
+    """Client for TuneBat data.
+
+    **NOTE:** This is a placeholder implementation. The search_track() method
+    always returns None and does not actually query TuneBat.
+    """
 
     def __init__(self):
         """Initialize TuneBat client."""
@@ -34,15 +38,17 @@ class TuneBatClient:
     def search_track(self, artist: str, title: str) -> TuneBatTrackInfo | None:
         """Search for a track on TuneBat.
 
+        **NOTE:** Not yet implemented. This method always returns None.
+
         Args:
             artist: Artist name.
             title: Track title.
 
         Returns:
-            Track information if found, None otherwise.
+            None (not yet implemented).
         """
         logger.debug("searching tunebat", artist=artist, title=title)
 
         # TODO: Implement TuneBat API or web scraper
-        # Placeholder implementation
+        # Placeholder implementation - always returns None
         return None
