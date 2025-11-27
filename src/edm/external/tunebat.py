@@ -29,7 +29,7 @@ class TuneBatClient:
 
     def __init__(self):
         """Initialize TuneBat client."""
-        logger.info("tunebat client initialized")
+        logger.debug("tunebat client initialized")
 
     def search_track(self, artist: str, title: str) -> TuneBatTrackInfo | None:
         """Search for a track on TuneBat.
@@ -40,11 +40,8 @@ class TuneBatClient:
 
         Returns:
             Track information if found, None otherwise.
-
-        Raises:
-            ExternalServiceError: If the request fails.
         """
-        logger.info("searching tunebat", artist=artist, title=title)
+        logger.debug("searching tunebat", artist=artist, title=title)
 
         # TODO: Implement TuneBat API or web scraper
         # Placeholder implementation

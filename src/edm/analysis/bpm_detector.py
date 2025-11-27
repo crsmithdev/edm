@@ -52,7 +52,7 @@ def compute_bpm_beat_this(filepath: Path, device: str | None = None) -> Computed
         >>> print(f"BPM: {result.bpm:.1f} (confidence: {result.confidence:.2f})")
         BPM: 128.0 (confidence: 0.95)
     """
-    logger.info("computing bpm with beat_this", filepath=str(filepath))
+    logger.debug("computing bpm with beat_this", filepath=str(filepath))
 
     try:
         import torch
@@ -95,7 +95,7 @@ def compute_bpm_beat_this(filepath: Path, device: str | None = None) -> Computed
         # Adjust to EDM range
         bpm = _adjust_bpm_to_edm_range(bpm, alternatives)
 
-        logger.info("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
+        logger.debug("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
         return ComputedBPM(
             bpm=bpm, confidence=confidence, method="beat-this", alternatives=alternatives
         )
@@ -139,7 +139,7 @@ def compute_bpm_librosa(
         >>> y, sr = load_audio(Path("track.mp3"))
         >>> result = compute_bpm_librosa(Path("track.mp3"), audio=(y, sr))
     """
-    logger.info("computing bpm with librosa", filepath=str(filepath))
+    logger.debug("computing bpm with librosa", filepath=str(filepath))
 
     try:
         # Use provided audio or load from cache
@@ -175,7 +175,7 @@ def compute_bpm_librosa(
         # Adjust to EDM range
         bpm = _adjust_bpm_to_edm_range(bpm, alternatives)
 
-        logger.info("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
+        logger.debug("detected bpm", bpm=round(bpm, 1), confidence=round(confidence, 2))
         return ComputedBPM(
             bpm=bpm, confidence=confidence, method="librosa", alternatives=alternatives
         )

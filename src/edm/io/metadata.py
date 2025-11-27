@@ -30,7 +30,7 @@ def read_metadata(filepath: Path) -> dict[str, Any]:
         >>> print(f"BPM: {metadata.get('bpm', 'Unknown')}")
         BPM: 128.0
     """
-    logger.info("reading metadata", filepath=str(filepath))
+    logger.debug("reading metadata", filepath=str(filepath))
 
     if not filepath.exists():
         from edm.exceptions import AudioFileError

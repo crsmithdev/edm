@@ -83,7 +83,7 @@ def analyze_bpm(
     if strategy is None:
         strategy = _build_strategy(ignore_metadata, offline)
 
-    logger.info("starting bpm analysis", filepath=str(filepath), strategy=strategy)
+    logger.debug("starting bpm analysis", filepath=str(filepath), strategy=strategy)
 
     # Try each strategy in order
     for source in strategy:
@@ -156,7 +156,7 @@ def _try_metadata(filepath: Path) -> BPMResult | None:
         bpm = metadata.get("bpm")
 
         if bpm and _is_valid_bpm(bpm):
-            logger.info("found bpm in metadata", filepath=str(filepath), bpm=bpm)
+            logger.debug("found bpm in metadata", filepath=str(filepath), bpm=bpm)
             return BPMResult(
                 bpm=float(bpm),
                 confidence=0.7,  # Metadata confidence
@@ -201,7 +201,7 @@ def _try_spotify(filepath: Path) -> BPMResult | None:
         track_info = client.search_track(artist, title)
 
         if track_info and track_info.bpm and _is_valid_bpm(track_info.bpm):
-            logger.info(
+            logger.debug(
                 "bpm_found_on_spotify",
                 filepath=str(filepath),
                 bpm=track_info.bpm,
@@ -251,7 +251,7 @@ def _try_compute(
 
         result = compute_bpm(filepath, prefer_madmom=use_madmom, audio=audio)
 
-        logger.info(
+        logger.debug(
             "bpm_computed",
             filepath=str(filepath),
             bpm=round(result.bpm, 1),

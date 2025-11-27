@@ -71,9 +71,6 @@ def load_config(config_path: Path | None = None) -> EDMConfig:
     Returns:
         Loaded and validated configuration.
 
-    Raises:
-        ConfigurationError: If configuration file is invalid.
-
     Examples:
         >>> config = load_config()
         >>> print(f"Log level: {config.log_level}")
@@ -89,14 +86,3 @@ def load_config(config_path: Path | None = None) -> EDMConfig:
 
     # Load from environment variables
     return EDMConfig()
-
-
-def get_default_log_dir() -> Path:
-    """Get the default log directory.
-
-    Returns:
-        Path to log directory (~/.local/share/edm/logs/).
-    """
-    log_dir = Path.home() / ".local" / "share" / "edm" / "logs"
-    log_dir.mkdir(parents=True, exist_ok=True)
-    return log_dir

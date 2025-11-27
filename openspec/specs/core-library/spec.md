@@ -19,7 +19,8 @@ The core library SHALL be organized as a Python package named `edm` with modular
 - **THEN** the package imports successfully and exposes version information
 
 ### Requirement: Audio Analysis Module
-The library SHALL provide an analysis module (`edm.analysis`) that contains functions for analyzing EDM tracks.
+
+The library SHALL provide an analysis module (`edm.analysis`) that contains functions for analyzing EDM tracks using beat_this for neural network-based BPM detection and librosa as fallback.
 
 #### Scenario: Analyze track for BPM
 - **WHEN** user calls `analyze_track(filepath, config)` with BPM detection enabled
@@ -32,6 +33,14 @@ The library SHALL provide an analysis module (`edm.analysis`) that contains func
 #### Scenario: Handle invalid audio file
 - **WHEN** user calls `analyze_track(filepath, config)` with an invalid file path
 - **THEN** raises a custom `AudioFileError` exception with descriptive message
+
+#### Scenario: BPM computation method selection
+- **WHEN** user calls `compute_bpm(filepath, prefer_madmom=True)`
+- **THEN** uses beat_this (neural network approach) as primary detector with librosa fallback
+
+#### Scenario: BPM computation with librosa preference
+- **WHEN** user calls `compute_bpm(filepath, prefer_madmom=False)`
+- **THEN** uses librosa (traditional DSP approach) as primary detector
 
 ### Requirement: File I/O Module
 The library SHALL provide an I/O module (`edm.io`) for reading and writing audio files and metadata.

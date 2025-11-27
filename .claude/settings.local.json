@@ -38,10 +38,18 @@
       "Bash(git config:*)",
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
-      "SlashCommand(/openspec:archive)",
+      "SlashComman(/archive)",
       "Bash(openspec archive add-github-actions-cicd:*)",
       "Bash(openspec archive add-accuracy-evaluation:*)",
-      "Bash(openspec archive migrate-logging-to-structlog:*)"
+      "Bash(openspec archive migrate-logging-to-structlog:*)",
+      "Bash",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.libhunt.com)",
+      "WebFetch(domain:biff.ai)",
+      "WebSearch",
+      "WebFetch",
+      "Edit",
+      "Write"
     ],
     "deny": [],
     "ask": []

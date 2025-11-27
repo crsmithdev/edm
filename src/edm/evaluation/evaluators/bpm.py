@@ -96,7 +96,7 @@ def _evaluate_sequential(args_list: list[tuple]) -> list[dict]:
         if isinstance(filepath, str):
             filepath = Path(filepath)
 
-        logger.info(
+        logger.debug(
             "evaluating file",
             progress=f"{idx}/{len(args_list)}",
             file=filepath.name,
@@ -106,7 +106,7 @@ def _evaluate_sequential(args_list: list[tuple]) -> list[dict]:
         results.append(result)
 
         if result["success"]:
-            logger.info(
+            logger.debug(
                 "evaluation success",
                 file=filepath.name,
                 reference=result["reference"],
@@ -141,7 +141,7 @@ def _evaluate_parallel(args_list: list[tuple], workers: int) -> list[dict]:
         advance = count - completed[0]
         if advance > 0:
             completed[0] = count
-            logger.info(
+            logger.debug(
                 "parallel progress",
                 completed=count,
                 total=len(args_list),
@@ -163,7 +163,7 @@ def _evaluate_parallel(args_list: list[tuple], workers: int) -> list[dict]:
     for result in results:
         filepath = Path(result["file"])
         if result["success"]:
-            logger.info(
+            logger.debug(
                 "evaluation success",
                 file=filepath.name,
                 reference=result["reference"],

@@ -126,11 +126,8 @@ class SpotifyClient:
 
         Returns:
             Track information if found, None otherwise.
-
-        Raises:
-            ExternalServiceError: If the API request fails.
         """
-        logger.info("searching spotify", artist=artist, title=title)
+        logger.debug("searching spotify", artist=artist, title=title)
 
         try:
             sp = self._get_client()
@@ -167,7 +164,7 @@ class SpotifyClient:
                 track.energy = features.get("energy")
                 track.danceability = features.get("danceability")
 
-            logger.info("found on spotify", artist=track.artist, title=track.title)
+            logger.debug("found on spotify", artist=track.artist, title=track.title)
             return track
 
         except ValueError as e:
@@ -206,14 +203,3 @@ class SpotifyClient:
         except Exception as e:
             logger.error("failed to get audio features", error=str(e))
             return None
-
-    def clear_cache(self):
-        """Clear the LRU cache and delete cached files."""
-        self.search_track.cache_clear()
-        self.get_audio_features.cache_clear()
-
-        # Remove cache files
-        cache_file = self.cache_dir / ".spotify_cache"
-        if cache_file.exists():
-            cache_file.unlink()
-            logger.info("cleared spotify cache")

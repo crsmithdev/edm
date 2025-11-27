@@ -41,11 +41,3 @@ The system SHALL use beat_this as the primary neural network-based BPM detector,
 #### Scenario: EDM range adjustment
 - **WHEN** beat_this detects a BPM outside the preferred EDM range (120-150)
 - **THEN** alternatives at half/double tempo are considered and the value in range is preferred
-
-## REMOVED Requirements
-
-### Requirement: madmom BPM Detection
-
-**Reason**: madmom is unmaintained (last release 2019), requires Python <3.10, and causes persistent installation failures due to Cython/NumPy version conflicts.
-
-**Migration**: Replace with beat_this which provides equivalent or better accuracy from the same research group (CPJKU) with modern Python support.

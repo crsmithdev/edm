@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import structlog
+from mutagen import File as MutagenFile
 
 logger = structlog.get_logger(__name__)
 
@@ -62,7 +63,17 @@ def analyze_structure(filepath: Path) -> StructureResult:
         buildup: 30.0s - 60.0s
         drop: 60.0s - 120.0s
     """
-    logger.info("analyzing structure", filepath=str(filepath))
+    logger.debug("analyzing structure", filepath=str(filepath))
+
+    # Get actual audio duration
+    try:
+        audio = MutagenFile(filepath)
+        if audio is None:
+            raise ValueError(f"Unable to read file format: {filepath.suffix}")
+        duration = audio.info.length if hasattr(audio.info, "length") else 180.0
+    except Exception as e:
+        logger.warning("failed to read audio duration, using placeholder", filepath=str(filepath), error=str(e))
+        duration = 180.0
 
     # TODO: Implement actual structure detection
     # Placeholder implementation
@@ -72,5 +83,5 @@ def analyze_structure(filepath: Path) -> StructureResult:
             Section(label="buildup", start_time=30.0, end_time=60.0, confidence=0.85),
             Section(label="drop", start_time=60.0, end_time=120.0, confidence=0.95),
         ],
-        duration=180.0,
+        duration=duration,
     )

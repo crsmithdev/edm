@@ -1,32 +1,103 @@
-## 1. Remove Feature Stubs
+# Implementation Tasks
 
-- [ ] 1.1 Delete `src/edm/features/spectral.py`
-- [ ] 1.2 Delete `src/edm/features/temporal.py`
-- [ ] 1.3 Delete `src/edm/features/__init__.py`
-- [ ] 1.4 Remove `src/edm/features/` directory
+## Phase 1: Remove Features Module
 
-## 2. Remove Model Stubs
+### 1. Delete Feature Extraction Files
+- [ ] Delete `src/edm/features/spectral.py`
+- [ ] Delete `src/edm/features/temporal.py`
+- [ ] Verify no imports exist in codebase (`rg "from edm.features import|from edm.features.spectral|from edm.features.temporal"`)
 
-- [ ] 2.1 Delete `src/edm/models/base.py`
-- [ ] 2.2 Delete `src/edm/models/__init__.py`
-- [ ] 2.3 Remove `src/edm/models/` directory
+### 2. Update Features Module Init
+- [ ] Update `src/edm/features/__init__.py` with minimal docstring
+- [ ] Remove any exports of spectral/temporal functions
+- [ ] Add note that module is reserved for future use
 
-## 3. Remove External Service Stubs
+## Phase 2: Remove Models Module
 
-- [ ] 3.1 Delete `src/edm/external/beatport.py`
-- [ ] 3.2 Delete `src/edm/external/tunebat.py`
-- [ ] 3.3 Update `src/edm/external/__init__.py` to remove exports
+### 3. Delete Model Management Files
+- [ ] Delete `src/edm/models/base.py`
+- [ ] Verify no imports of `BaseModel` exist (`rg "from edm.models.base import|BaseModel"`)
+- [ ] Verify no imports of `load_model` exist (`rg "from edm.models import load_model|load_model\("`)
 
-## 4. Update Structure Analysis
+### 4. Update Models Module Init
+- [ ] Update `src/edm/models/__init__.py` with minimal docstring
+- [ ] Remove any exports of base model classes
+- [ ] Add note that module is reserved for future use
+- [ ] Keep `ModelNotFoundError` in exceptions module (already there)
 
-- [ ] 4.1 Add `implemented: bool = False` field to `StructureResult` dataclass
-- [ ] 4.2 Modify `analyze_structure()` to return empty result with `implemented=False`
-- [ ] 4.3 Update CLI to check `implemented` flag and display "not implemented" message
-- [ ] 4.4 Keep structure columns in output but show "N/A" or similar
+### 5. Verify Exception Handling
+- [ ] Check that `ModelNotFoundError` is defined in `src/edm/exceptions.py`
+- [ ] If not, add it for future use
+- [ ] Remove import of exception from deleted base.py if it exists
 
-## 5. Cleanup
+## Phase 3: Update Documentation
 
-- [ ] 5.1 Update `src/edm/__init__.py` to remove feature/model imports if present
-- [ ] 5.2 Remove any tests for deleted stub code
-- [ ] 5.3 Run full test suite to verify no breakage
-- [ ] 5.4 Run `ruff check` and `mypy` to catch dead imports
+### 6. Update Architecture Documentation
+- [ ] Remove Feature Extraction Module section from `docs/architecture.md`
+- [ ] Remove Model Management Module section from `docs/architecture.md`
+- [ ] Update module diagram/overview to reflect removed modules
+- [ ] Add note that these may be added in future releases
+
+### 7. Update API Documentation
+- [ ] Verify no references to `extract_spectral_features` in docs
+- [ ] Verify no references to `extract_temporal_features` in docs
+- [ ] Verify no references to `load_model` in user-facing docs
+- [ ] Update README.md if it mentions these features
+
+### 8. Check Examples and Code Comments
+- [ ] Search for example usage of features module (`rg "extract_spectral|extract_temporal"`)
+- [ ] Search for example usage of models module (`rg "load_model"`)
+- [ ] Remove or update any examples referencing these modules
+
+## Phase 4: Validation and Testing
+
+### 9. Verify Imports and Tests
+- [ ] Run `rg "edm.features" --type py` to find any remaining imports
+- [ ] Run `rg "edm.models" --type py` to find any remaining imports
+- [ ] Verify no tests reference deleted modules
+- [ ] Run full test suite: `uv run pytest`
+- [ ] Verify all tests pass
+
+### 10. Type Checking and Linting
+- [ ] Run mypy: `uv run mypy src/`
+- [ ] Verify no type errors from missing imports
+- [ ] Run ruff: `uv run ruff check .`
+- [ ] Fix any linting issues
+
+### 11. Import Validation
+- [ ] Try importing edm package: `python -c "import edm"`
+- [ ] Verify no import errors
+- [ ] Try importing submodules: `python -c "import edm.features; import edm.models"`
+- [ ] Verify modules exist but are empty
+
+## Phase 5: Final Verification
+
+### 12. Manual Testing
+- [ ] Run CLI with a sample file: `uv run edm analyze tests/fixtures/test.mp3 --no-color`
+- [ ] Verify analysis works without errors
+- [ ] Check that no warnings about missing features/models appear
+
+### 13. Documentation Review
+- [ ] Verify `docs/architecture.md` reflects current state
+- [ ] Verify no broken links to feature extraction or model management
+- [ ] Update project structure diagram if needed
+
+### 14. Git Housekeeping
+- [ ] Review all changed files
+- [ ] Ensure no unintended deletions
+- [ ] Verify empty __init__.py files have appropriate content
+
+## Dependencies and Parallelization
+
+**Sequential Tasks:**
+- Tasks 1-2 must complete before Phase 2 begins
+- Tasks 3-5 must complete before Phase 3 begins
+- Phase 4 tasks depend on all code changes being complete
+
+**Parallelizable:**
+- Task 6 (architecture docs) can run in parallel with Task 7 (API docs)
+- Tasks 9-11 (validation) can be run concurrently
+
+**Blocking Tasks:**
+- Task 5 (verify exception handling) must complete before tests run
+- Task 12 (manual testing) depends on all code changes

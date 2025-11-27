@@ -31,7 +31,7 @@ class BeatportClient:
 
     def __init__(self):
         """Initialize Beatport client."""
-        logger.info("beatport client initialized")
+        logger.debug("beatport client initialized")
 
     def search_track(self, artist: str, title: str) -> BeatportTrackInfo | None:
         """Search for a track on Beatport.
@@ -42,11 +42,8 @@ class BeatportClient:
 
         Returns:
             Track information if found, None otherwise.
-
-        Raises:
-            ExternalServiceError: If the request fails.
         """
-        logger.info("searching beatport", artist=artist, title=title)
+        logger.debug("searching beatport", artist=artist, title=title)
 
         # TODO: Implement Beatport API or web scraper
         # Placeholder implementation

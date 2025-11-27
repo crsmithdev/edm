@@ -19,19 +19,7 @@ class AnalysisError(EDMError):
     pass
 
 
-class ExternalServiceError(EDMError):
-    """Error communicating with external services."""
-
-    pass
-
-
 class ModelNotFoundError(EDMError):
     """Requested model not found."""
-
-    pass
-
-
-class ConfigurationError(EDMError):
-    """Configuration validation or loading error."""
 
     pass
