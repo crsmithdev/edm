@@ -167,12 +167,8 @@ def analyze_command(
     # Process files
     start_time = time.time()
 
-    if workers == 1:
-        # Sequential processing with progress bar
-        results = _process_sequential(args_list, console, quiet)
-    else:
-        # Parallel processing
-        results = _process_parallel(args_list, workers, console, quiet)
+    # Always use parallel processing (workers=1 is handled by ParallelProcessor)
+    results = _process_parallel(args_list, workers, console, quiet)
 
     total_time = time.time() - start_time
 
@@ -200,44 +196,6 @@ def analyze_command(
             if sum_individual > 0:
                 speedup = sum_individual / total_time
                 console.print(f"Parallel speedup: {speedup:.1f}x")
-
-
-def _process_sequential(
-    args_list: list[tuple],
-    console: Console,
-    quiet: bool,
-) -> list[dict]:
-    """Process files sequentially with progress bar.
-
-    Args:
-        args_list: List of argument tuples for each file.
-        console: Rich console for output.
-        quiet: Suppress progress output.
-
-    Returns:
-        List of analysis results.
-    """
-    results = []
-
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-        disable=quiet,
-    ) as progress:
-        task = progress.add_task("Analyzing...", total=len(args_list))
-
-        for args in args_list:
-            result = _analyze_file_worker(args)
-            results.append(result)
-
-            if "error" in result and not quiet:
-                filepath = Path(result["file"])
-                console.print(f"[red]Error analyzing {filepath.name}:[/red] {result['error']}")
-
-            progress.update(task, advance=1)
-
-    return results
 
 
 def _process_parallel(
@@ -268,7 +226,9 @@ def _process_parallel(
         console=console,
         disable=quiet,
     ) as progress:
-        task = progress.add_task(f"Analyzing ({workers} workers)...", total=len(args_list))
+        # Use simpler message for single worker
+        description = "Analyzing..." if workers == 1 else f"Analyzing ({workers} workers)..."
+        task = progress.add_task(description, total=len(args_list))
 
         def progress_callback(count: int):
             # Update progress bar

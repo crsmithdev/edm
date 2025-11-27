@@ -13,6 +13,7 @@ from cli.commands.evaluate import evaluate_app
 from edm import __version__ as lib_version
 from edm.io.audio import clear_audio_cache, set_cache_size
 from edm.logging import configure_logging
+from edm.processing.parallel import get_default_workers
 
 # Load environment variables from .env file
 load_dotenv()
@@ -135,11 +136,11 @@ def analyze(
         "--cache-size",
         help="Number of audio files to cache in memory (0 to disable)",
     ),
-    workers: int = typer.Option(
-        1,
+    workers: int | None = typer.Option(
+        None,
         "--workers",
         "-w",
-        help="Number of parallel workers for analysis (default: 1 = sequential)",
+        help="Number of parallel workers for analysis (default: CPU count - 1)",
     ),
 ):
     """Analyze EDM tracks for BPM, structure, and other features.
@@ -190,6 +191,11 @@ def analyze(
 
     logger = structlog.get_logger(__name__)
     logger.debug("cli started", log_level=effective_log_level, json_logs=json_logs)
+
+    # Set default workers if not specified
+    if workers is None:
+        workers = get_default_workers()
+        logger.debug("using default workers", workers=workers)
 
     # Disable colors if requested or not a TTY
     if no_color or not sys.stdout.isatty():
