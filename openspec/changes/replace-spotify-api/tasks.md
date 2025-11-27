@@ -1,125 +1,128 @@
 # Implementation Tasks
 
-## Phase 1: Implement New Sources
+## Phase 1: Implement GetSongBPM Client
 
-### 1. Beatport Client Implementation
-- [ ] Create `src/edm/external/beatport.py` web scraper
-  - [ ] Implement track search by artist + title
-  - [ ] Parse BPM from track page HTML
-  - [ ] Parse key and genre information
-  - [ ] Add rate limiting (respect robots.txt)
-  - [ ] Add user agent and headers for respectful scraping
-  - [ ] Handle HTTP errors and timeouts
-  - [ ] Return `BeatportTrackInfo` dataclass
+### 1. GetSongBPM Client Implementation
+- [ ] Create `src/edm/external/getsongbpm.py`
+  - [ ] Define `GetSongBPMTrackInfo` dataclass (bpm, key, time_sig, title, artist)
+  - [ ] Implement `GetSongBPMClient` class with API key authentication
+  - [ ] Implement `search_track(artist, title)` method using search endpoint
+  - [ ] Implement `get_song_by_id(song_id)` method for direct lookup
+  - [ ] Add rate limiting (configurable, default 1 req/sec)
+  - [ ] Add response caching with configurable TTL
+  - [ ] Handle HTTP errors (401 unauthorized, 429 rate limit, 5xx server errors)
+  - [ ] Return None gracefully when track not found
 
-### 2. TuneBat Client Implementation
-- [ ] Create `src/edm/external/tunebat.py` web scraper
-  - [ ] Implement track search by artist + title
-  - [ ] Parse BPM from results page
-  - [ ] Parse key and camelot key information
-  - [ ] Add rate limiting (respect robots.txt)
-  - [ ] Add user agent and headers for respectful scraping
-  - [ ] Handle HTTP errors and timeouts
-  - [ ] Return `TuneBatTrackInfo` dataclass
-
-### 3. Add Dependencies
-- [ ] Add `beautifulsoup4` to pyproject.toml
-- [ ] Add `requests` to pyproject.toml
-- [ ] Add `lxml` parser for beautifulsoup (optional but faster)
+### 2. Add Dependencies
+- [ ] Add `httpx` to pyproject.toml for async HTTP requests
 - [ ] Update `uv.lock` with new dependencies
+- [ ] Verify no conflicts with existing dependencies
+
+### 3. Update Configuration
+- [ ] Modify `src/edm/config.py`
+  - [ ] Add `getsongbpm_api_key` field to ExternalServicesConfig
+  - [ ] Add `getsongbpm_rate_limit` field (default: 1.0 req/sec)
+  - [ ] Add deprecation notice to Spotify config fields
+  - [ ] Update default BPM lookup strategy to `["metadata", "getsongbpm", "computed"]`
+  - [ ] Add environment variable support: `GETSONGBPM_API_KEY`
 
 ### 4. Update BPM Analysis Strategy
 - [ ] Modify `src/edm/analysis/bpm.py`
-  - [ ] Add `_try_beatport()` helper function
-  - [ ] Add `_try_tunebat()` helper function
-  - [ ] Update `analyze_bpm()` to use new strategy: metadata → beatport → tunebat → computed
+  - [ ] Add `_try_getsongbpm()` helper function
+  - [ ] Update `analyze_bpm()` to use new strategy: metadata → getsongbpm → computed
   - [ ] Add deprecation warning when Spotify is used
   - [ ] Keep `_try_spotify()` for backward compatibility
+  - [ ] Handle missing API key gracefully (skip to next source)
 
-### 5. Update Configuration
-- [ ] Modify `src/edm/config.py`
-  - [ ] Add Beatport configuration section (rate_limit, cache_ttl, user_agent)
-  - [ ] Add TuneBat configuration section (rate_limit, cache_ttl, user_agent)
-  - [ ] Add deprecation notice to Spotify config section
-  - [ ] Update default BPM lookup strategy to `["metadata", "beatport", "tunebat", "computed"]`
-  - [ ] Add configuration option for source preference order
+### 5. Update External Module
+- [ ] Modify `src/edm/external/__init__.py`
+  - [ ] Export `GetSongBPMClient` and `GetSongBPMTrackInfo`
+  - [ ] Keep Spotify exports with deprecation note
+  - [ ] Remove Beatport and TuneBat exports
 
-## Phase 2: Testing and Documentation
+## Phase 2: Remove Stubs and Update Docs
 
-### 6. Unit Tests
-- [ ] Create `tests/test_external/test_beatport.py`
-  - [ ] Test successful track search
+### 6. Remove Beatport/TuneBat Stubs
+- [ ] Delete `src/edm/external/beatport.py`
+- [ ] Delete `src/edm/external/tunebat.py`
+- [ ] Update any imports that reference these modules
+- [ ] Update `docs/architecture.md` to remove Beatport/TuneBat references
+
+### 7. Unit Tests
+- [ ] Create `tests/test_external/test_getsongbpm.py`
+  - [ ] Test successful track search with mocked response
+  - [ ] Test track not found returns None
   - [ ] Test rate limiting behavior
-  - [ ] Test error handling (network errors, parsing errors)
-  - [ ] Test timeout handling
-  - [ ] Mock HTTP responses for deterministic tests
-- [ ] Create `tests/test_external/test_tunebat.py`
-  - [ ] Test successful track search
-  - [ ] Test rate limiting behavior
-  - [ ] Test error handling
-  - [ ] Test timeout handling
+  - [ ] Test error handling (network errors, API errors)
+  - [ ] Test caching behavior
+  - [ ] Test missing API key handling
   - [ ] Mock HTTP responses for deterministic tests
 - [ ] Update `tests/test_analysis/test_bpm.py`
-  - [ ] Test new cascading strategy
-  - [ ] Test Beatport fallback when metadata missing
-  - [ ] Test TuneBat fallback when Beatport fails
+  - [ ] Test new cascading strategy with GetSongBPM
+  - [ ] Test fallback when GetSongBPM unavailable
   - [ ] Test Spotify deprecation warnings
-
-### 7. Integration Tests
-- [ ] Create integration tests with real web scraping (marked as slow)
-- [ ] Test Beatport scraping with known tracks
-- [ ] Test TuneBat scraping with known tracks
-- [ ] Verify caching works across sources
 
 ### 8. Documentation Updates
 - [ ] Update `docs/architecture.md`
-  - [ ] Document new Beatport and TuneBat clients
+  - [ ] Document GetSongBPM client
   - [ ] Update BPM analysis strategy diagram
-  - [ ] Document web scraping approach and limitations
+  - [ ] Remove Beatport/TuneBat from external services list
+  - [ ] Update "Placeholder / Unimplemented Features" section
 - [ ] Update `docs/cli-reference.md`
   - [ ] Update BPM strategy explanation
-  - [ ] Remove references to Spotify as primary source
-  - [ ] Add migration guide for users
-- [ ] Create migration guide
-  - [ ] Document how to update configurations
-  - [ ] Explain new BPM strategy
-  - [ ] Note backward compatibility period
-- [ ] Update README.md
+  - [ ] Add GetSongBPM API key configuration
+  - [ ] Document attribution requirement
+- [ ] Update `docs/agent-guide.md`
+  - [ ] Update external services section
+- [ ] Update `README.md`
   - [ ] Update BPM detection strategy description
-  - [ ] Update feature list (Beatport, TuneBat instead of Spotify)
+  - [ ] Add GetSongBPM API key setup instructions
+  - [ ] Add attribution note
 
-## Phase 3: Deprecation and Cleanup
+## Phase 3: Attribution and Deprecation
 
-### 9. Deprecate Spotify Client
+### 9. Implement Attribution Display
+- [ ] Modify CLI table output to show attribution footer when GetSongBPM used
+- [ ] Modify JSON output to include `attribution` field
+- [ ] Add attribution note to --help text
+
+### 10. Deprecate Spotify Client
 - [ ] Add deprecation warning to `SpotifyClient.__init__()`
 - [ ] Add deprecation notice to all Spotify-related docstrings
 - [ ] Update `analyze_bpm()` to log deprecation warning when Spotify is used
 - [ ] Document timeline for removal (target: v0.4.0)
 
-### 10. Update CLI Help Text
+### 11. Update CLI Help Text
 - [ ] Update `src/cli/main.py` help text for `--offline` flag
 - [ ] Update BPM strategy documentation in CLI
-- [ ] Add note about Spotify deprecation
+- [ ] Add note about GetSongBPM API key requirement
 
-### 11. Validation and Accuracy Testing
-- [ ] Run accuracy evaluation with new sources
-- [ ] Compare results against Spotify-based evaluation
-- [ ] Verify BPM accuracy meets or exceeds previous results
-- [ ] Document any accuracy changes in evaluation results
+## Phase 4: Validation
 
-### 12. CI/CD Updates
-- [ ] Update GitHub Actions workflows if needed
-- [ ] Add environment variables for optional rate limit configuration
-- [ ] Ensure tests run with mocked HTTP responses (don't hit real services in CI)
+### 12. Integration Tests
+- [ ] Create integration test with real GetSongBPM API (marked as slow/optional)
+- [ ] Test with known EDM tracks to verify BPM accuracy
+- [ ] Verify caching works correctly
+
+### 13. Accuracy Evaluation
+- [ ] Run BPM accuracy evaluation with GetSongBPM as source
+- [ ] Compare results against previous Spotify-based evaluation
+- [ ] Document any accuracy differences
+
+### 14. CI/CD Updates
+- [ ] Add `GETSONGBPM_API_KEY` to GitHub Actions secrets (for integration tests)
+- [ ] Ensure unit tests run with mocked responses (don't hit real API in CI)
+- [ ] Update any environment variable documentation
 
 ## Final Checklist
 
 - [ ] All unit tests pass
-- [ ] All integration tests pass
+- [ ] All integration tests pass (when API key available)
 - [ ] Documentation is complete and accurate
-- [ ] Migration guide is clear and tested
+- [ ] Attribution is displayed correctly
 - [ ] Deprecation warnings are visible but not disruptive
-- [ ] No breaking changes for users who don't configure Spotify
+- [ ] No breaking changes for users who don't use external APIs
 - [ ] Type checking passes (mypy)
 - [ ] Linting passes (ruff)
-- [ ] Accuracy evaluation shows comparable or better results
+- [ ] Beatport and TuneBat stubs removed
+- [ ] spotipy can be optionally removed from dependencies
