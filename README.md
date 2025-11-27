@@ -1,3 +1,5 @@
+[Powered by the SongBPM API](https://getsongbpm.com)
+
 # EDM Track Analysis
 
 [![CI](https://github.com/crsmithdev/edm/actions/workflows/ci.yml/badge.svg)](https://github.com/crsmithdev/edm/actions/workflows/ci.yml)
@@ -104,3 +106,4 @@ uv run mypy src/                           # Type check
 ```
 
 See [development.md](docs/development.md) for details.
+
