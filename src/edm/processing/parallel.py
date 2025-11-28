@@ -1,6 +1,5 @@
 """Parallel processing utilities using multiprocessing."""
 
-import logging
 import multiprocessing
 import os
 import signal
