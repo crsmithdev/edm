@@ -3,7 +3,7 @@
 import csv
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -12,7 +12,6 @@ from edm.evaluation.reference import (
     load_reference_auto,
     load_reference_csv,
     load_reference_json,
-    load_spotify_reference,
 )
 
 
@@ -77,36 +76,6 @@ def test_load_reference_json_invalid_format(tmp_path):
         load_reference_json(json_path, value_field="bpm")
 
 
-@patch("edm.external.spotify.SpotifyClient")
-@patch("edm.io.metadata.read_metadata")
-@patch("edm.evaluation.reference.discover_audio_files")
-def test_load_spotify_reference(mock_discover, mock_read_metadata, mock_spotify_client):
-    """Test loading reference from Spotify API."""
-    # Mock file discovery
-    mock_files = [Path("/music/track1.mp3"), Path("/music/track2.flac")]
-    mock_discover.return_value = mock_files
-
-    # Mock metadata reading
-    mock_read_metadata.side_effect = [
-        {"artist": "Artist 1", "title": "Track 1"},
-        {"artist": "Artist 2", "title": "Track 2"},
-    ]
-
-    # Mock Spotify client
-    mock_client = MagicMock()
-    mock_client.search_track.side_effect = [
-        {"bpm": 128.0},
-        {"bpm": 140.0},
-    ]
-    mock_spotify_client.return_value = mock_client
-
-    reference = load_spotify_reference(Path("/music"))
-
-    assert len(reference) == 2
-    assert reference[Path("/music/track1.mp3")] == 128.0
-    assert reference[Path("/music/track2.flac")] == 140.0
-
-
 @patch("edm.io.metadata.read_metadata")
 @patch("edm.evaluation.reference.discover_audio_files")
 def test_load_metadata_reference(mock_discover, mock_read_metadata):
@@ -165,17 +134,6 @@ def test_load_reference_auto_json(tmp_path):
     )
 
     assert len(reference) == 1
-
-
-def test_load_reference_auto_spotify_unsupported():
-    """Test that Spotify reference is rejected for unsupported analysis types."""
-    with pytest.raises(ValueError, match="Spotify reference not supported"):
-        load_reference_auto(
-            reference_arg="spotify",
-            analysis_type="drops",
-            source_path=Path("/music"),
-            value_field="drops",
-        )
 
 
 def test_load_reference_auto_metadata_unsupported():
