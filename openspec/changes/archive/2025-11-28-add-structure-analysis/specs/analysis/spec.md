@@ -24,31 +24,23 @@ The system SHALL cache loaded audio data to avoid redundant file I/O and decodin
 
 ### Requirement: Structure Detection
 
-The system SHALL detect track structure sections (intro, buildup, drop, breakdown, outro) using ML-based analysis with rule-based fallback.
+The system SHALL detect track structure sections (intro, buildup, drop, breakdown, outro) using MSAF-based analysis with energy-based fallback.
 
-#### Scenario: Analyze track structure with Allin1
-- **WHEN** `analyze_structure(filepath)` is called with Allin1 available
+#### Scenario: Analyze track structure with MSAF
+- **WHEN** `analyze_structure(filepath)` is called with MSAF available
 - **THEN** returns StructureResult containing detected sections with labels, timestamps, and confidence scores
 
 #### Scenario: Analyze track structure with energy fallback
-- **WHEN** `analyze_structure(filepath)` is called and Allin1 is unavailable
+- **WHEN** `analyze_structure(filepath)` is called and MSAF is unavailable
 - **THEN** falls back to energy-based detection and returns StructureResult with detected sections
 
 #### Scenario: Explicit detector selection
 - **WHEN** `analyze_structure(filepath, detector="energy")` is called
-- **THEN** uses the specified detector regardless of Allin1 availability
+- **THEN** uses the specified detector regardless of MSAF availability
 
 #### Scenario: Auto detector selection
 - **WHEN** `analyze_structure(filepath, detector="auto")` is called (default)
-- **THEN** uses Allin1 if available, otherwise falls back to energy-based detection
-
-#### Scenario: GPU acceleration
-- **WHEN** CUDA is available and Allin1 detector is used
-- **THEN** inference runs on GPU for faster processing
-
-#### Scenario: CPU fallback
-- **WHEN** CUDA is not available and Allin1 detector is used
-- **THEN** inference runs on CPU without errors
+- **THEN** uses MSAF if available, otherwise falls back to energy-based detection
 
 ### Requirement: Section Data Model
 

@@ -138,6 +138,11 @@ def analyze(
         "-w",
         help="Number of parallel workers for analysis (default: CPU count - 1)",
     ),
+    structure_detector: str = typer.Option(
+        "auto",
+        "--structure-detector",
+        help="Structure detection method: auto (default), msaf, or energy",
+    ),
 ):
     """Analyze EDM tracks for BPM, structure, and other features.
 
@@ -225,6 +230,7 @@ def analyze(
             quiet=quiet,
             console=console,
             workers=workers,
+            structure_detector=structure_detector,
         )
     except Exception as e:
         logger = structlog.get_logger(__name__)

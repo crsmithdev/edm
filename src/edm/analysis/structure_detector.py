@@ -1,0 +1,527 @@
+"""Structure detection implementations."""
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Protocol
+
+import librosa
+import numpy as np
+import structlog
+
+logger = structlog.get_logger(__name__)
+
+
+@dataclass
+class DetectedSection:
+    """A detected section from a structure detector.
+
+    Attributes:
+        start_time: Start time in seconds.
+        end_time: End time in seconds.
+        label: Section label (generic or EDM-specific).
+        confidence: Confidence score between 0 and 1.
+        start_bar: Start bar position (0-indexed). None if BPM unavailable.
+        end_bar: End bar position. None if BPM unavailable.
+        bar_count: Number of bars in section. None if BPM unavailable.
+    """
+
+    start_time: float
+    end_time: float
+    label: str
+    confidence: float
+    start_bar: float | None = None
+    end_bar: float | None = None
+    bar_count: float | None = None
+
+
+class StructureDetector(Protocol):
+    """Protocol for structure detection implementations."""
+
+    def is_available(self) -> bool:
+        """Check if this detector is available for use."""
+        ...
+
+    def detect(self, filepath: Path, sr: int = 22050) -> list[DetectedSection]:
+        """Detect structure sections in an audio file.
+
+        Args:
+            filepath: Path to the audio file.
+            sr: Sample rate for audio loading.
+
+        Returns:
+            List of detected sections.
+        """
+        ...
+
+
+class MSAFDetector:
+    """MSAF-based structure detection.
+
+    Uses the Music Structure Analysis Framework for boundary detection
+    and segment labeling, with energy-based EDM label mapping.
+    """
+
+    def __init__(self, boundary_algorithm: str = "sf", label_algorithm: str = "fmc2d"):
+        """Initialize MSAF detector.
+
+        Args:
+            boundary_algorithm: MSAF boundary detection algorithm.
+                Options: 'sf' (spectral flux), 'foote', 'olda', 'scluster', 'cnmf'.
+            label_algorithm: MSAF labeling algorithm.
+                Options: 'fmc2d', 'scluster', 'cnmf'.
+        """
+        self._boundary_algorithm = boundary_algorithm
+        self._label_algorithm = label_algorithm
+        self._msaf = None
+
+    def is_available(self) -> bool:
+        """Check if MSAF is available."""
+        try:
+            # Patch scipy.inf for compatibility with msaf (scipy 1.12+ removed scipy.inf)
+            import numpy as np
+            import scipy
+
+            if not hasattr(scipy, "inf"):
+                scipy.inf = np.inf
+
+            import msaf
+
+            self._msaf = msaf
+            return True
+        except ImportError:
+            logger.debug("msaf not available")
+            return False
+
+    def detect(self, filepath: Path, sr: int = 22050) -> list[DetectedSection]:
+        """Detect structure using MSAF.
+
+        Args:
+            filepath: Path to the audio file.
+            sr: Sample rate for audio loading.
+
+        Returns:
+            List of detected sections with EDM labels.
+        """
+        if not self.is_available():
+            raise RuntimeError("MSAF is not available")
+
+        logger.debug(
+            "running msaf detection",
+            filepath=str(filepath),
+            boundary_algorithm=self._boundary_algorithm,
+            label_algorithm=self._label_algorithm,
+        )
+
+        try:
+            # Run MSAF segmentation
+            assert self._msaf is not None  # Verified by is_available()
+            boundaries, labels = self._msaf.process(
+                str(filepath),
+                boundaries_id=self._boundary_algorithm,
+                labels_id=self._label_algorithm,
+            )
+
+            # Get audio duration for the last segment
+            y, _ = librosa.load(str(filepath), sr=sr, mono=True)
+            duration = len(y) / sr
+
+            # Convert to sections
+            sections = self._boundaries_to_sections(boundaries, labels, duration)
+
+            # Map to EDM labels using energy analysis
+            sections = self._map_to_edm_labels(filepath, sections, sr)
+
+            logger.debug(
+                "msaf detection complete",
+                sections=len(sections),
+            )
+
+            return sections
+
+        except Exception as e:
+            logger.error("msaf detection failed", error=str(e))
+            raise
+
+    def _boundaries_to_sections(
+        self, boundaries: np.ndarray, labels: np.ndarray, duration: float
+    ) -> list[DetectedSection]:
+        """Convert MSAF boundaries and labels to sections.
+
+        Args:
+            boundaries: Array of boundary times.
+            labels: Array of segment labels.
+            duration: Total audio duration.
+
+        Returns:
+            List of detected sections.
+        """
+        sections = []
+
+        for i in range(len(boundaries) - 1):
+            start = float(boundaries[i])
+            end = float(boundaries[i + 1])
+            label = f"segment_{int(labels[i])}" if i < len(labels) else "unknown"
+
+            sections.append(
+                DetectedSection(
+                    start_time=start,
+                    end_time=end,
+                    label=label,
+                    confidence=0.8,  # MSAF doesn't provide confidence scores
+                )
+            )
+
+        # Ensure last section extends to duration
+        if sections and sections[-1].end_time < duration:
+            sections[-1] = DetectedSection(
+                start_time=sections[-1].start_time,
+                end_time=duration,
+                label=sections[-1].label,
+                confidence=sections[-1].confidence,
+            )
+
+        return sections
+
+    def _map_to_edm_labels(
+        self, filepath: Path, sections: list[DetectedSection], sr: int
+    ) -> list[DetectedSection]:
+        """Map generic segment labels to EDM labels using energy analysis.
+
+        Args:
+            filepath: Path to the audio file.
+            sections: Sections with generic labels.
+            sr: Sample rate.
+
+        Returns:
+            Sections with EDM labels.
+        """
+        if not sections:
+            return sections
+
+        # Load audio for energy analysis
+        y, _ = librosa.load(str(filepath), sr=sr, mono=True)
+
+        # Calculate RMS energy per section
+        section_energies = []
+        for section in sections:
+            start_sample = int(section.start_time * sr)
+            end_sample = int(section.end_time * sr)
+            segment = y[start_sample:end_sample]
+
+            if len(segment) > 0:
+                rms = np.sqrt(np.mean(segment**2))
+                section_energies.append(rms)
+            else:
+                section_energies.append(0.0)
+
+        if not section_energies:
+            return sections
+
+        # Normalize energies
+        max_energy = max(section_energies) if max(section_energies) > 0 else 1.0
+        normalized_energies = [e / max_energy for e in section_energies]
+
+        # Calculate energy gradients for buildup detection
+        gradients = [0.0]  # First section has no gradient
+        for i in range(1, len(normalized_energies)):
+            gradients.append(normalized_energies[i] - normalized_energies[i - 1])
+
+        # Map labels based on energy characteristics
+        edm_sections = []
+        for i, section in enumerate(sections):
+            energy = float(normalized_energies[i])
+            gradient = float(gradients[i])
+
+            # Determine EDM label
+            if i == 0:
+                label = "intro"
+                confidence = 0.9
+            elif i == len(sections) - 1:
+                label = "outro"
+                confidence = 0.9
+            elif energy > 0.7:
+                label = "drop"
+                confidence = 0.85 + (energy - 0.7) * 0.5  # Higher energy = higher confidence
+            elif gradient > 0.15:
+                label = "buildup"
+                confidence = 0.75 + gradient
+            elif energy < 0.4:
+                label = "breakdown"
+                confidence = 0.8
+            else:
+                # Mid-energy section - could be verse or transition
+                label = "buildup" if gradient > 0 else "breakdown"
+                confidence = 0.6
+
+            # Clamp confidence
+            confidence = float(min(confidence, 0.99))
+
+            edm_sections.append(
+                DetectedSection(
+                    start_time=float(section.start_time),
+                    end_time=float(section.end_time),
+                    label=label,
+                    confidence=confidence,
+                )
+            )
+
+        return edm_sections
+
+
+class EnergyDetector:
+    """Energy-based structure detection using librosa.
+
+    Uses RMS energy, spectral contrast, and onset strength
+    for rule-based drop/breakdown/buildup detection.
+    """
+
+    def __init__(
+        self,
+        min_section_duration: float = 8.0,
+        energy_threshold_high: float = 0.7,
+        energy_threshold_low: float = 0.4,
+    ):
+        """Initialize energy detector.
+
+        Args:
+            min_section_duration: Minimum section duration in seconds.
+            energy_threshold_high: Normalized energy threshold for drops.
+            energy_threshold_low: Normalized energy threshold for breakdowns.
+        """
+        self._min_section_duration = min_section_duration
+        self._energy_threshold_high = energy_threshold_high
+        self._energy_threshold_low = energy_threshold_low
+
+    def is_available(self) -> bool:
+        """Energy detector is always available (uses librosa)."""
+        return True
+
+    def detect(self, filepath: Path, sr: int = 22050) -> list[DetectedSection]:
+        """Detect structure using energy analysis.
+
+        Args:
+            filepath: Path to the audio file.
+            sr: Sample rate for audio loading.
+
+        Returns:
+            List of detected sections with EDM labels.
+        """
+        logger.debug("running energy-based detection", filepath=str(filepath))
+
+        # Load audio
+        y, loaded_sr = librosa.load(str(filepath), sr=sr, mono=True)
+        actual_sr: int = int(loaded_sr)
+        duration = len(y) / actual_sr
+
+        # Calculate frame-level RMS energy
+        hop_length: int = 512
+        frame_length: int = 2048
+        rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
+
+        # Smooth RMS with median filter
+        from scipy.ndimage import median_filter
+
+        rms_smooth = median_filter(rms, size=21)
+
+        # Normalize
+        rms_norm = rms_smooth / (np.max(rms_smooth) + 1e-8)
+
+        # Detect boundaries using energy changes
+        boundaries = self._detect_boundaries(rms_norm, hop_length, actual_sr, duration)
+
+        # Create sections from boundaries
+        sections = self._boundaries_to_sections(boundaries, rms_norm, hop_length, actual_sr, duration)
+
+        # Merge short sections
+        sections = self._merge_short_sections(sections)
+
+        logger.debug("energy detection complete", sections=len(sections))
+
+        return sections
+
+    def _detect_boundaries(
+        self, rms_norm: np.ndarray, hop_length: int, sr: int, duration: float
+    ) -> list[float]:
+        """Detect section boundaries from energy changes.
+
+        Args:
+            rms_norm: Normalized RMS energy.
+            hop_length: Hop length in samples.
+            sr: Sample rate.
+            duration: Total duration.
+
+        Returns:
+            List of boundary times in seconds.
+        """
+        # Calculate energy gradient
+        gradient = np.gradient(rms_norm)
+
+        # Find significant changes (peaks in absolute gradient)
+        from scipy.signal import find_peaks
+
+        # Find positive peaks (energy increases - potential drop starts)
+        pos_peaks, _ = find_peaks(gradient, height=0.02, distance=sr // hop_length * 4)
+
+        # Find negative peaks (energy decreases - potential breakdown starts)
+        neg_peaks, _ = find_peaks(-gradient, height=0.02, distance=sr // hop_length * 4)
+
+        # Combine and sort boundaries
+        all_peaks = np.concatenate([pos_peaks, neg_peaks])
+        all_peaks = np.unique(np.sort(all_peaks))
+
+        # Convert to times
+        frame_times = librosa.frames_to_time(all_peaks, sr=sr, hop_length=hop_length)
+
+        # Add start and end (convert numpy floats to Python floats)
+        boundaries: list[float] = [0.0] + [float(t) for t in frame_times] + [float(duration)]
+
+        # Filter out boundaries that are too close
+        filtered: list[float] = [boundaries[0]]
+        for b in boundaries[1:]:
+            if b - filtered[-1] >= self._min_section_duration:
+                filtered.append(b)
+
+        # Ensure we have end boundary
+        if filtered[-1] < duration - 1.0:
+            filtered.append(float(duration))
+
+        return filtered
+
+    def _boundaries_to_sections(
+        self,
+        boundaries: list[float],
+        rms_norm: np.ndarray,
+        hop_length: int,
+        sr: int,
+        duration: float,
+    ) -> list[DetectedSection]:
+        """Convert boundaries to labeled sections.
+
+        Args:
+            boundaries: List of boundary times.
+            rms_norm: Normalized RMS energy.
+            hop_length: Hop length in samples.
+            sr: Sample rate.
+            duration: Total duration.
+
+        Returns:
+            List of detected sections.
+        """
+        sections = []
+
+        for i in range(len(boundaries) - 1):
+            start = boundaries[i]
+            end = boundaries[i + 1]
+
+            # Calculate average energy for this section
+            start_frame = int(start * sr / hop_length)
+            end_frame = int(end * sr / hop_length)
+            end_frame = min(end_frame, len(rms_norm))
+
+            if start_frame < end_frame:
+                avg_energy = np.mean(rms_norm[start_frame:end_frame])
+            else:
+                avg_energy = 0.5
+
+            # Determine label
+            if i == 0:
+                label = "intro"
+                confidence = 0.9
+            elif i == len(boundaries) - 2:
+                label = "outro"
+                confidence = 0.9
+            elif avg_energy > self._energy_threshold_high:
+                label = "drop"
+                confidence = 0.8 + float(avg_energy - self._energy_threshold_high) * 0.5
+            elif avg_energy < self._energy_threshold_low:
+                label = "breakdown"
+                confidence = 0.75
+            else:
+                # Check if energy is rising
+                if end_frame > start_frame + 1:
+                    energy_trend = float(rms_norm[end_frame - 1] - rms_norm[start_frame])
+                    if energy_trend > 0.1:
+                        label = "buildup"
+                        confidence = 0.7
+                    else:
+                        label = "breakdown"
+                        confidence = 0.6
+                else:
+                    label = "buildup"
+                    confidence = 0.6
+
+            confidence = float(min(confidence, 0.99))
+
+            sections.append(
+                DetectedSection(
+                    start_time=float(start),
+                    end_time=float(end),
+                    label=label,
+                    confidence=confidence,
+                )
+            )
+
+        return sections
+
+    def _merge_short_sections(self, sections: list[DetectedSection]) -> list[DetectedSection]:
+        """Merge sections shorter than minimum duration.
+
+        Args:
+            sections: List of sections.
+
+        Returns:
+            List with short sections merged.
+        """
+        if len(sections) <= 1:
+            return sections
+
+        merged = [sections[0]]
+
+        for section in sections[1:]:
+            duration = section.end_time - section.start_time
+            prev = merged[-1]
+            prev_duration = prev.end_time - prev.start_time
+
+            if duration < self._min_section_duration:
+                # Merge with previous section
+                merged[-1] = DetectedSection(
+                    start_time=float(prev.start_time),
+                    end_time=float(section.end_time),
+                    label=prev.label if prev_duration >= duration else section.label,
+                    confidence=float(max(prev.confidence, section.confidence)),
+                )
+            else:
+                merged.append(section)
+
+        return merged
+
+
+def get_detector(detector_type: str) -> StructureDetector | None:
+    """Get a structure detector by type.
+
+    Args:
+        detector_type: Detector type ('auto', 'msaf', 'energy').
+
+    Returns:
+        Detector instance, or None if not available.
+    """
+    if detector_type == "energy":
+        return EnergyDetector()
+
+    if detector_type == "msaf":
+        detector = MSAFDetector()
+        if detector.is_available():
+            return detector
+        logger.warning("msaf detector requested but not available")
+        return None
+
+    if detector_type == "auto":
+        # Try MSAF first, fall back to energy
+        msaf_detector = MSAFDetector()
+        if msaf_detector.is_available():
+            return msaf_detector
+        logger.info("msaf not available, using energy detector")
+        return EnergyDetector()
+
+    logger.warning("unknown detector type", detector_type=detector_type)
+    return None

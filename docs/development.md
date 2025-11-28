@@ -65,7 +65,6 @@ Audio files for testing: `~/music`
 Fixtures defined in `tests/conftest.py`:
 - `tmp_audio_file` - Temporary audio file
 - `sample_metadata` - Sample track metadata
-- `mock_spotify_client` - Mocked Spotify client
 
 ### Writing Tests
 
@@ -114,7 +113,7 @@ uv run ruff format .
 
 Configuration in `pyproject.toml`:
 - Line length: 100
-- Target: Python 3.9+
+- Target: Python 3.12+
 - Rules: E, F, I, N, W
 
 ### Type Checking
@@ -198,9 +197,6 @@ uv run edm analyze track.mp3 --no-color
 ### Running Evaluations
 
 ```bash
-# BPM accuracy against Spotify
-uv run edm evaluate bpm --source ~/music --reference spotify
-
 # Against file metadata
 uv run edm evaluate bpm --source ~/music --reference metadata
 
@@ -215,10 +211,9 @@ uv run edm evaluate bpm --source ~/music --reference metadata --full --seed 42
 
 | Source | Description | File |
 |--------|-------------|------|
-| `spotify` | Query Spotify API | - |
 | `metadata` | File ID3 tags | - |
-| CSV | File with `file,bpm` columns | `src/edm/evaluation/reference.py:45` |
-| JSON | File-to-BPM mapping | `src/edm/evaluation/reference.py:78` |
+| CSV | File with `file,bpm` columns | `src/edm/evaluation/reference.py:63` |
+| JSON | File-to-BPM mapping | `src/edm/evaluation/reference.py:105` |
 
 ### Metrics
 

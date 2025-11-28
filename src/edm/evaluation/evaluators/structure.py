@@ -1,0 +1,568 @@
+"""Structure evaluation logic."""
+
+import csv
+import time
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import structlog
+
+from edm.analysis.bars import bars_to_time
+from edm.analysis.structure import analyze_structure
+from edm.evaluation.common import (
+    create_symlinks,
+    discover_audio_files,
+    get_git_branch,
+    get_git_commit,
+    sample_full,
+    sample_random,
+    save_results_json,
+)
+
+logger = structlog.get_logger(__name__)
+
+
+def load_structure_reference(reference_path: Path) -> dict[Path, list[dict]]:
+    """Load structure ground truth from CSV file.
+
+    Expected CSV formats:
+
+    Time-based:
+        filename,start,end,label
+        track1.mp3,0.0,32.0,intro
+        track1.mp3,32.0,64.0,buildup
+        ...
+
+    Bar-based (requires BPM column):
+        filename,start_bar,end_bar,label,bpm
+        track1.mp3,0,16,intro,128
+        track1.mp3,16,32,buildup,128
+        ...
+
+    Mixed format (bar positions preferred if BPM available):
+        filename,start,end,start_bar,end_bar,label,bpm
+        track1.mp3,0.0,30.0,0,16,intro,128
+        ...
+
+    Args:
+        reference_path: Path to CSV file with structure annotations.
+
+    Returns:
+        Dictionary mapping file paths to lists of section dicts with 'start' and 'end' in seconds.
+    """
+    reference: dict[Path, list[dict]] = {}
+
+    with open(reference_path) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Handle different column names for filename
+            filename = row.get("filename") or row.get("file")
+            if not filename:
+                logger.warning("skipping row without filename", row=row)
+                continue
+
+            filepath = Path(filename).resolve()
+            label = row["label"].strip().lower()
+
+            # Determine if we have bar-based or time-based annotations
+            has_bars = "start_bar" in row and "end_bar" in row
+            has_time = "start" in row and "end" in row
+            bpm = float(row["bpm"]) if "bpm" in row and row["bpm"] else None
+
+            if has_bars and bpm:
+                # Convert bars to time
+                start_bar = float(row["start_bar"])
+                end_bar = float(row["end_bar"])
+                start_time = bars_to_time(start_bar, bpm)
+                end_time = bars_to_time(end_bar, bpm)
+
+                if start_time is None or end_time is None:
+                    logger.warning(
+                        "failed to convert bars to time",
+                        filename=filename,
+                        start_bar=start_bar,
+                        end_bar=end_bar,
+                        bpm=bpm,
+                    )
+                    continue
+            elif has_time:
+                # Use time directly
+                start_time = float(row["start"])
+                end_time = float(row["end"])
+            else:
+                logger.warning(
+                    "row missing both time and bar position data",
+                    filename=filename,
+                    label=label,
+                )
+                continue
+
+            section = {
+                "label": label,
+                "start": start_time,
+                "end": end_time,
+            }
+
+            if filepath not in reference:
+                reference[filepath] = []
+            reference[filepath].append(section)
+
+    # Sort sections by start time for each file
+    for filepath in reference:
+        reference[filepath] = sorted(reference[filepath], key=lambda s: s["start"])
+
+    logger.info("loaded structure reference", files=len(reference), path=str(reference_path))
+
+    return reference
+
+
+def _evaluate_file_worker(args: tuple) -> dict:
+    """Worker function for parallel structure evaluation.
+
+    Args:
+        args: Tuple of (filepath, ref_sections, tolerance, detector).
+
+    Returns:
+        Evaluation result dict.
+    """
+    filepath, ref_sections, tolerance, detector = args
+
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
+
+    start_time = time.time()
+
+    try:
+        result = analyze_structure(filepath, detector=detector)
+        computation_time = time.time() - start_time
+
+        # Convert detected sections to comparable format
+        detected = [
+            {"label": s.label, "start": s.start_time, "end": s.end_time, "confidence": s.confidence}
+            for s in result.sections
+        ]
+
+        # Calculate metrics
+        metrics = _calculate_structure_metrics(ref_sections, detected, tolerance)
+
+        return {
+            "file": str(filepath),
+            "reference_sections": ref_sections,
+            "detected_sections": detected,
+            "detector": result.detector,
+            "success": True,
+            "computation_time": computation_time,
+            "error_message": None,
+            **metrics,
+        }
+
+    except Exception as e:
+        computation_time = time.time() - start_time
+
+        return {
+            "file": str(filepath),
+            "reference_sections": ref_sections,
+            "detected_sections": [],
+            "detector": None,
+            "success": False,
+            "computation_time": computation_time,
+            "error_message": str(e),
+            "boundary_precision": 0.0,
+            "boundary_recall": 0.0,
+            "boundary_f1": 0.0,
+            "label_accuracy": 0.0,
+        }
+
+
+def _calculate_structure_metrics(
+    reference: list[dict], detected: list[dict], tolerance: float
+) -> dict:
+    """Calculate structure detection metrics.
+
+    Args:
+        reference: Reference sections.
+        detected: Detected sections.
+        tolerance: Boundary tolerance in seconds.
+
+    Returns:
+        Dictionary of metrics.
+    """
+    if not reference or not detected:
+        return {
+            "boundary_precision": 0.0,
+            "boundary_recall": 0.0,
+            "boundary_f1": 0.0,
+            "label_accuracy": 0.0,
+            "drop_precision": 0.0,
+            "drop_recall": 0.0,
+        }
+
+    # Extract boundaries (excluding 0.0 which is always present)
+    ref_boundaries = set()
+    for s in reference:
+        if s["start"] > 0.1:
+            ref_boundaries.add(s["start"])
+        if s["end"] > 0.1:
+            ref_boundaries.add(s["end"])
+
+    det_boundaries = set()
+    for s in detected:
+        if s["start"] > 0.1:
+            det_boundaries.add(s["start"])
+        if s["end"] > 0.1:
+            det_boundaries.add(s["end"])
+
+    # Match boundaries within tolerance
+    matched_ref = set()
+    matched_det = set()
+
+    for ref_b in ref_boundaries:
+        for det_b in det_boundaries:
+            if abs(ref_b - det_b) <= tolerance and det_b not in matched_det:
+                matched_ref.add(ref_b)
+                matched_det.add(det_b)
+                break
+
+    # Calculate boundary metrics
+    true_positives = len(matched_det)
+    false_positives = len(det_boundaries) - true_positives
+    false_negatives = len(ref_boundaries) - len(matched_ref)
+
+    boundary_precision = (
+        true_positives / (true_positives + false_positives)
+        if (true_positives + false_positives) > 0
+        else 0.0
+    )
+    boundary_recall = (
+        true_positives / (true_positives + false_negatives)
+        if (true_positives + false_negatives) > 0
+        else 0.0
+    )
+    boundary_f1 = (
+        2 * boundary_precision * boundary_recall / (boundary_precision + boundary_recall)
+        if (boundary_precision + boundary_recall) > 0
+        else 0.0
+    )
+
+    # Calculate label accuracy for matched segments
+    label_matches = 0
+    label_total = 0
+
+    for ref_s in reference:
+        # Find best matching detected section
+        best_overlap = 0.0
+        best_match = None
+
+        for det_s in detected:
+            overlap = _calculate_overlap(ref_s, det_s)
+            if overlap > best_overlap:
+                best_overlap = overlap
+                best_match = det_s
+
+        if best_match and best_overlap > 0.5:
+            label_total += 1
+            if best_match["label"] == ref_s["label"]:
+                label_matches += 1
+
+    label_accuracy = label_matches / label_total if label_total > 0 else 0.0
+
+    # Calculate drop-specific metrics
+    ref_drops = [s for s in reference if s["label"] == "drop"]
+    det_drops = [s for s in detected if s["label"] == "drop"]
+
+    drop_matches = 0
+    for ref_drop in ref_drops:
+        for det_drop in det_drops:
+            if _calculate_overlap(ref_drop, det_drop) > 0.5:
+                drop_matches += 1
+                break
+
+    drop_precision = drop_matches / len(det_drops) if det_drops else 0.0
+    drop_recall = drop_matches / len(ref_drops) if ref_drops else 0.0
+
+    return {
+        "boundary_precision": boundary_precision,
+        "boundary_recall": boundary_recall,
+        "boundary_f1": boundary_f1,
+        "label_accuracy": label_accuracy,
+        "drop_precision": drop_precision,
+        "drop_recall": drop_recall,
+    }
+
+
+def _calculate_overlap(section1: dict, section2: dict) -> float:
+    """Calculate overlap ratio between two sections.
+
+    Args:
+        section1: First section with 'start' and 'end'.
+        section2: Second section with 'start' and 'end'.
+
+    Returns:
+        Overlap ratio (0 to 1).
+    """
+    start = max(section1["start"], section2["start"])
+    end = min(section1["end"], section2["end"])
+
+    if end <= start:
+        return 0.0
+
+    overlap = end - start
+    duration1 = section1["end"] - section1["start"]
+    duration2 = section2["end"] - section2["start"]
+
+    # Use IoU (intersection over union)
+    union = duration1 + duration2 - overlap
+    return overlap / union if union > 0 else 0.0
+
+
+def evaluate_structure(
+    source_path: Path,
+    reference_path: Path,
+    sample_size: int = 100,
+    output_dir: Path | None = None,
+    seed: int | None = None,
+    full: bool = False,
+    tolerance: float = 2.0,
+    detector: str = "auto",
+) -> dict[str, Any]:
+    """Evaluate structure detection accuracy.
+
+    Args:
+        source_path: Directory containing audio files.
+        reference_path: Path to CSV file with ground truth annotations.
+        sample_size: Number of files to sample (ignored if full=True).
+        output_dir: Output directory for results.
+        seed: Random seed for reproducibility.
+        full: Use all files instead of sampling.
+        tolerance: Boundary tolerance in seconds.
+        detector: Structure detector to use (auto, msaf, energy).
+
+    Returns:
+        Dictionary containing evaluation results.
+    """
+    logger.info(
+        "starting structure evaluation",
+        source=str(source_path),
+        reference=str(reference_path),
+        sample_size=sample_size,
+        full=full,
+        tolerance=tolerance,
+        detector=detector,
+    )
+
+    # Discover audio files
+    all_files = discover_audio_files(source_path)
+    if not all_files:
+        raise ValueError(f"No audio files found in {source_path}")
+
+    # Load reference data
+    reference = load_structure_reference(reference_path)
+    if not reference:
+        raise ValueError(f"No reference data loaded from {reference_path}")
+
+    # Sample files
+    if full:
+        sampled_files = sample_full(all_files)
+        sampling_strategy = "full"
+    else:
+        sampled_files = sample_random(all_files, sample_size, seed)
+        sampling_strategy = "random"
+
+    # Filter to files with reference data
+    sampled_files = [f for f in sampled_files if f.resolve() in reference]
+
+    if not sampled_files:
+        raise ValueError(
+            f"No sampled files have reference data. "
+            f"Sampled {len(all_files)} files but found 0 with reference."
+        )
+
+    logger.info(
+        "evaluation setup complete",
+        total_files=len(all_files),
+        sampled=len(sampled_files),
+        with_reference=len(sampled_files),
+    )
+
+    # Evaluate each file
+    results = []
+    for idx, filepath in enumerate(sampled_files, 1):
+        logger.debug(
+            "evaluating file",
+            progress=f"{idx}/{len(sampled_files)}",
+            file=filepath.name,
+        )
+
+        ref_sections = reference[filepath.resolve()]
+        result = _evaluate_file_worker((str(filepath), ref_sections, tolerance, detector))
+        results.append(result)
+
+        if result["success"]:
+            logger.debug(
+                "evaluation success",
+                file=filepath.name,
+                boundary_f1=result["boundary_f1"],
+                label_accuracy=result["label_accuracy"],
+            )
+        else:
+            logger.error(
+                "evaluation failed",
+                file=filepath.name,
+                error=result["error_message"],
+            )
+
+    # Count successes/failures
+    successful = sum(1 for r in results if r["success"])
+    failed = sum(1 for r in results if not r["success"])
+
+    # Calculate aggregate metrics
+    successful_results = [r for r in results if r["success"]]
+
+    if not successful_results:
+        raise ValueError("No successful evaluations - cannot calculate metrics")
+
+    avg_boundary_precision = sum(r["boundary_precision"] for r in successful_results) / len(
+        successful_results
+    )
+    avg_boundary_recall = sum(r["boundary_recall"] for r in successful_results) / len(
+        successful_results
+    )
+    avg_boundary_f1 = sum(r["boundary_f1"] for r in successful_results) / len(successful_results)
+    avg_label_accuracy = sum(r["label_accuracy"] for r in successful_results) / len(
+        successful_results
+    )
+    avg_drop_precision = sum(r["drop_precision"] for r in successful_results) / len(
+        successful_results
+    )
+    avg_drop_recall = sum(r["drop_recall"] for r in successful_results) / len(successful_results)
+
+    # Prepare results dictionary
+    timestamp = datetime.now().isoformat()
+    git_commit = get_git_commit()
+    git_branch = get_git_branch()
+
+    evaluation_results = {
+        "metadata": {
+            "analysis_type": "structure",
+            "timestamp": timestamp,
+            "git_commit": git_commit,
+            "git_branch": git_branch,
+            "sample_size": len(sampled_files),
+            "sampling_strategy": sampling_strategy,
+            "sampling_seed": seed,
+            "reference_source": str(reference_path),
+            "tolerance": tolerance,
+            "detector": detector,
+        },
+        "summary": {
+            "total_files": len(sampled_files),
+            "successful": successful,
+            "failed": failed,
+            "avg_boundary_precision": avg_boundary_precision,
+            "avg_boundary_recall": avg_boundary_recall,
+            "avg_boundary_f1": avg_boundary_f1,
+            "avg_label_accuracy": avg_label_accuracy,
+            "avg_drop_precision": avg_drop_precision,
+            "avg_drop_recall": avg_drop_recall,
+        },
+        "results": results,
+    }
+
+    # Save results
+    if output_dir is None:
+        output_dir = Path("benchmarks/results/accuracy/structure")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp_str = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    output_base = output_dir / f"{timestamp_str}_structure_eval_commit-{git_commit}"
+
+    save_results_json(evaluation_results, output_base.with_suffix(".json"))
+    _save_structure_markdown(evaluation_results, output_base.with_suffix(".md"))
+
+    create_symlinks(output_base)
+
+    logger.info(
+        "evaluation complete",
+        boundary_f1=avg_boundary_f1,
+        label_accuracy=avg_label_accuracy,
+        drop_precision=avg_drop_precision,
+        drop_recall=avg_drop_recall,
+        output=str(output_dir),
+    )
+
+    # Print summary
+    print("\n" + "=" * 60)
+    print("STRUCTURE EVALUATION COMPLETE")
+    print("=" * 60)
+    print(f"Total Files: {len(sampled_files)}")
+    print(f"Successful: {successful}")
+    print(f"Failed: {failed}")
+    print()
+    print("Boundary Detection:")
+    print(f"  Precision: {avg_boundary_precision:.1%}")
+    print(f"  Recall: {avg_boundary_recall:.1%}")
+    print(f"  F1: {avg_boundary_f1:.1%}")
+    print()
+    print("Section Labeling:")
+    print(f"  Label Accuracy: {avg_label_accuracy:.1%}")
+    print()
+    print("Drop Detection:")
+    print(f"  Precision: {avg_drop_precision:.1%}")
+    print(f"  Recall: {avg_drop_recall:.1%}")
+    print()
+    print("Results saved to:")
+    print(f"  - {output_base.with_suffix('.json')}")
+    print(f"  - {output_base.with_suffix('.md')}")
+    print(f"  - {output_dir / 'latest.json'} (symlink)")
+    print("=" * 60 + "\n")
+
+    return evaluation_results
+
+
+def _save_structure_markdown(results: dict, output_path: Path) -> None:
+    """Save structure evaluation results to Markdown.
+
+    Args:
+        results: Evaluation results dictionary.
+        output_path: Output file path.
+    """
+    metadata = results["metadata"]
+    summary = results["summary"]
+
+    lines = [
+        "# Structure Evaluation Results",
+        "",
+        f"**Date**: {metadata['timestamp']}",
+        f"**Commit**: {metadata['git_commit']}",
+        f"**Detector**: {metadata['detector']}",
+        f"**Sample**: {metadata['sample_size']} files ({metadata['sampling_strategy']})",
+        f"**Tolerance**: ±{metadata['tolerance']} seconds",
+        "",
+        "## Summary Metrics",
+        "",
+        "### Boundary Detection",
+        f"- Precision: {summary['avg_boundary_precision']:.1%}",
+        f"- Recall: {summary['avg_boundary_recall']:.1%}",
+        f"- F1: {summary['avg_boundary_f1']:.1%}",
+        "",
+        "### Section Labeling",
+        f"- Label Accuracy: {summary['avg_label_accuracy']:.1%}",
+        "",
+        "### Drop Detection",
+        f"- Precision: {summary['avg_drop_precision']:.1%}",
+        f"- Recall: {summary['avg_drop_recall']:.1%}",
+        "",
+        "## Evaluation Summary",
+        f"- Successful: {summary['successful']} / {summary['total_files']}",
+        f"- Failed: {summary['failed']}",
+        "",
+    ]
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path, "w") as f:
+        f.write("\n".join(lines))
+
+    logger.info("saved results markdown", path=str(output_path))

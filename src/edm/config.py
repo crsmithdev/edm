@@ -16,30 +16,14 @@ class AnalysisConfig(BaseModel):
         detect_structure: Enable structure detection.
         use_madmom: Use beat_this for BPM detection (legacy parameter name).
         use_librosa: Use librosa for BPM detection.
+        structure_detector: Structure detector type ('auto', 'msaf', 'energy').
     """
 
     detect_bpm: bool = True
     detect_structure: bool = True
     use_madmom: bool = True  # Legacy name - controls beat_this library
     use_librosa: bool = False
-
-
-class ExternalServicesConfig(BaseModel):
-    """Configuration for external services.
-
-    Attributes:
-        spotify_client_id: Spotify API client ID.
-        spotify_client_secret: Spotify API client secret.
-        enable_beatport: Enable Beatport lookups.
-        enable_tunebat: Enable TuneBat lookups.
-        cache_ttl: Cache time-to-live in seconds.
-    """
-
-    spotify_client_id: str | None = Field(None, env="SPOTIFY_CLIENT_ID")
-    spotify_client_secret: str | None = Field(None, env="SPOTIFY_CLIENT_SECRET")
-    enable_beatport: bool = True
-    enable_tunebat: bool = True
-    cache_ttl: int = 3600  # 1 hour
+    structure_detector: str = "auto"  # 'auto', 'msaf', 'energy'
 
 
 class EDMConfig(BaseModel):
@@ -47,15 +31,18 @@ class EDMConfig(BaseModel):
 
     Attributes:
         analysis: Analysis configuration.
-        external_services: External services configuration.
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR).
         log_file: Path to log file.
+        bpm_lookup_strategy: Order of BPM lookup sources.
     """
 
     analysis: AnalysisConfig = Field(default_factory=AnalysisConfig)
-    external_services: ExternalServicesConfig = Field(default_factory=ExternalServicesConfig)
     log_level: str = "INFO"
     log_file: Path | None = None
+    bpm_lookup_strategy: list[str] = Field(
+        default=["metadata", "computed"],
+        description="Order of BPM lookup sources: metadata, computed",
+    )
 
     class Config:
         env_prefix = "EDM_"

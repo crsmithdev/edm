@@ -57,73 +57,20 @@ The library SHALL provide an I/O module (`edm.io`) for reading and writing audio
 - **WHEN** user calls `read_metadata(filepath)` with an audio file
 - **THEN** returns metadata dictionary with artist, title, album, and technical info
 
-### Requirement: External Data Retrieval Module
-The library SHALL provide an external module (`edm.external`) for retrieving BPM and track information from Spotify, Beatport, and TuneBat.
-
-#### Scenario: Query Spotify for track info
-- **WHEN** user calls `search_spotify(artist, title)` with valid parameters
-- **THEN** returns matching track information including BPM if available from Spotify API
-
-#### Scenario: Query Beatport for BPM
-- **WHEN** user calls `search_beatport(artist, title)` with valid parameters
-- **THEN** returns BPM and key information from Beatport
-
-#### Scenario: Query TuneBat for BPM
-- **WHEN** user calls `search_tunebat(artist, title)` with valid parameters
-- **THEN** returns BPM, key, and other analysis data from TuneBat
-
-#### Scenario: Handle API timeout
-- **WHEN** external API request exceeds timeout threshold
-- **THEN** raises a custom `ExternalServiceError` with retry information
-
-#### Scenario: Cache external requests
-- **WHEN** the same external data request is made within cache lifetime
-- **THEN** returns cached result without making new API call
-
-#### Scenario: Aggregate results from multiple sources
-- **WHEN** user calls `get_track_info(artist, title)` without specifying source
-- **THEN** queries all available sources and returns aggregated results with source attribution
-
-### Requirement: Feature Extraction Module
-The library SHALL provide a features module (`edm.features`) for extracting audio features used in analysis.
-
-#### Scenario: Extract spectral features
-- **WHEN** user calls `extract_spectral_features(audio_data, sample_rate)`
-- **THEN** returns features including spectral centroid, rolloff, and flux
-
-#### Scenario: Extract temporal features
-- **WHEN** user calls `extract_temporal_features(audio_data, sample_rate)`
-- **THEN** returns features including RMS energy, zero-crossing rate, and onset strength
-
-### Requirement: Model Management Module
-The library SHALL provide a models module (`edm.models`) for loading and managing ML models.
-
-#### Scenario: Load pre-trained model
-- **WHEN** user calls `load_model(model_name)` with a valid model identifier
-- **THEN** loads the model and returns a model instance ready for inference
-
-#### Scenario: Model not found
-- **WHEN** user calls `load_model(model_name)` with an invalid identifier
-- **THEN** raises a custom `ModelNotFoundError` exception
-
 ### Requirement: Configuration Management
 The library SHALL provide a configuration system that supports BPM lookup strategy configuration with file-based and programmatic options.
 
 #### Scenario: Configure BPM lookup order
-- **WHEN** user sets `config.bpm_lookup_strategy = ["metadata", "spotify", "computed"]`
+- **WHEN** user sets `config.bpm_lookup_strategy = ["metadata", "computed"]`
 - **THEN** BPM analysis follows specified order
 
-#### Scenario: Skip specific lookup sources
-- **WHEN** user sets `config.bpm_lookup_strategy = ["metadata", "computed"]`
-- **THEN** system skips Spotify API and only uses metadata and computation
+#### Scenario: Skip metadata lookup
+- **WHEN** user sets `config.bpm_lookup_strategy = ["computed"]`
+- **THEN** system skips metadata and computes BPM directly from audio
 
 #### Scenario: Force computation via configuration
 - **WHEN** user sets `config.bpm_force_compute = True`
-- **THEN** all BPM lookups skip metadata and API, computing directly
-
-#### Scenario: Configure Spotify cache TTL
-- **WHEN** user sets `config.external_services.cache_ttl = 7200`
-- **THEN** Spotify API responses are cached for 2 hours
+- **THEN** all BPM lookups skip metadata, computing directly from audio
 
 ### Requirement: Type Safety
 The library SHALL use Python type hints throughout the public API.
@@ -146,10 +93,6 @@ The library SHALL define custom exception classes for different error categories
 #### Scenario: Analysis errors
 - **WHEN** analysis fails due to invalid input
 - **THEN** raises `AnalysisError` with details about what failed
-
-#### Scenario: External service errors
-- **WHEN** external API call fails
-- **THEN** raises `ExternalServiceError` with error details and retry information
 
 ### Requirement: Logging Support
 The library SHALL provide structured logging for debugging and monitoring.

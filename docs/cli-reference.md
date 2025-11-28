@@ -36,8 +36,8 @@ Analyzes EDM tracks for BPM, structure, and other features.
 | `--format`, `-f` | TEXT | `table` | Output format: `table`, `json` |
 | `--config`, `-c` | PATH | - | Path to configuration file |
 | `--recursive`, `-r` | FLAG | - | Recursively analyze directories |
-| `--offline` | FLAG | - | Skip network lookups (Spotify API) |
-| `--ignore-metadata` | FLAG | - | Skip reading metadata from audio files |
+| `--ignore-metadata` | FLAG | - | Skip reading BPM from audio file metadata |
+| `--structure-detector` | TEXT | `auto` | Structure detection method: `auto`, `msaf`, `energy` |
 | `--log-level` | TEXT | `WARNING` | Log level: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 | `--log-file` | PATH | - | Write logs to file (JSON format) |
 | `--json-logs` | FLAG | - | Output logs in JSON format |
@@ -47,14 +47,20 @@ Analyzes EDM tracks for BPM, structure, and other features.
 
 #### BPM Lookup Strategy
 
-Default: metadata → Spotify → computed
+Default: metadata → computed
 
 | Flags | Strategy |
 |-------|----------|
-| (none) | metadata → spotify → computed |
-| `--offline` | metadata → computed |
-| `--ignore-metadata` | spotify → computed |
-| `--offline --ignore-metadata` | computed only |
+| (none) | metadata → computed |
+| `--ignore-metadata` | computed only |
+
+#### Structure Detection Options
+
+| Detector | Description |
+|----------|-------------|
+| `auto` | Use MSAF if available, fall back to energy-based (default) |
+| `msaf` | Boundary detection using MSAF with energy-based labeling |
+| `energy` | Rule-based detection using RMS energy analysis |
 
 #### Examples
 
@@ -71,11 +77,11 @@ uv run edm analyze *.mp3 --output results.json
 # Recursive directory analysis
 uv run edm analyze /path/to/tracks/ --recursive
 
-# Skip Spotify API (use metadata or compute)
-uv run edm analyze track.mp3 --offline
+# Force computation only (skip metadata)
+uv run edm analyze track.mp3 --ignore-metadata
 
-# Force computation only
-uv run edm analyze track.mp3 --offline --ignore-metadata
+# Structure analysis only with energy detector
+uv run edm analyze track.mp3 --types structure --structure-detector energy
 
 # Debug logging
 uv run edm analyze track.mp3 --log-level DEBUG --no-color
@@ -100,7 +106,7 @@ edm evaluate bpm [OPTIONS]
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
 | `--source` | DIRECTORY | Yes | - | Directory containing audio files |
-| `--reference` | TEXT | Yes | - | Reference source: `spotify`, `metadata`, or path to CSV/JSON |
+| `--reference` | TEXT | Yes | - | Reference source: `metadata` or path to CSV/JSON |
 | `--sample-size` | INTEGER | No | `100` | Number of files to sample |
 | `--output` | DIRECTORY | No | `benchmarks/results/accuracy/bpm/` | Output directory |
 | `--seed` | INTEGER | No | - | Random seed for reproducible sampling |
@@ -111,19 +117,15 @@ edm evaluate bpm [OPTIONS]
 
 | Source | Description |
 |--------|-------------|
-| `spotify` | Query Spotify API (requires credentials) |
 | `metadata` | Read BPM from file metadata (ID3 tags) |
 | `path/to/file.csv` | CSV file with columns: `file`, `bpm` |
 | `path/to/file.json` | JSON file with file-to-BPM mapping |
 
-#### Examples
+#### BPM Evaluation Examples
 
 ```bash
 # Evaluate against CSV reference
 uv run edm evaluate bpm --source ~/music --reference tests/fixtures/reference/bpm_tagged.csv
-
-# Evaluate against Spotify API
-uv run edm evaluate bpm --source ~/music --reference spotify
 
 # Evaluate against file metadata
 uv run edm evaluate bpm --source ~/music --reference metadata
@@ -132,7 +134,7 @@ uv run edm evaluate bpm --source ~/music --reference metadata
 uv run edm evaluate bpm --source ~/music --reference metadata --full --seed 42
 
 # Custom tolerance and output
-uv run edm evaluate bpm --source ~/music --reference spotify --tolerance 1.0 --output ./results/
+uv run edm evaluate bpm --source ~/music --reference metadata --tolerance 1.0 --output ./results/
 ```
 
 #### Output Files
@@ -143,21 +145,103 @@ Results saved to output directory:
 - `latest.json` - Symlink to most recent JSON
 - `latest.md` - Symlink to most recent Markdown
 
-## Configuration
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `SPOTIFY_CLIENT_ID` | Spotify API client ID |
-| `SPOTIFY_CLIENT_SECRET` | Spotify API client secret |
-
-Set in `.env` file in project root:
+##### `evaluate structure` - Structure Accuracy Evaluation
 
 ```bash
-SPOTIFY_CLIENT_ID=your_client_id
-SPOTIFY_CLIENT_SECRET=your_client_secret
+edm evaluate structure [OPTIONS]
 ```
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `--source` | DIRECTORY | Yes | - | Directory containing audio files |
+| `--reference` | PATH | Yes | - | Path to CSV file with ground truth annotations |
+| `--sample-size` | INTEGER | No | `100` | Number of files to sample |
+| `--output` | DIRECTORY | No | `benchmarks/results/accuracy/structure/` | Output directory |
+| `--seed` | INTEGER | No | - | Random seed for reproducible sampling |
+| `--full` | FLAG | No | - | Evaluate all files (ignore `--sample-size`) |
+| `--tolerance` | FLOAT | No | `2.0` | Boundary tolerance in seconds for section matching |
+| `--detector` | TEXT | No | `auto` | Structure detector: `auto`, `msaf`, `energy` |
+
+#### Structure Reference CSV Format
+
+CSV file with ground truth structure annotations supports both time-based and bar-based formats:
+
+**Time-based format:**
+```csv
+filename,start,end,label
+track1.mp3,0.0,30.5,intro
+track1.mp3,30.5,91.5,buildup
+track1.mp3,91.5,183.0,drop
+track1.mp3,183.0,213.5,breakdown
+track1.mp3,213.5,244.0,outro
+```
+
+**Bar-based format (requires BPM):**
+```csv
+filename,start_bar,end_bar,label,bpm
+track1.mp3,1,17,intro,128
+track1.mp3,17,49,buildup,128
+track1.mp3,49,97,drop,128
+track1.mp3,97,113,breakdown,128
+track1.mp3,113,129,outro,128
+```
+
+**Note:** Bar numbering is 1-indexed (bar 1 = first bar). An 8-bar intro spans bars 1-8, and the following section starts at bar 9.
+
+**Mixed format (bar positions preferred when available):**
+```csv
+filename,start,end,start_bar,end_bar,label,bpm
+track1.mp3,0.0,30.5,1,17,intro,128
+track1.mp3,30.5,91.5,17,49,buildup,128
+```
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `filename` | TEXT | Yes | Audio filename (relative to source directory) |
+| `start` | FLOAT | Conditional | Section start time in seconds (required if no `start_bar`) |
+| `end` | FLOAT | Conditional | Section end time in seconds (required if no `end_bar`) |
+| `start_bar` | FLOAT | Conditional | Section start bar position (requires `bpm`) |
+| `end_bar` | FLOAT | Conditional | Section end bar position (requires `bpm`) |
+| `label` | TEXT | Yes | Section label: `intro`, `buildup`, `drop`, `breakdown`, `outro` |
+| `bpm` | FLOAT | Conditional | Track BPM (required for bar-based annotations) |
+
+**Annotation Workflow:**
+When annotating while listening to tracks, bar-based annotations are more natural:
+1. Listen to track and note bar numbers shown in your music player/DJ software
+2. Mark section boundaries by bar (e.g., "drop starts at bar 48")
+3. Save with BPM from track metadata or detection
+4. System converts bars to time automatically during evaluation
+
+#### Structure Evaluation Metrics
+
+| Metric | Description |
+|--------|-------------|
+| Precision | True positives / (True positives + False positives) |
+| Recall | True positives / (True positives + False negatives) |
+| F1 Score | Harmonic mean of precision and recall |
+| Boundary Error | Average distance from detected to true boundaries |
+
+Metrics are calculated:
+- **Overall**: Across all section types
+- **Per-type**: For each section type (intro, buildup, drop, breakdown, outro)
+
+#### Structure Evaluation Examples
+
+```bash
+# Evaluate against ground truth CSV
+uv run edm evaluate structure --source ~/music --reference annotations.csv
+
+# Full evaluation of all files
+uv run edm evaluate structure --source ~/music --reference annotations.csv --full
+
+# Custom boundary tolerance (±3 seconds)
+uv run edm evaluate structure --source ~/music --reference annotations.csv --tolerance 3.0
+
+# Use energy-based detector only
+uv run edm evaluate structure --source ~/music --reference annotations.csv --detector energy
+```
+
+## Configuration
 
 ### Configuration File
 
@@ -167,16 +251,11 @@ Optional TOML configuration at `~/.config/edm/config.toml`:
 [analysis]
 detect_bpm = true
 detect_structure = true
-use_madmom = true
+use_madmom = true  # Legacy name - controls beat_this library
 use_librosa = false
 
-[external_services]
-enable_beatport = true
-enable_tunebat = true
-cache_ttl = 3600
-
 [logging]
-level = "INFO"
+level = "WARNING"
 ```
 
 ## Exit Codes

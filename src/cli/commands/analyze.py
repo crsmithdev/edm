@@ -24,12 +24,12 @@ def _analyze_file_worker(args: tuple) -> dict:
     """Worker function for parallel file analysis.
 
     Args:
-        args: Tuple of (filepath, run_bpm, run_structure, offline, ignore_metadata).
+        args: Tuple of (filepath, run_bpm, run_structure, offline, ignore_metadata, structure_detector).
 
     Returns:
         Analysis result dict with file path and timing.
     """
-    filepath, run_bpm, run_structure, offline, ignore_metadata = args
+    filepath, run_bpm, run_structure, offline, ignore_metadata, structure_detector = args
 
     # Convert string back to Path if needed (for pickling)
     if isinstance(filepath, str):
@@ -38,7 +38,9 @@ def _analyze_file_worker(args: tuple) -> dict:
     start_time = time.time()
 
     try:
-        result = _analyze_file_impl(filepath, run_bpm, run_structure, offline, ignore_metadata)
+        result = _analyze_file_impl(
+            filepath, run_bpm, run_structure, offline, ignore_metadata, structure_detector
+        )
         elapsed = time.time() - start_time
         result["file"] = str(filepath)
         result["time"] = elapsed
@@ -59,7 +61,12 @@ def _analyze_file_worker(args: tuple) -> dict:
 
 
 def _analyze_file_impl(
-    filepath: Path, run_bpm: bool, run_structure: bool, offline: bool, ignore_metadata: bool
+    filepath: Path,
+    run_bpm: bool,
+    run_structure: bool,
+    offline: bool,
+    ignore_metadata: bool,
+    structure_detector: str = "auto",
 ) -> dict[str, object]:
     """Analyze a single audio file (implementation).
 
@@ -69,6 +76,7 @@ def _analyze_file_impl(
         run_structure: Run structure analysis.
         offline: Skip network lookups.
         ignore_metadata: Skip metadata reading.
+        structure_detector: Structure detection method (auto, msaf, energy).
 
     Returns:
         Analysis results.
@@ -86,14 +94,29 @@ def _analyze_file_impl(
             result["bpm_alternatives"] = [round(alt, 1) for alt in bpm_result.alternatives]
 
     if run_structure:
-        structure_result = analyze_structure(filepath)
+        structure_result = analyze_structure(filepath, detector=structure_detector)  # type: ignore[arg-type]
         result["duration"] = round(structure_result.duration, 1)
         result["sections"] = len(structure_result.sections)
+        result["structure_detector"] = structure_result.detector
+        if structure_result.bpm:
+            result["bpm"] = round(structure_result.bpm, 1)
         result["structure"] = [
             {
                 "label": s.label,
                 "start": round(s.start_time, 1),
                 "end": round(s.end_time, 1),
+                "confidence": round(s.confidence, 2),
+                **(
+                    {
+                        "start_bar": round(s.start_bar, 1),
+                        "end_bar": round(s.end_bar, 1),
+                        "bar_count": round(s.bar_count, 1),
+                    }
+                    if s.start_bar is not None
+                    and s.end_bar is not None
+                    and s.bar_count is not None
+                    else {}
+                ),
             }
             for s in structure_result.sections
         ]
@@ -113,6 +136,7 @@ def analyze_command(
     quiet: bool,
     console: Console,
     workers: int = 1,
+    structure_detector: str = "auto",
 ):
     """Execute the analyze command.
 
@@ -128,6 +152,7 @@ def analyze_command(
         quiet: Suppress non-essential output.
         console: Rich console for output.
         workers: Number of parallel workers (default: 1 for sequential).
+        structure_detector: Structure detection method (auto, msaf, energy).
     """
     # Load configuration
     load_config(config_path)
@@ -137,6 +162,9 @@ def analyze_command(
     run_structure = (
         analysis_types is None or "structure" in analysis_types or "grid" in analysis_types
     )
+
+    # MSAF is thread-safe and can run in parallel
+    # No special handling needed unlike the previous allin1 detector
 
     # Collect all audio files
     audio_files = discover_audio_files(files, recursive=recursive)
@@ -161,7 +189,7 @@ def analyze_command(
 
     # Prepare args for each file
     args_list = [
-        (str(filepath), run_bpm, run_structure, offline, ignore_metadata)
+        (str(filepath), run_bpm, run_structure, offline, ignore_metadata, structure_detector)
         for filepath in audio_files
     ]
 
@@ -261,7 +289,12 @@ def _process_parallel(
 
 
 def analyze_file(
-    filepath: Path, run_bpm: bool, run_structure: bool, offline: bool, ignore_metadata: bool
+    filepath: Path,
+    run_bpm: bool,
+    run_structure: bool,
+    offline: bool,
+    ignore_metadata: bool,
+    structure_detector: str = "auto",
 ) -> dict:
     """Analyze a single audio file.
 
@@ -271,12 +304,15 @@ def analyze_file(
         run_structure: Run structure analysis.
         offline: Skip network lookups.
         ignore_metadata: Skip metadata reading.
+        structure_detector: Structure detection method (auto, msaf, energy).
 
     Returns:
         Analysis results.
     """
     logger.info("analyzing file", filepath=str(filepath))
-    return _analyze_file_impl(filepath, run_bpm, run_structure, offline, ignore_metadata)
+    return _analyze_file_impl(
+        filepath, run_bpm, run_structure, offline, ignore_metadata, structure_detector
+    )
 
 
 def output_json(results: list[dict], output_path: Path | None, console: Console, quiet: bool):

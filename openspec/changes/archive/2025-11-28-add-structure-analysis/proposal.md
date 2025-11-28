@@ -13,24 +13,25 @@ Without real structure detection, the library cannot fulfill its primary purpose
 
 ## What Changes
 
-Replace the placeholder implementation with ML-based structure detection:
+Replace the placeholder implementation with MSAF-based structure detection:
 
-1. **Integrate Allin1 model** - State-of-the-art music structure analysis model (2023)
-   - Pre-trained weights for section boundary detection
-   - Maps generic sections (chorus/verse/bridge) to EDM terminology (drop/breakdown/buildup)
-   - GPU acceleration when available, CPU fallback
+1. **Integrate MSAF** - Music Structure Analysis Framework (Nieto & Bello, ISMIR 2016)
+   - Multiple boundary detection algorithms (Laplacian, Foote, etc.)
+   - Multiple labeling algorithms for segment classification
+   - Lightweight dependencies (librosa, scipy, scikit-learn - no PyTorch/madmom)
+   - CPU-only, no GPU requirements
 
 2. **Add energy-based fallback** - Rule-based drop detection using librosa
    - RMS energy analysis for high-energy section detection
    - Spectral contrast for bass-heavy drop identification
    - Onset strength patterns for buildup detection
-   - Used when Allin1 unavailable or for validation
+   - Used when MSAF unavailable or for validation
 
-3. **Implement section mapping** - Convert model output to EDM-specific labels
-   - chorus → drop (high energy, full arrangement)
-   - bridge → breakdown (reduced energy, melodic focus)
-   - verse → buildup (building energy, tension)
-   - intro/outro → preserved as-is
+3. **Implement section mapping** - Convert MSAF output to EDM-specific labels
+   - High-energy segments → drop
+   - Low-energy segments after drops → breakdown
+   - Rising-energy segments before drops → buildup
+   - First/last segments → intro/outro
 
 4. **Add evaluation framework** - Structure accuracy metrics
    - Boundary tolerance evaluation (±2 seconds)
@@ -39,7 +40,7 @@ Replace the placeholder implementation with ML-based structure detection:
 
 5. **Update CLI** - Structure-specific options
    - `--types structure` for structure-only analysis
-   - `--structure-model` to select detection method (allin1/energy/auto)
+   - `--structure-detector` to select detection method (msaf/energy/auto)
    - JSON output includes section boundaries with confidence
 
 ## Impact
@@ -53,44 +54,53 @@ Replace the placeholder implementation with ML-based structure detection:
   - Modified: `src/edm/cli/` (structure options)
   - New: `src/edm/evaluation/structure.py` (accuracy evaluation)
 - **Dependencies**:
-  - Add: `allin1` (music structure analysis model)
-  - Existing: `librosa` (energy-based fallback)
+  - Add: `msaf` (music structure analysis framework)
+  - Existing: `librosa` (energy-based fallback, also used by MSAF)
 - **User experience**: `edm analyze track.mp3 --types structure` returns real section data
 - **Performance**: < 30 seconds per track (accuracy-first tradeoff)
 
 ## Design Decisions
 
-### Why Allin1?
+### Why MSAF?
 
-1. **State-of-the-art accuracy** - Recent (2023) transformer-based model outperforming older approaches
-2. **Pre-trained weights** - No training infrastructure needed
-3. **Maintained** - Active development, pip-installable
-4. **Extensible** - Can fine-tune on EDM data later if generic model insufficient
+1. **Established framework** - Academic-grade (ISMIR 2016), well-documented
+2. **Lightweight dependencies** - librosa, scipy, scikit-learn (no PyTorch, no madmom)
+3. **Multiple algorithms** - Can experiment with different boundary/labeling methods
+4. **MIT license** - Compatible with project licensing
+5. **No GPU required** - Works on any system without CUDA complexity
+
+### Why not Allin1?
+
+- Requires PyTorch with specific version constraints
+- Depends on madmom which is unmaintained and has Python 3.10+ issues
+- NATTEN dependency has complex GPU/PyTorch version matrix
+- Sequential processing only, cannot batch
+- Heavy installation (~2GB+ with PyTorch)
 
 ### Why not custom training?
 
 - Requires 1000+ labeled EDM tracks with section boundaries
-- 3-6 month development cycle for competitive accuracy
-- Significant GPU infrastructure for training
-- Allin1 provides immediate value; fine-tuning can come later
+- Significant development cycle for competitive accuracy
+- MSAF provides immediate value with proven algorithms
 
 ### Why energy-based fallback?
 
-- Allin1 may not be installed (large dependency)
-- GPU memory constraints on some systems
+- MSAF may fail on unusual tracks
 - Drop detection via energy analysis is well-established for EDM
 - Provides validation/ensemble opportunity
+- Zero additional dependencies (uses librosa)
 
-### Section Label Mapping
+### Section Label Mapping Strategy
 
-| Allin1 Label | EDM Label | Rationale |
-|--------------|-----------|-----------|
-| intro | intro | Direct mapping |
-| verse | buildup | Pre-drop tension building |
-| chorus | drop | High energy payoff section |
-| bridge | breakdown | Reduced energy, melodic |
-| outro | outro | Direct mapping |
-| instrumental | varies | Context-dependent |
+MSAF returns segment boundaries with cluster labels. We map to EDM labels using energy analysis:
+
+| Segment Characteristic | EDM Label | Detection Method |
+|------------------------|-----------|------------------|
+| First segment | intro | Position-based |
+| High sustained energy | drop | RMS energy threshold |
+| Low energy after drop | breakdown | Energy dip detection |
+| Rising energy before drop | buildup | Energy gradient |
+| Last segment | outro | Position-based |
 
 ### Accuracy Targets
 

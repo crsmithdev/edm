@@ -7,20 +7,13 @@ Navigation index for AI agents working in this codebase.
 ### Analyze or Modify BPM Detection
 
 Read together:
-- `src/edm/analysis/bpm.py` - Cascading strategy (metadata → spotify → computed)
+- `src/edm/analysis/bpm.py` - Cascading strategy (metadata → computed)
 - `src/edm/analysis/bpm_detector.py` - Computation (beat_this, librosa)
-- `tests/test_analysis/test_bpm.py` - Test cases
+- `tests/unit/test_analysis.py` - BPM tests
 
 Key functions:
 - `analyze_bpm()` at `src/edm/analysis/bpm.py:40`
 - `compute_bpm()` at `src/edm/analysis/bpm_detector.py:224`
-
-### Add or Modify External Service Integration
-
-Read together:
-- `src/edm/external/` - Existing services (spotify, beatport, tunebat)
-- `src/edm/config.py` - Credential handling
-- [architecture.md](architecture.md) - Service integration pattern
 
 ### Work on Evaluation Framework
 
@@ -68,15 +61,7 @@ Read:
 |---------|------|-------------|
 | BPM detection | `src/edm/analysis/bpm.py` | `analyze_bpm()` |
 | BPM computation | `src/edm/analysis/bpm_detector.py` | `compute_bpm()` |
-| Structure detection | `src/edm/analysis/structure.py` | - |
-
-### External Services
-
-| Service | File | Client Class |
-|---------|------|--------------|
-| Spotify | `src/edm/external/spotify.py` | `SpotifyClient` |
-| Beatport | `src/edm/external/beatport.py` | - |
-| TuneBat | `src/edm/external/tunebat.py` | - |
+| Structure detection | `src/edm/analysis/structure.py` | `analyze_structure()` (placeholder) |
 
 ### Evaluation
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-EDM is a Python library and CLI for analyzing EDM tracks. It provides BPM detection, structure analysis, and integration with external music services (Spotify, Beatport, TuneBat).
+EDM is a Python library and CLI for analyzing EDM tracks. It provides BPM detection and structure analysis using neural network-based audio processing.
 
 ## Module Organization
 
@@ -12,18 +12,16 @@ src/
 │   └── main.py            # Typer app with analyze/evaluate commands
 └── edm/                   # Core library
     ├── analysis/          # Audio analysis
-    │   ├── bpm.py         # Cascading BPM strategy (metadata → spotify → computed)
+    │   ├── bpm.py         # Cascading BPM strategy (metadata → computed)
     │   ├── bpm_detector.py # BPM computation (beat_this, librosa)
-    │   └── structure.py   # Structure detection (intro, drop, etc.) [PLACEHOLDER]
+    │   ├── structure.py   # Structure analysis public API
+    │   └── structure_detector.py # Structure detectors (MSAF, energy)
     ├── evaluation/        # Accuracy evaluation framework
     │   ├── common.py      # Shared utilities, metrics (MAE, RMSE)
     │   ├── reference.py   # Reference data sources
     │   └── evaluators/    # Evaluation implementations
-    │       └── bpm.py     # BPM accuracy evaluation
-    ├── external/          # External service integrations
-    │   ├── spotify.py     # Spotify API client
-    │   ├── beatport.py    # Beatport client
-    │   └── tunebat.py     # TuneBat client
+    │       ├── bpm.py     # BPM accuracy evaluation
+    │       └── structure.py # Structure accuracy evaluation
     ├── features/          # Feature extraction
     │   ├── temporal.py    # Time-domain features
     │   └── spectral.py    # Frequency-domain features
@@ -38,18 +36,15 @@ src/
 
 ## Key Components
 
-### BPM Detection (`src/edm/analysis/bpm.py:40`)
+### BPM Detection (`src/edm/analysis/bpm.py:42`)
 
 Uses a cascading lookup strategy:
 
 1. **Metadata** (fastest) - Read BPM from ID3/FLAC/MP4 tags
-2. **Spotify** (professional accuracy) - Query Spotify API using artist/title
-3. **Computed** (fallback) - Analyze audio with beat_this or librosa
+2. **Computed** (fallback) - Analyze audio with beat_this or librosa
 
 Control via CLI flags:
-- `--offline`: Skip Spotify (metadata → computed)
-- `--ignore-metadata`: Skip metadata (spotify → computed)
-- Both flags: Force computation only
+- `--ignore-metadata`: Skip metadata (force computation)
 
 ### BPM Computation (`src/edm/analysis/bpm_detector.py:224`)
 
@@ -62,29 +57,67 @@ Both methods:
 - Adjust to preferred EDM range (120-150 BPM)
 - Return confidence scores based on beat interval consistency
 
-### External Services (`src/edm/external/`)
+### Structure Detection (`src/edm/analysis/structure.py`)
 
-Pattern for service integration:
-1. Read track metadata (artist, title)
-2. Query external API
-3. Return structured result with BPM/confidence
-4. Handle authentication via environment variables
+Detects track structure sections using MSAF-based boundary detection with energy-based labeling:
 
-Configuration in `.env`:
-```
-SPOTIFY_CLIENT_ID=...
-SPOTIFY_CLIENT_SECRET=...
-```
+**Detector Selection** (`--structure-detector`):
+- `auto` (default): Use MSAF if available, fall back to energy
+- `msaf`: MSAF boundary detection with energy-based EDM label mapping
+- `energy`: Rule-based detection using RMS energy and spectral contrast
+
+**Section Labels** (EDM terminology):
+- `intro` - Opening section
+- `buildup` - Rising energy, tension building
+- `drop` - High energy payoff section
+- `breakdown` - Reduced energy, melodic focus
+- `outro` - Closing section
+
+**MSAF Integration** (`src/edm/analysis/structure_detector.py:55`):
+- Music Structure Analysis Framework (Nieto & Bello, ISMIR 2016)
+- Boundary detection using spectral flux algorithm
+- Energy-based mapping to EDM labels (high energy → drop, low energy → breakdown)
+- Returns confidence scores based on energy characteristics
+
+**Energy-Based Fallback** (`src/edm/analysis/structure_detector.py:260`):
+- RMS energy analysis for drop detection
+- Boundary detection via energy gradient peaks
+- Ensures full track coverage with no gaps
+- Minimum section duration filtering (8 seconds)
+
+**Bar/Measure Calculation** (`src/edm/analysis/bars.py`):
+- Converts time positions to musical bars based on BPM and time signature
+- Automatically integrates with structure analysis (calculates bars for all sections)
+- Designed for future beat grid integration (optional `beat_grid` parameter reserved)
+- Default 4/4 time signature, supports 3/4, 6/8, etc.
+- Graceful degradation: bar fields are None when BPM unavailable
+- Utility functions: `time_to_bars()`, `bars_to_time()`, `bar_count_for_range()`
+
+**Output Format:**
+- Sections include both time (`start_time`, `end_time`) and bar positions (`start_bar`, `end_bar`, `bar_count`)
+- JSON output: `{"label": "drop", "start": 30.0, "end": 90.0, "start_bar": 17.0, "end_bar": 49.0, "bar_count": 32.0}`
+- Bar numbering is 1-indexed (bar 1 = first bar) to match DJ software conventions
+- Example: "32 bars (30.0s-90.0s)" is more meaningful than "30.0s-90.0s" for musical analysis
 
 ### Evaluation Framework (`src/edm/evaluation/`)
 
 Tests analysis accuracy against reference data:
-- **Reference sources**: Spotify API, file metadata, CSV/JSON files
-- **Metrics**: MAE, RMSE, accuracy within tolerance
+- **Reference sources**: File metadata, CSV/JSON files
+- **Metrics**: MAE, RMSE, accuracy within tolerance (BPM); Precision, Recall, F1 (structure)
 - **Output**: JSON (machine-readable) + Markdown (human-readable)
 - **Sampling**: Random subset with optional seed for reproducibility
 
-Results saved to `benchmarks/results/accuracy/bpm/` with `latest.*` symlinks.
+**BPM Evaluation** (`src/edm/evaluation/evaluators/bpm.py`):
+- Compares computed BPM against reference values
+- Results saved to `benchmarks/results/accuracy/bpm/`
+
+**Structure Evaluation** (`src/edm/evaluation/evaluators/structure.py`):
+- Compares detected sections against ground truth annotations
+- Supports both time-based and bar-based annotation formats
+- Bar-based annotations automatically converted to time using BPM
+- Boundary tolerance matching (default ±2 seconds)
+- Per-section-type metrics (precision/recall/F1 for each label)
+- Results saved to `benchmarks/results/accuracy/structure/`
 
 ### Logging (`src/edm/logging.py:26`)
 
@@ -97,9 +130,9 @@ Uses structlog with:
 ### Configuration (`src/edm/config.py`)
 
 Pydantic models with:
-- Environment variable support (`SPOTIFY_CLIENT_ID`, etc.)
+- Environment variable support
 - TOML config file support (planned)
-- Nested configs: `AnalysisConfig`, `ExternalServicesConfig`
+- Nested configs: `AnalysisConfig`
 
 ## Data Flow
 
@@ -110,11 +143,7 @@ Audio File → Metadata Read → BPM Strategy → Result
                 ↓
             (if needed)
                 ↓
-            Spotify API
-                ↓
-            (if needed)
-                ↓
-            Audio Load → madmom/librosa → BPM Computation
+            Audio Load → beat_this/librosa → BPM Computation
 ```
 
 ### Evaluation Flow
@@ -143,9 +172,14 @@ Reference Source → Reference Values         Computed Values
 ### Why cascading BPM strategy?
 
 - Metadata is instant when available
-- Spotify provides professional-grade BPM values
 - Computation is resource-intensive, used only when needed
 - User can control strategy via CLI flags
+
+### Why no external APIs?
+
+- External BPM APIs are unreliable (deprecated, Cloudflare-blocked, or non-existent)
+- Local neural network analysis provides accurate results
+- Tool works fully offline with no API dependencies
 
 ### Why structlog?
 
@@ -161,14 +195,27 @@ Reference Source → Reference Values         Computed Values
 - Clear schema documentation via type hints
 - Easy serialization/deserialization
 
+### Why MSAF for structure detection?
+
+- Music Structure Analysis Framework (ISMIR 2016), well-documented academic framework
+- Lightweight dependencies (librosa, scipy, scikit-learn - no PyTorch for structure)
+- Multiple boundary/labeling algorithms available for experimentation
+- MIT license, compatible with project licensing
+- CPU-only, no GPU/CUDA complexity
+
+Previous versions used Allin1 but it was replaced due to:
+- PyTorch dependency with strict version requirements
+- Required madmom (unmaintained, Python 3.10+ compatibility issues)
+- NATTEN dependency with complex GPU/PyTorch version matrix
+- Heavy installation (~2GB+ with PyTorch)
+
 ## Tech Stack
 
 | Component | Library | Purpose |
 |-----------|---------|---------|
 | CLI | typer + rich | Modern CLI with colors/tables |
-| Audio Analysis | beat_this, librosa | BPM detection, audio loading |
+| Audio Analysis | beat_this, librosa, msaf | BPM detection, structure analysis, audio loading |
 | Audio I/O | mutagen | Metadata reading |
-| HTTP Client | requests, spotipy | External API calls |
 | Config | pydantic | Validation, env vars |
 | Logging | structlog | Structured logging |
 | Testing | pytest | Test framework |
@@ -178,31 +225,6 @@ Reference Source → Reference Values         Computed Values
 ## Placeholder / Unimplemented Features
 
 The following features are documented but currently return hardcoded/placeholder values:
-
-### Structure Analysis (`src/edm/analysis/structure.py`)
-
-**Status:** Placeholder implementation only
-
-- Always returns the same hardcoded sections (intro, buildup, drop)
-- Does not analyze actual audio content
-- Returns actual audio duration (since fix) but sections are static
-- **TODO:** Implement actual structure detection algorithm
-
-### External Service Integrations
-
-#### Beatport (`src/edm/external/beatport.py`)
-
-**Status:** Not implemented
-
-- Always returns `None`
-- **TODO:** Implement Beatport API integration or web scraper
-
-#### TuneBat (`src/edm/external/tunebat.py`)
-
-**Status:** Not implemented
-
-- Always returns `None`
-- **TODO:** Implement TuneBat API integration or web scraper
 
 ### Configuration File Support (`src/edm/config.py`)
 
