@@ -13,6 +13,7 @@ from edm.analysis.bpm import analyze_bpm
 from edm.analysis.structure import analyze_structure
 from edm.config import load_config
 from edm.exceptions import AnalysisError, AudioFileError
+from edm.io.files import discover_audio_files
 from edm.processing.parallel import ParallelProcessor
 
 logger = structlog.get_logger(__name__)
@@ -59,7 +60,7 @@ def _analyze_file_worker(args: tuple) -> dict:
 
 def _analyze_file_impl(
     filepath: Path, run_bpm: bool, run_structure: bool, offline: bool, ignore_metadata: bool
-) -> dict:
+) -> dict[str, object]:
     """Analyze a single audio file (implementation).
 
     Args:
@@ -72,7 +73,7 @@ def _analyze_file_impl(
     Returns:
         Analysis results.
     """
-    result = {}
+    result: dict[str, object] = {}
 
     if run_bpm:
         bpm_result = analyze_bpm(filepath, offline=offline, ignore_metadata=ignore_metadata)
@@ -138,7 +139,7 @@ def analyze_command(
     )
 
     # Collect all audio files
-    audio_files = collect_audio_files(files, recursive)
+    audio_files = discover_audio_files(files, recursive=recursive)
 
     if not audio_files:
         logger.warning("no audio files found", paths=[str(f) for f in files])
@@ -259,35 +260,6 @@ def _process_parallel(
     return results
 
 
-def collect_audio_files(paths: list[Path], recursive: bool) -> list[Path]:
-    """Collect all audio files from the given paths.
-
-    Args:
-        paths: Files or directories to process.
-        recursive: Recursively search directories.
-
-    Returns:
-        List of audio file paths.
-    """
-    audio_extensions = {".mp3", ".wav", ".flac", ".m4a", ".ogg"}
-    audio_files = []
-
-    for path in paths:
-        if path.is_file():
-            if path.suffix.lower() in audio_extensions:
-                audio_files.append(path)
-        elif path.is_dir():
-            if recursive:
-                pattern = "**/*"
-            else:
-                pattern = "*"
-
-            for ext in audio_extensions:
-                audio_files.extend(path.glob(f"{pattern}{ext}"))
-
-    return sorted(audio_files)
-
-
 def analyze_file(
     filepath: Path, run_bpm: bool, run_structure: bool, offline: bool, ignore_metadata: bool
 ) -> dict:
@@ -347,8 +319,13 @@ def output_table(results: list[dict], console: Console, quiet: bool):
     table.add_column("Time", justify="right")
 
     # Map sources to icons and colors
-    source_icons = {"metadata": "📄", "spotify": "🎵", "computed": "🔬"}
-    source_colors = {"metadata": "blue", "spotify": "green", "computed": "yellow"}
+    source_icons = {"metadata": "📄", "spotify": "🎵", "getsongbpm": "🎵", "computed": "🔬"}
+    source_colors = {
+        "metadata": "blue",
+        "spotify": "green",
+        "getsongbpm": "green",
+        "computed": "yellow",
+    }
 
     for result in results:
         if "error" in result:
@@ -381,3 +358,8 @@ def output_table(results: list[dict], console: Console, quiet: bool):
             )
 
     console.print(table)
+
+    # Check if any results used GetSongBPM and display attribution
+    has_getsongbpm = any(r.get("bpm_source") == "getsongbpm" for r in results if "error" not in r)
+    if has_getsongbpm:
+        console.print("[dim]BPM data from getsongbpm.com[/dim]")

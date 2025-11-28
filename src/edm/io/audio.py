@@ -9,8 +9,8 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-# Type alias for audio data
-AudioData = tuple[np.ndarray, int]
+# Type alias for audio data (sample rate can be int or float from librosa)
+AudioData = tuple[np.ndarray, int | float]
 
 
 class AudioCache:

@@ -1,7 +1,7 @@
 """BPM detection and analysis with cascading lookup strategy."""
 
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -19,7 +19,7 @@ class BPMResult:
     Attributes:
         bpm: Detected BPM value.
         confidence: Confidence score between 0 and 1.
-        source: Source of the BPM data.
+        source: Source of the BPM data ('metadata' or 'computed').
         method: Detection method used (e.g., 'beat-this', 'librosa').
         computation_time: Time spent computing/fetching BPM in seconds.
         alternatives: Alternative BPM candidates (for tempo multiplicity).
@@ -27,14 +27,10 @@ class BPMResult:
 
     bpm: float
     confidence: float
-    source: Literal["metadata", "spotify", "computed"]
+    source: Literal["metadata", "computed"]
     method: str | None = None
     computation_time: float = 0.0
-    alternatives: list[float] = None
-
-    def __post_init__(self):
-        if self.alternatives is None:
-            self.alternatives = []
+    alternatives: list[float] = field(default_factory=list)
 
 
 def analyze_bpm(
@@ -48,7 +44,7 @@ def analyze_bpm(
 ) -> BPMResult:
     """Analyze BPM of an audio track using cascading lookup strategy.
 
-    Default strategy: metadata → spotify → computed
+    Default strategy: metadata → computed
 
     Args:
         filepath: Path to the audio file.
@@ -57,7 +53,7 @@ def analyze_bpm(
         use_librosa: Use librosa for BPM detection (default: False).
         strategy: Custom lookup strategy. If None, uses default based on flags.
         ignore_metadata: Skip metadata lookup (default: False).
-        offline: Skip network calls/Spotify API (default: False).
+        offline: Ignored, kept for backward compatibility. No network calls are made.
 
     Returns:
         BPM analysis result with confidence score and source.
@@ -73,7 +69,7 @@ def analyze_bpm(
         BPM: 128.0 from metadata
 
         >>> # Force computation
-        >>> result = analyze_bpm(Path("track.mp3"), offline=True, ignore_metadata=True)
+        >>> result = analyze_bpm(Path("track.mp3"), ignore_metadata=True)
         >>> print(f"BPM: {result.bpm:.1f} (computed using {result.method})")
         BPM: 128.0 (computed using beat-this)
     """
@@ -81,7 +77,7 @@ def analyze_bpm(
 
     # Determine strategy based on flags
     if strategy is None:
-        strategy = _build_strategy(ignore_metadata, offline)
+        strategy = _build_strategy(ignore_metadata)
 
     logger.debug("starting bpm analysis", filepath=str(filepath), strategy=strategy)
 
@@ -90,12 +86,6 @@ def analyze_bpm(
         try:
             if source == "metadata" and not ignore_metadata:
                 result = _try_metadata(filepath)
-                if result:
-                    result.computation_time = time.time() - start_time
-                    return result
-
-            elif source == "spotify" and not offline:
-                result = _try_spotify(filepath)
                 if result:
                     result.computation_time = time.time() - start_time
                     return result
@@ -115,12 +105,11 @@ def analyze_bpm(
     raise AnalysisError(f"All BPM lookup strategies failed for {filepath}")
 
 
-def _build_strategy(ignore_metadata: bool, offline: bool) -> list[str]:
+def _build_strategy(ignore_metadata: bool) -> list[str]:
     """Build lookup strategy based on flags.
 
     Args:
         ignore_metadata: Skip metadata lookup.
-        offline: Skip network calls.
 
     Returns:
         Ordered list of strategies to try.
@@ -129,9 +118,6 @@ def _build_strategy(ignore_metadata: bool, offline: bool) -> list[str]:
 
     if not ignore_metadata:
         strategy.append("metadata")
-
-    if not offline:
-        strategy.append("spotify")
 
     strategy.append("computed")
 
@@ -169,57 +155,6 @@ def _try_metadata(filepath: Path) -> BPMResult | None:
 
     except Exception as e:
         logger.warning("metadata lookup failed", error=str(e))
-        return None
-
-
-def _try_spotify(filepath: Path) -> BPMResult | None:
-    """Try to get BPM from Spotify API.
-
-    Args:
-        filepath: Path to the audio file.
-
-    Returns:
-        BPM result if found on Spotify, None otherwise.
-    """
-    logger.debug("trying spotify lookup", filepath=str(filepath))
-
-    try:
-        from edm.external.spotify import SpotifyClient
-        from edm.io.metadata import read_metadata
-
-        # Get artist and title from metadata for searching
-        metadata = read_metadata(filepath)
-        artist = metadata.get("artist")
-        title = metadata.get("title")
-
-        if not artist or not title:
-            logger.debug("missing metadata for spotify lookup", filepath=str(filepath))
-            return None
-
-        # Search Spotify
-        client = SpotifyClient()
-        track_info = client.search_track(artist, title)
-
-        if track_info and track_info.bpm and _is_valid_bpm(track_info.bpm):
-            logger.debug(
-                "bpm_found_on_spotify",
-                filepath=str(filepath),
-                bpm=track_info.bpm,
-                artist=artist,
-                title=title,
-            )
-            return BPMResult(
-                bpm=float(track_info.bpm),
-                confidence=0.9,  # Spotify confidence
-                source="spotify",
-                method=None,
-            )
-        else:
-            logger.debug("track not found on spotify", filepath=str(filepath))
-            return None
-
-    except Exception as e:
-        logger.warning("spotify lookup failed", error=str(e))
         return None
 
 

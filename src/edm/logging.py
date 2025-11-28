@@ -91,7 +91,7 @@ def configure_logging(
 
     # Configure structlog
     structlog.configure(
-        processors=processors,
+        processors=processors,  # type: ignore[arg-type]
         wrapper_class=structlog.stdlib.BoundLogger,
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
@@ -163,4 +163,4 @@ def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
         >>> logger.info("processing started", file_path="track.mp3")
         >>> logger.error("analysis failed", error="Invalid file format")
     """
-    return structlog.get_logger(name)
+    return structlog.get_logger(name)  # type: ignore[no-any-return]

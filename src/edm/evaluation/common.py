@@ -7,36 +7,14 @@ from pathlib import Path
 
 import structlog
 
+from edm.io.files import SUPPORTED_AUDIO_FORMATS, discover_audio_files
+
 logger = structlog.get_logger(__name__)
 
-# Supported audio file extensions
-AUDIO_EXTENSIONS = {".mp3", ".flac", ".wav", ".m4a", ".aac", ".ogg"}
+# Re-export for backward compatibility
+AUDIO_EXTENSIONS = SUPPORTED_AUDIO_FORMATS
 
-
-def discover_audio_files(source_path: Path) -> list[Path]:
-    """Discover all audio files recursively in source directory.
-
-    Args:
-        source_path: Directory to search for audio files
-
-    Returns:
-        Sorted list of audio file paths
-    """
-    if not source_path.exists():
-        raise FileNotFoundError(f"Source path does not exist: {source_path}")
-
-    if not source_path.is_dir():
-        raise NotADirectoryError(f"Source path is not a directory: {source_path}")
-
-    audio_files: list[Path] = []
-    for ext in AUDIO_EXTENSIONS:
-        audio_files.extend(source_path.rglob(f"*{ext}"))
-
-    # Sort for reproducibility
-    audio_files.sort()
-
-    logger.info("discovered audio files", count=len(audio_files), source=str(source_path))
-    return audio_files
+__all__ = ["AUDIO_EXTENSIONS", "discover_audio_files"]
 
 
 def sample_random(files: list[Path], size: int, seed: int | None = None) -> list[Path]:
@@ -84,7 +62,9 @@ def calculate_rmse(errors: list[float]) -> float:
     """Calculate Root Mean Square Error."""
     if not errors:
         return 0.0
-    return (sum(e**2 for e in errors) / len(errors)) ** 0.5
+    import math
+
+    return math.sqrt(sum(e**2 for e in errors) / len(errors))
 
 
 def calculate_accuracy_within_tolerance(errors: list[float], tolerance: float) -> float:

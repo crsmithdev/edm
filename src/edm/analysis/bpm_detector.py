@@ -1,6 +1,6 @@
 """BPM computation using beat_this and librosa."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -27,11 +27,7 @@ class ComputedBPM:
     bpm: float
     confidence: float
     method: Literal["beat-this", "librosa"]
-    alternatives: list[float] = None
-
-    def __post_init__(self):
-        if self.alternatives is None:
-            self.alternatives = []
+    alternatives: list[float] = field(default_factory=list)
 
 
 def compute_bpm_beat_this(filepath: Path, device: str | None = None) -> ComputedBPM:
@@ -78,15 +74,15 @@ def compute_bpm_beat_this(filepath: Path, device: str | None = None) -> Computed
 
         # Calculate BPM from beat intervals
         intervals = np.diff(beats)
-        median_interval = np.median(intervals)
+        median_interval = float(np.median(intervals))
         bpm = 60.0 / median_interval
 
         # Calculate confidence based on interval consistency
-        std = np.std(intervals)
+        std = float(np.std(intervals))
         confidence = max(0.0, min(1.0, 1.0 - (std / median_interval)))
 
         # Check for tempo multiplicity
-        alternatives = []
+        alternatives: list[float] = []
         for multiplier in [0.5, 2.0]:
             alt_bpm = bpm * multiplier
             if 40 <= alt_bpm <= 200:
@@ -159,14 +155,14 @@ def compute_bpm_librosa(
             librosa.onset.onset_strength(y=y, sr=sr, hop_length=hop_length)
             beat_times = librosa.frames_to_time(beats, sr=sr, hop_length=hop_length)
             intervals = np.diff(beat_times)
-            std = np.std(intervals)
-            mean_interval = np.mean(intervals)
+            std = float(np.std(intervals))
+            mean_interval = float(np.mean(intervals))
             confidence = max(0.0, min(1.0, 1.0 - (std / mean_interval)))
         else:
             confidence = 0.5
 
         # Check for tempo multiplicity
-        alternatives = []
+        alternatives: list[float] = []
         for multiplier in [0.5, 2.0]:
             alt_bpm = bpm * multiplier
             if 40 <= alt_bpm <= 200:

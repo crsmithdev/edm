@@ -18,7 +18,7 @@ def load_reference_auto(
     """Auto-detect and load reference based on argument and analysis type.
 
     Args:
-        reference_arg: Reference source ('spotify', 'metadata', or file path)
+        reference_arg: Reference source ('metadata' or file path)
         analysis_type: Type of analysis (bpm, drops, key)
         source_path: Source directory for audio files
         value_field: Field name for value extraction
@@ -35,15 +35,6 @@ def load_reference_auto(
         analysis_type=analysis_type,
         value_field=value_field,
     )
-
-    # Handle special reference types
-    if reference_arg.lower() == "spotify":
-        if analysis_type not in ["bpm"]:
-            raise ValueError(
-                f"Spotify reference not supported for '{analysis_type}' analysis. "
-                f"Only 'bpm' is supported."
-            )
-        return load_spotify_reference(source_path)
 
     if reference_arg.lower() == "metadata":
         if analysis_type not in ["bpm", "key"]:
@@ -64,8 +55,7 @@ def load_reference_auto(
         return load_reference_json(ref_path, value_field)
     else:
         raise ValueError(
-            f"Unknown reference format: {reference_arg}. "
-            f"Expected .csv, .json, 'spotify', or 'metadata'"
+            f"Unknown reference format: {reference_arg}. Expected .csv, .json, or 'metadata'"
         )
 
 
@@ -84,10 +74,13 @@ def load_reference_csv(path: Path, value_field: str = "bpm") -> dict[Path, float
     Returns:
         Dictionary mapping file paths to reference values
     """
-    reference = {}
+    reference: dict[Path, float] = {}
 
     with open(path, "r") as f:
         reader = csv.DictReader(f)
+
+        if reader.fieldnames is None:
+            raise ValueError("CSV file is empty or has no header")
 
         if "path" not in reader.fieldnames:
             raise ValueError("CSV must have 'path' column")
@@ -154,48 +147,6 @@ def load_reference_json(path: Path, value_field: str = "bpm") -> dict[Path, Any]
     return reference
 
 
-def load_spotify_reference(source_path: Path) -> dict[Path, float]:
-    """Load BPM data from Spotify API for discovered files.
-
-    Args:
-        source_path: Source directory for audio files
-
-    Returns:
-        Dictionary mapping file paths to BPM values
-    """
-    from edm.external.spotify import SpotifyClient
-    from edm.io.metadata import read_metadata
-
-    client = SpotifyClient()
-    reference = {}
-
-    files = discover_audio_files(source_path)
-
-    logger.info("fetching spotify reference", file_count=len(files))
-
-    for file_path in files:
-        try:
-            metadata = read_metadata(file_path)
-            artist = metadata.get("artist")
-            title = metadata.get("title")
-
-            if not artist or not title:
-                logger.debug("missing metadata", file=str(file_path), artist=artist, title=title)
-                continue
-
-            track_info = client.search_track(artist, title)
-            if track_info and track_info.get("bpm"):
-                reference[file_path] = float(track_info["bpm"])
-                logger.debug("spotify lookup success", file=file_path.name, bpm=track_info["bpm"])
-
-        except Exception as e:
-            logger.warning("spotify lookup failed", file=str(file_path), error=str(e))
-
-    logger.info("loaded spotify reference", count=len(reference))
-
-    return reference
-
-
 def load_metadata_reference(source_path: Path, value_field: str = "bpm") -> dict[Path, Any]:
     """Load reference data from file metadata (ID3/Vorbis/MP4 tags).
 
@@ -208,7 +159,7 @@ def load_metadata_reference(source_path: Path, value_field: str = "bpm") -> dict
     """
     from edm.io.metadata import read_metadata
 
-    reference = {}
+    reference: dict[Path, Any] = {}
     files = discover_audio_files(source_path)
 
     logger.info("reading metadata reference", file_count=len(files), value_field=value_field)
