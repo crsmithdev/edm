@@ -5,7 +5,6 @@ from pathlib import Path
 
 import structlog
 import typer
-from dotenv import load_dotenv
 from rich.console import Console
 
 from cli.commands.analyze import analyze_command
@@ -14,9 +13,6 @@ from edm import __version__ as lib_version
 from edm.io.audio import clear_audio_cache, set_cache_size
 from edm.logging import configure_logging
 from edm.processing.parallel import get_default_workers
-
-# Load environment variables from .env file
-load_dotenv()
 
 app = typer.Typer(
     name="edm",
