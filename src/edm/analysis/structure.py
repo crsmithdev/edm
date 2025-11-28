@@ -212,9 +212,7 @@ def _post_process_sections(sections: list[Section], duration: float | None) -> l
     if not sections:
         # Return minimal structure if no sections detected
         if duration:
-            return [
-                Section(label="intro", start_time=0.0, end_time=duration, confidence=0.5)
-            ]
+            return [Section(label="intro", start_time=0.0, end_time=duration, confidence=0.5)]
         return []
 
     # Sort by start time

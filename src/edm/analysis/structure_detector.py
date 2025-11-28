@@ -330,7 +330,9 @@ class EnergyDetector:
         boundaries = self._detect_boundaries(rms_norm, hop_length, actual_sr, duration)
 
         # Create sections from boundaries
-        sections = self._boundaries_to_sections(boundaries, rms_norm, hop_length, actual_sr, duration)
+        sections = self._boundaries_to_sections(
+            boundaries, rms_norm, hop_length, actual_sr, duration
+        )
 
         # Merge short sections
         sections = self._merge_short_sections(sections)

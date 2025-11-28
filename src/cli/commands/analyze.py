@@ -112,9 +112,7 @@ def _analyze_file_impl(
                         "end_bar": round(s.end_bar, 1),
                         "bar_count": round(s.bar_count, 1),
                     }
-                    if s.start_bar is not None
-                    and s.end_bar is not None
-                    and s.bar_count is not None
+                    if s.start_bar is not None and s.end_bar is not None and s.bar_count is not None
                     else {}
                 ),
             }

@@ -1,7 +1,5 @@
 """Tests for structure evaluation module."""
 
-
-
 from edm.evaluation.evaluators.structure import (
     _calculate_overlap,
     _calculate_structure_metrics,

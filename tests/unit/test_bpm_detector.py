@@ -98,9 +98,7 @@ class TestComputeBpmLibrosa:
                 np.array([128.0]),
                 np.array([0, 21, 42, 63, 84]),  # Regular beat frames
             )
-            mock_librosa.frames_to_time.return_value = np.array(
-                [0.0, 0.469, 0.938, 1.407, 1.876]
-            )
+            mock_librosa.frames_to_time.return_value = np.array([0.0, 0.469, 0.938, 1.407, 1.876])
             mock_librosa.onset.onset_strength.return_value = np.zeros(100)
 
             with patch("edm.analysis.bpm_detector.load_audio") as mock_load:
@@ -120,9 +118,7 @@ class TestComputeBpmLibrosa:
                 np.array([140.0]),
                 np.array([0, 18, 36, 54, 72]),
             )
-            mock_librosa.frames_to_time.return_value = np.array(
-                [0.0, 0.428, 0.857, 1.285, 1.714]
-            )
+            mock_librosa.frames_to_time.return_value = np.array([0.0, 0.428, 0.857, 1.285, 1.714])
             mock_librosa.onset.onset_strength.return_value = np.zeros(100)
 
             # Pre-loaded audio
@@ -217,9 +213,7 @@ class TestBpmDetectorIntegration:
 
         # 5% tolerance
         tolerance = bpm * 0.05
-        assert abs(result.bpm - bpm) <= tolerance, (
-            f"Expected {bpm}±{tolerance}, got {result.bpm}"
-        )
+        assert abs(result.bpm - bpm) <= tolerance, f"Expected {bpm}±{tolerance}, got {result.bpm}"
 
     @pytest.mark.parametrize("bpm", [120, 128, 140])
     def test_librosa_on_beat_patterns(self, bpm):
@@ -232,6 +226,4 @@ class TestBpmDetectorIntegration:
 
         # 5% tolerance
         tolerance = bpm * 0.05
-        assert abs(result.bpm - bpm) <= tolerance, (
-            f"Expected {bpm}±{tolerance}, got {result.bpm}"
-        )
+        assert abs(result.bpm - bpm) <= tolerance, f"Expected {bpm}±{tolerance}, got {result.bpm}"

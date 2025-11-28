@@ -199,7 +199,10 @@ def get_section_at_bar(
 
 
 def check_bar_alignment(
-    time_seconds: float, bpm: Optional[float], time_signature: TimeSignature = (4, 4), tolerance: float = 0.5
+    time_seconds: float,
+    bpm: Optional[float],
+    time_signature: TimeSignature = (4, 4),
+    tolerance: float = 0.5,
 ) -> Optional[bool]:
     """Check if a time position aligns with a bar boundary.
 
