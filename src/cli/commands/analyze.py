@@ -2,13 +2,16 @@
 
 import json
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import structlog
+import yaml
 from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
 from rich.table import Table
 
+from edm.analysis.beat_detector import detect_beats
 from edm.analysis.bpm import analyze_bpm
 from edm.analysis.structure import analyze_structure
 from edm.config import load_config
@@ -19,17 +22,58 @@ from edm.processing.parallel import ParallelProcessor
 logger = structlog.get_logger(__name__)
 
 
+@dataclass
+class TrackAnalysis:
+    """Analysis result for a single track with new hierarchical schema."""
+
+    file: str
+    duration: float | None = None
+    tempo: dict | None = None
+    key: str | None = None
+    structure: list[list] | None = None
+    error: str | None = None
+    time: float | None = None
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary in new schema format.
+
+        Returns:
+            Dictionary with hierarchical structure for YAML/JSON output.
+        """
+        result: dict = {"file": self.file}
+
+        if self.error:
+            result["error"] = self.error
+            if self.time is not None:
+                result["time"] = self.time
+            return result
+
+        if self.duration is not None:
+            result["duration"] = self.duration
+
+        if self.tempo:
+            result["tempo"] = self.tempo
+
+        if self.key:
+            result["key"] = self.key
+
+        if self.structure:
+            result["structure"] = self.structure
+
+        return result
+
+
 # Worker function for parallel execution (must be top-level for pickling)
 def _analyze_file_worker(args: tuple) -> dict:
     """Worker function for parallel file analysis.
 
     Args:
-        args: Tuple of (filepath, run_bpm, run_structure, offline, ignore_metadata, structure_detector).
+        args: Tuple of (filepath, run_bpm, run_structure, run_beats, offline, ignore_metadata, structure_detector).
 
     Returns:
         Analysis result dict with file path and timing.
     """
-    filepath, run_bpm, run_structure, offline, ignore_metadata, structure_detector = args
+    filepath, run_bpm, run_structure, run_beats, offline, ignore_metadata, structure_detector = args
 
     # Convert string back to Path if needed (for pickling)
     if isinstance(filepath, str):
@@ -38,88 +82,97 @@ def _analyze_file_worker(args: tuple) -> dict:
     start_time = time.time()
 
     try:
-        result = _analyze_file_impl(
-            filepath, run_bpm, run_structure, offline, ignore_metadata, structure_detector
+        analysis = _analyze_file_impl(
+            filepath,
+            run_bpm,
+            run_structure,
+            run_beats,
+            offline,
+            ignore_metadata,
+            structure_detector,
         )
-        elapsed = time.time() - start_time
-        result["file"] = str(filepath)
-        result["time"] = elapsed
-        return result
+        analysis.time = time.time() - start_time
+        return analysis.to_dict()
 
     except (AudioFileError, AnalysisError) as e:
-        return {
-            "file": str(filepath),
-            "error": str(e),
-            "time": time.time() - start_time,
-        }
+        return TrackAnalysis(
+            file=str(filepath),
+            error=str(e),
+            time=time.time() - start_time,
+        ).to_dict()
     except Exception as e:
-        return {
-            "file": str(filepath),
-            "error": f"Unexpected error: {e}",
-            "time": time.time() - start_time,
-        }
+        return TrackAnalysis(
+            file=str(filepath),
+            error=f"Unexpected error: {e}",
+            time=time.time() - start_time,
+        ).to_dict()
 
 
 def _analyze_file_impl(
     filepath: Path,
     run_bpm: bool,
     run_structure: bool,
+    run_beats: bool,
     offline: bool,
     ignore_metadata: bool,
     structure_detector: str = "auto",
-) -> dict[str, object]:
+) -> TrackAnalysis:
     """Analyze a single audio file (implementation).
 
     Args:
         filepath: Path to the audio file.
         run_bpm: Run BPM analysis.
         run_structure: Run structure analysis.
+        run_beats: Run beat detection.
         offline: Skip network lookups.
         ignore_metadata: Skip metadata reading.
         structure_detector: Structure detection method (auto, msaf, energy).
 
     Returns:
-        Analysis results.
+        TrackAnalysis with hierarchical schema.
     """
-    result: dict[str, object] = {}
+    tempo: dict = {}
+    duration: float | None = None
+    structure: list[list] | None = None
 
     if run_bpm:
         bpm_result = analyze_bpm(filepath, offline=offline, ignore_metadata=ignore_metadata)
-        result["bpm"] = round(bpm_result.bpm, 1)
-        result["bpm_confidence"] = round(bpm_result.confidence, 2)
-        result["bpm_source"] = bpm_result.source
-        result["bpm_method"] = bpm_result.method
-        result["bpm_computation_time"] = round(bpm_result.computation_time, 3)
-        if bpm_result.alternatives:
-            result["bpm_alternatives"] = [round(alt, 1) for alt in bpm_result.alternatives]
+        tempo["bpm"] = round(bpm_result.bpm, 1)
+
+    if run_beats:
+        beat_grid = detect_beats(filepath)
+        tempo["bpm"] = round(beat_grid.bpm, 1)
+        tempo["downbeat"] = round(beat_grid.first_beat_time, 3)
+        tempo["time_signature"] = f"{beat_grid.time_signature[0]}/{beat_grid.time_signature[1]}"
 
     if run_structure:
         structure_result = analyze_structure(filepath, detector=structure_detector)  # type: ignore[arg-type]
-        result["duration"] = round(structure_result.duration, 1)
-        result["sections"] = len(structure_result.sections)
-        result["structure_detector"] = structure_result.detector
+        duration = round(structure_result.duration, 1)
         if structure_result.bpm:
-            result["bpm"] = round(structure_result.bpm, 1)
-        result["structure"] = [
-            {
-                "label": s.label,
-                "start": round(s.start_time, 1),
-                "end": round(s.end_time, 1),
-                "confidence": round(s.confidence, 2),
-                **(
-                    {
-                        "start_bar": round(s.start_bar, 1),
-                        "end_bar": round(s.end_bar, 1),
-                        "bar_count": round(s.bar_count, 1),
-                    }
-                    if s.start_bar is not None and s.end_bar is not None and s.bar_count is not None
-                    else {}
-                ),
-            }
-            for s in structure_result.sections
-        ]
+            tempo["bpm"] = round(structure_result.bpm, 1)
+        # Polymorphic format: events [bar, label], spans [start_bar, end_bar, label]
+        event_labels = {"drop"}
+        structure = []
+        for s in structure_result.sections:
+            if s.label in event_labels:
+                # Events: single bar marker
+                if s.start_bar is not None:
+                    structure.append([int(s.start_bar), s.label])
+                else:
+                    structure.append([round(s.start_time, 1), s.label])
+            else:
+                # Spans: start and end
+                if s.start_bar is not None and s.end_bar is not None:
+                    structure.append([int(s.start_bar), int(s.end_bar), s.label])
+                else:
+                    structure.append([round(s.start_time, 1), round(s.end_time, 1), s.label])
 
-    return result
+    return TrackAnalysis(
+        file=str(filepath),
+        duration=duration,
+        tempo=tempo if tempo else None,
+        structure=structure,
+    )
 
 
 def analyze_command(
@@ -160,6 +213,7 @@ def analyze_command(
     run_structure = (
         analysis_types is None or "structure" in analysis_types or "grid" in analysis_types
     )
+    run_beats = analysis_types is not None and "beats" in analysis_types
 
     # MSAF is thread-safe and can run in parallel
     # No special handling needed unlike the previous allin1 detector
@@ -177,6 +231,7 @@ def analyze_command(
         file_count=len(audio_files),
         run_bpm=run_bpm,
         run_structure=run_structure,
+        run_beats=run_beats,
         offline=offline,
         workers=workers,
     )
@@ -187,7 +242,15 @@ def analyze_command(
 
     # Prepare args for each file
     args_list = [
-        (str(filepath), run_bpm, run_structure, offline, ignore_metadata, structure_detector)
+        (
+            str(filepath),
+            run_bpm,
+            run_structure,
+            run_beats,
+            offline,
+            ignore_metadata,
+            structure_detector,
+        )
         for filepath in audio_files
     ]
 
@@ -200,7 +263,9 @@ def analyze_command(
     total_time = time.time() - start_time
 
     # Display results
-    if format == "json" or output:
+    if format == "yaml":
+        output_yaml(results, output, console, quiet)
+    elif format == "json" or output:
         output_json(results, output, console, quiet)
     else:
         output_table(results, console, quiet)
@@ -293,6 +358,7 @@ def analyze_file(
     offline: bool,
     ignore_metadata: bool,
     structure_detector: str = "auto",
+    run_beats: bool = False,
 ) -> dict:
     """Analyze a single audio file.
 
@@ -303,14 +369,16 @@ def analyze_file(
         offline: Skip network lookups.
         ignore_metadata: Skip metadata reading.
         structure_detector: Structure detection method (auto, msaf, energy).
+        run_beats: Run beat detection.
 
     Returns:
-        Analysis results.
+        Analysis results in new schema format.
     """
     logger.info("analyzing file", filepath=str(filepath))
-    return _analyze_file_impl(
-        filepath, run_bpm, run_structure, offline, ignore_metadata, structure_detector
+    analysis = _analyze_file_impl(
+        filepath, run_bpm, run_structure, run_beats, offline, ignore_metadata, structure_detector
     )
+    return analysis.to_dict()
 
 
 def output_json(results: list[dict], output_path: Path | None, console: Console, quiet: bool):
@@ -332,6 +400,31 @@ def output_json(results: list[dict], output_path: Path | None, console: Console,
         console.print(json_str)
 
 
+def output_yaml(results: list[dict], output_path: Path | None, console: Console, quiet: bool):
+    """Output results as YAML (multi-document for batch).
+
+    Args:
+        results: Analysis results.
+        output_path: File to write YAML to (None for stdout).
+        console: Rich console for output.
+        quiet: Suppress output messages.
+    """
+    # Multi-document YAML: each track as separate document
+    yaml_str = yaml.dump_all(
+        results,
+        default_flow_style=None,
+        allow_unicode=True,
+        sort_keys=False,
+    )
+
+    if output_path:
+        output_path.write_text(yaml_str)
+        if not quiet:
+            console.print(f"Results written to {output_path}")
+    else:
+        console.print(yaml_str)
+
+
 def output_table(results: list[dict], console: Console, quiet: bool):
     """Output results as a Rich table.
 
@@ -346,20 +439,9 @@ def output_table(results: list[dict], console: Console, quiet: bool):
     table = Table(title="Analysis Results")
     table.add_column("File", style="cyan")
     table.add_column("BPM", justify="right")
-    table.add_column("Source", justify="center")
-    table.add_column("Confidence", justify="right")
+    table.add_column("Time Sig", justify="center")
     table.add_column("Duration", justify="right")
     table.add_column("Sections", justify="right")
-    table.add_column("Time", justify="right")
-
-    # Map sources to icons and colors
-    source_icons = {"metadata": "📄", "spotify": "🎵", "getsongbpm": "🎵", "computed": "🔬"}
-    source_colors = {
-        "metadata": "blue",
-        "spotify": "green",
-        "getsongbpm": "green",
-        "computed": "yellow",
-    }
 
     for result in results:
         if "error" in result:
@@ -369,31 +451,21 @@ def output_table(results: list[dict], console: Console, quiet: bool):
                 "",
                 "",
                 "",
-                "",
-                "",
             )
         else:
-            # Format BPM source with icon and color
-            bpm_source = result.get("bpm_source", "")
-            source_icon = source_icons.get(bpm_source, "")
-            source_color = source_colors.get(bpm_source, "white")
-            source_display = (
-                f"{source_icon} [{source_color}]{bpm_source}[/{source_color}]" if bpm_source else ""
-            )
+            tempo = result.get("tempo", {}) or {}
+            bpm = tempo.get("bpm", "N/A")
+            time_sig = tempo.get("time_signature", "N/A")
+            duration = result.get("duration", "N/A")
+            duration_str = f"{duration}s" if duration != "N/A" else "N/A"
+            sections = len(result.get("structure", [])) if result.get("structure") else "N/A"
 
             table.add_row(
                 Path(result["file"]).name,
-                f"{result.get('bpm', 'N/A')}",
-                source_display,
-                f"{result.get('bpm_confidence', 'N/A')}",
-                f"{result.get('duration', 'N/A')}s",
-                str(result.get("sections", "N/A")),
-                f"{result.get('time', 0):.2f}s",
+                str(bpm),
+                str(time_sig),
+                duration_str,
+                str(sections),
             )
 
     console.print(table)
-
-    # Check if any results used GetSongBPM and display attribution
-    has_getsongbpm = any(r.get("bpm_source") == "getsongbpm" for r in results if "error" not in r)
-    if has_getsongbpm:
-        console.print("[dim]BPM data from getsongbpm.com[/dim]")

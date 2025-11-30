@@ -23,33 +23,49 @@ from edm.evaluation.common import (
 logger = structlog.get_logger(__name__)
 
 
+EVENT_LABELS = {"drop"}
+
+
 def load_structure_reference(reference_path: Path) -> dict[Path, list[dict]]:
     """Load structure ground truth from CSV file.
 
     Expected CSV formats:
 
-    Time-based:
+    Time-based spans:
         filename,start,end,label
         track1.mp3,0.0,32.0,intro
         track1.mp3,32.0,64.0,buildup
         ...
 
-    Bar-based (requires BPM column):
+    Time-based events (no end column or end equals start):
+        filename,start,label
+        track1.mp3,32.0,drop
+        ...
+
+    Bar-based spans (requires BPM column):
         filename,start_bar,end_bar,label,bpm
         track1.mp3,0,16,intro,128
         track1.mp3,16,32,buildup,128
         ...
 
-    Mixed format (bar positions preferred if BPM available):
-        filename,start,end,start_bar,end_bar,label,bpm
-        track1.mp3,0.0,30.0,0,16,intro,128
+    Bar-based events (no end_bar or end_bar equals start_bar):
+        filename,bar,label,bpm
+        track1.mp3,17,drop,128
+        ...
+
+    Bar-based with first_downbeat (for accurate bar alignment):
+        filename,start_bar,end_bar,label,bpm,first_downbeat
+        track1.mp3,1,17,intro,128,0.5
+        track1.mp3,17,33,buildup,128,0.5
         ...
 
     Args:
         reference_path: Path to CSV file with structure annotations.
 
     Returns:
-        Dictionary mapping file paths to lists of section dicts with 'start' and 'end' in seconds.
+        Dictionary mapping file paths to lists of section dicts.
+        Spans have 'start' and 'end' in seconds.
+        Events have 'time' in seconds and 'is_event': True.
     """
     reference: dict[Path, list[dict]] = {}
 
@@ -65,52 +81,78 @@ def load_structure_reference(reference_path: Path) -> dict[Path, list[dict]]:
             filepath = Path(filename).resolve()
             label = row["label"].strip().lower()
 
+            # Check if this is an event (single point) or span
+            is_event = label in EVENT_LABELS
+
             # Determine if we have bar-based or time-based annotations
-            has_bars = "start_bar" in row and "end_bar" in row
-            has_time = "start" in row and "end" in row
+            has_bar = "bar" in row and row["bar"]
+            has_bars = "start_bar" in row and row["start_bar"]
+            has_time = "start" in row and row["start"]
             bpm = float(row["bpm"]) if "bpm" in row and row["bpm"] else None
+            first_downbeat = (
+                float(row["first_downbeat"])
+                if "first_downbeat" in row and row["first_downbeat"]
+                else 0.0
+            )
 
-            if has_bars and bpm:
-                # Convert bars to time
-                start_bar = float(row["start_bar"])
-                end_bar = float(row["end_bar"])
-                start_time = bars_to_time(start_bar, bpm)
-                end_time = bars_to_time(end_bar, bpm)
-
-                if start_time is None or end_time is None:
-                    logger.warning(
-                        "failed to convert bars to time",
-                        filename=filename,
-                        start_bar=start_bar,
-                        end_bar=end_bar,
-                        bpm=bpm,
-                    )
+            if is_event:
+                # Handle event (single point)
+                if has_bar and bpm:
+                    bar = float(row["bar"])
+                    time_val = bars_to_time(bar, bpm, first_downbeat=first_downbeat)
+                    if time_val is None:
+                        logger.warning("failed to convert bar to time", filename=filename, bar=bar)
+                        continue
+                elif has_bars and bpm:
+                    bar = float(row["start_bar"])
+                    time_val = bars_to_time(bar, bpm, first_downbeat=first_downbeat)
+                    if time_val is None:
+                        logger.warning("failed to convert bar to time", filename=filename, bar=bar)
+                        continue
+                elif has_time:
+                    time_val = float(row["start"])
+                else:
+                    logger.warning("event missing time/bar data", filename=filename, label=label)
                     continue
-            elif has_time:
-                # Use time directly
-                start_time = float(row["start"])
-                end_time = float(row["end"])
-            else:
-                logger.warning(
-                    "row missing both time and bar position data",
-                    filename=filename,
-                    label=label,
-                )
-                continue
 
-            section = {
-                "label": label,
-                "start": start_time,
-                "end": end_time,
-            }
+                section = {"label": label, "time": time_val, "is_event": True}
+            else:
+                # Handle span (start/end)
+                has_end_bar = "end_bar" in row and row["end_bar"]
+                has_end = "end" in row and row["end"]
+
+                if has_bars and has_end_bar and bpm:
+                    start_bar = float(row["start_bar"])
+                    end_bar = float(row["end_bar"])
+                    start_time = bars_to_time(start_bar, bpm, first_downbeat=first_downbeat)
+                    end_time = bars_to_time(end_bar, bpm, first_downbeat=first_downbeat)
+
+                    if start_time is None or end_time is None:
+                        logger.warning(
+                            "failed to convert bars to time",
+                            filename=filename,
+                            start_bar=start_bar,
+                            end_bar=end_bar,
+                        )
+                        continue
+                elif has_time and has_end:
+                    start_time = float(row["start"])
+                    end_time = float(row["end"])
+                else:
+                    logger.warning("span missing time/bar data", filename=filename, label=label)
+                    continue
+
+                section = {"label": label, "start": start_time, "end": end_time, "is_event": False}
 
             if filepath not in reference:
                 reference[filepath] = []
             reference[filepath].append(section)
 
-    # Sort sections by start time for each file
+    # Sort sections by start time/time for each file
     for filepath in reference:
-        reference[filepath] = sorted(reference[filepath], key=lambda s: s["start"])
+        reference[filepath] = sorted(
+            reference[filepath], key=lambda s: s.get("start", s.get("time", 0))
+        )
 
     logger.info("loaded structure reference", files=len(reference), path=str(reference_path))
 
@@ -138,10 +180,27 @@ def _evaluate_file_worker(args: tuple) -> dict:
         computation_time = time.time() - start_time
 
         # Convert detected sections to comparable format
-        detected = [
-            {"label": s.label, "start": s.start_time, "end": s.end_time, "confidence": s.confidence}
-            for s in result.sections
-        ]
+        detected = []
+        for s in result.sections:
+            if s.label in EVENT_LABELS:
+                detected.append(
+                    {
+                        "label": s.label,
+                        "time": s.start_time,
+                        "is_event": True,
+                        "confidence": s.confidence,
+                    }
+                )
+            else:
+                detected.append(
+                    {
+                        "label": s.label,
+                        "start": s.start_time,
+                        "end": s.end_time,
+                        "is_event": False,
+                        "confidence": s.confidence,
+                    }
+                )
 
         # Calculate metrics
         metrics = _calculate_structure_metrics(ref_sections, detected, tolerance)
@@ -172,6 +231,9 @@ def _evaluate_file_worker(args: tuple) -> dict:
             "boundary_recall": 0.0,
             "boundary_f1": 0.0,
             "label_accuracy": 0.0,
+            "event_precision": 0.0,
+            "event_recall": 0.0,
+            "event_f1": 0.0,
         }
 
 
@@ -181,8 +243,8 @@ def _calculate_structure_metrics(
     """Calculate structure detection metrics.
 
     Args:
-        reference: Reference sections.
-        detected: Detected sections.
+        reference: Reference sections (spans and events).
+        detected: Detected sections (spans and events).
         tolerance: Boundary tolerance in seconds.
 
     Returns:
@@ -194,20 +256,27 @@ def _calculate_structure_metrics(
             "boundary_recall": 0.0,
             "boundary_f1": 0.0,
             "label_accuracy": 0.0,
-            "drop_precision": 0.0,
-            "drop_recall": 0.0,
+            "event_precision": 0.0,
+            "event_recall": 0.0,
+            "event_f1": 0.0,
         }
 
-    # Extract boundaries (excluding 0.0 which is always present)
+    # Separate events and spans
+    ref_events = [s for s in reference if s.get("is_event")]
+    ref_spans = [s for s in reference if not s.get("is_event")]
+    det_events = [s for s in detected if s.get("is_event")]
+    det_spans = [s for s in detected if not s.get("is_event")]
+
+    # Extract boundaries from spans (excluding 0.0 which is always present)
     ref_boundaries = set()
-    for s in reference:
+    for s in ref_spans:
         if s["start"] > 0.1:
             ref_boundaries.add(s["start"])
         if s["end"] > 0.1:
             ref_boundaries.add(s["end"])
 
     det_boundaries = set()
-    for s in detected:
+    for s in det_spans:
         if s["start"] > 0.1:
             det_boundaries.add(s["start"])
         if s["end"] > 0.1:
@@ -245,16 +314,44 @@ def _calculate_structure_metrics(
         else 0.0
     )
 
-    # Calculate label accuracy for matched segments
+    # Calculate event metrics (e.g., drops)
+    matched_ref_events = set()
+    matched_det_events = set()
+
+    for i, ref_e in enumerate(ref_events):
+        ref_time = ref_e["time"]
+        for j, det_e in enumerate(det_events):
+            det_time = det_e["time"]
+            if (
+                abs(ref_time - det_time) <= tolerance
+                and j not in matched_det_events
+                and ref_e["label"] == det_e["label"]
+            ):
+                matched_ref_events.add(i)
+                matched_det_events.add(j)
+                break
+
+    event_tp = len(matched_det_events)
+    event_fp = len(det_events) - event_tp
+    event_fn = len(ref_events) - len(matched_ref_events)
+
+    event_precision = event_tp / (event_tp + event_fp) if (event_tp + event_fp) > 0 else 0.0
+    event_recall = event_tp / (event_tp + event_fn) if (event_tp + event_fn) > 0 else 0.0
+    event_f1 = (
+        2 * event_precision * event_recall / (event_precision + event_recall)
+        if (event_precision + event_recall) > 0
+        else 0.0
+    )
+
+    # Calculate label accuracy for matched span segments
     label_matches = 0
     label_total = 0
 
-    for ref_s in reference:
-        # Find best matching detected section
+    for ref_s in ref_spans:
         best_overlap = 0.0
         best_match = None
 
-        for det_s in detected:
+        for det_s in det_spans:
             overlap = _calculate_overlap(ref_s, det_s)
             if overlap > best_overlap:
                 best_overlap = overlap
@@ -267,27 +364,14 @@ def _calculate_structure_metrics(
 
     label_accuracy = label_matches / label_total if label_total > 0 else 0.0
 
-    # Calculate drop-specific metrics
-    ref_drops = [s for s in reference if s["label"] == "drop"]
-    det_drops = [s for s in detected if s["label"] == "drop"]
-
-    drop_matches = 0
-    for ref_drop in ref_drops:
-        for det_drop in det_drops:
-            if _calculate_overlap(ref_drop, det_drop) > 0.5:
-                drop_matches += 1
-                break
-
-    drop_precision = drop_matches / len(det_drops) if det_drops else 0.0
-    drop_recall = drop_matches / len(ref_drops) if ref_drops else 0.0
-
     return {
         "boundary_precision": boundary_precision,
         "boundary_recall": boundary_recall,
         "boundary_f1": boundary_f1,
         "label_accuracy": label_accuracy,
-        "drop_precision": drop_precision,
-        "drop_recall": drop_recall,
+        "event_precision": event_precision,
+        "event_recall": event_recall,
+        "event_f1": event_f1,
     }
 
 
@@ -471,7 +555,7 @@ def evaluate_structure(
 
     # Save results
     if output_dir is None:
-        output_dir = Path("benchmarks/results/accuracy/structure")
+        output_dir = Path("data/accuracy/structure")
 
     output_dir.mkdir(parents=True, exist_ok=True)
 

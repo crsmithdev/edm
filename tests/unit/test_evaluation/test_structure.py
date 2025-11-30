@@ -43,6 +43,117 @@ class TestLoadStructureReference:
         assert sections[0]["label"] == "intro"
         assert sections[1]["label"] == "drop"
 
+    def test_bar_based_annotations_with_bpm(self, tmp_path):
+        """Test loading bar-based annotations with BPM."""
+        csv_path = tmp_path / "reference.csv"
+        # At 120 BPM in 4/4: bar 1 = 0s, bar 9 = 16s, bar 17 = 32s
+        # Drop is an event (single bar), buildup is a span
+        csv_path.write_text(
+            "file,label,start_bar,end_bar,bpm\n"
+            "track1.mp3,intro,1,9,120\n"
+            "track1.mp3,drop,9,,120\n"  # Event - no end_bar
+        )
+
+        reference = load_structure_reference(csv_path)
+        track1_key = [k for k in reference.keys() if k.name == "track1.mp3"][0]
+
+        sections = reference[track1_key]
+        # Bar 1 starts at 0s, bar 9 starts at 16s (8 bars * 2s per bar)
+        assert sections[0]["label"] == "intro"
+        assert abs(sections[0]["start"] - 0.0) < 0.01
+        assert abs(sections[0]["end"] - 16.0) < 0.01
+        assert sections[0]["is_event"] is False
+
+        assert sections[1]["label"] == "drop"
+        assert abs(sections[1]["time"] - 16.0) < 0.01
+        assert sections[1]["is_event"] is True
+
+    def test_bar_based_annotations_with_first_downbeat(self, tmp_path):
+        """Test loading bar-based annotations with first_downbeat offset."""
+        csv_path = tmp_path / "reference.csv"
+        # At 120 BPM with first_downbeat=0.5:
+        # bar 1 = 0.5s, bar 9 = 16.5s
+        csv_path.write_text(
+            "file,label,start_bar,end_bar,bpm,first_downbeat\n"
+            "track1.mp3,intro,1,9,120,0.5\n"
+            "track1.mp3,drop,9,,120,0.5\n"  # Event - no end_bar
+        )
+
+        reference = load_structure_reference(csv_path)
+        track1_key = [k for k in reference.keys() if k.name == "track1.mp3"][0]
+
+        sections = reference[track1_key]
+        assert sections[0]["label"] == "intro"
+        assert abs(sections[0]["start"] - 0.5) < 0.01
+        assert abs(sections[0]["end"] - 16.5) < 0.01
+
+        assert sections[1]["label"] == "drop"
+        assert abs(sections[1]["time"] - 16.5) < 0.01
+        assert sections[1]["is_event"] is True
+
+    def test_first_downbeat_defaults_to_zero(self, tmp_path):
+        """Test that first_downbeat defaults to 0.0 when not provided."""
+        csv_path = tmp_path / "reference.csv"
+        # Without first_downbeat column
+        csv_path.write_text("file,label,start_bar,end_bar,bpm\ntrack1.mp3,intro,1,9,120\n")
+
+        reference = load_structure_reference(csv_path)
+        track1_key = [k for k in reference.keys() if k.name == "track1.mp3"][0]
+
+        sections = reference[track1_key]
+        # Bar 1 at 0s (first_downbeat defaults to 0.0)
+        assert abs(sections[0]["start"] - 0.0) < 0.01
+
+    def test_empty_first_downbeat_defaults_to_zero(self, tmp_path):
+        """Test that empty first_downbeat value defaults to 0.0."""
+        csv_path = tmp_path / "reference.csv"
+        csv_path.write_text(
+            "file,label,start_bar,end_bar,bpm,first_downbeat\n"
+            "track1.mp3,intro,1,9,120,\n"  # Empty first_downbeat
+        )
+
+        reference = load_structure_reference(csv_path)
+        track1_key = [k for k in reference.keys() if k.name == "track1.mp3"][0]
+
+        sections = reference[track1_key]
+        # Bar 1 at 0s (first_downbeat defaults to 0.0 when empty)
+        assert abs(sections[0]["start"] - 0.0) < 0.01
+
+    def test_mixed_format_prefers_bars_with_bpm(self, tmp_path):
+        """Test that bar-based is used when both time and bar columns exist with BPM."""
+        csv_path = tmp_path / "reference.csv"
+        # Both start/end (time) and start_bar/end_bar with BPM
+        csv_path.write_text(
+            "file,label,start,end,start_bar,end_bar,bpm,first_downbeat\n"
+            "track1.mp3,intro,999,999,1,9,120,0.5\n"  # Time values ignored
+        )
+
+        reference = load_structure_reference(csv_path)
+        track1_key = [k for k in reference.keys() if k.name == "track1.mp3"][0]
+
+        sections = reference[track1_key]
+        # Should use bar-based (0.5s) not time-based (999s)
+        assert abs(sections[0]["start"] - 0.5) < 0.01
+
+    def test_per_track_first_downbeat(self, tmp_path):
+        """Test that different tracks can have different first_downbeat values."""
+        csv_path = tmp_path / "reference.csv"
+        csv_path.write_text(
+            "file,label,start_bar,end_bar,bpm,first_downbeat\n"
+            "track1.mp3,intro,1,9,120,0.5\n"
+            "track2.mp3,intro,1,9,120,1.0\n"
+        )
+
+        reference = load_structure_reference(csv_path)
+        track1_key = [k for k in reference.keys() if k.name == "track1.mp3"][0]
+        track2_key = [k for k in reference.keys() if k.name == "track2.mp3"][0]
+
+        # track1 has first_downbeat=0.5
+        assert abs(reference[track1_key][0]["start"] - 0.5) < 0.01
+
+        # track2 has first_downbeat=1.0
+        assert abs(reference[track2_key][0]["start"] - 1.0) < 0.01
+
 
 class TestCalculateOverlap:
     """Tests for _calculate_overlap function."""
@@ -137,22 +248,22 @@ class TestCalculateStructureMetrics:
         # Boundaries should match within tolerance
         assert metrics["boundary_recall"] > 0.5
 
-    def test_drop_detection_metrics(self):
-        """Test drop-specific detection metrics."""
+    def test_event_detection_metrics(self):
+        """Test event-specific detection metrics (drops)."""
         reference = [
-            {"label": "intro", "start": 0.0, "end": 30.0},
-            {"label": "drop", "start": 30.0, "end": 90.0},
-            {"label": "drop", "start": 120.0, "end": 180.0},
+            {"label": "intro", "start": 0.0, "end": 30.0, "is_event": False},
+            {"label": "drop", "time": 30.0, "is_event": True},
+            {"label": "drop", "time": 120.0, "is_event": True},
         ]
         detected = [
-            {"label": "intro", "start": 0.0, "end": 30.0, "confidence": 0.9},
-            {"label": "drop", "start": 30.0, "end": 90.0, "confidence": 0.85},  # Correct
-            {"label": "breakdown", "start": 120.0, "end": 180.0, "confidence": 0.8},  # Missed drop
+            {"label": "intro", "start": 0.0, "end": 30.0, "is_event": False, "confidence": 0.9},
+            {"label": "drop", "time": 30.0, "is_event": True, "confidence": 0.85},  # Correct
+            # Missed second drop
         ]
 
         metrics = _calculate_structure_metrics(reference, detected, 2.0)
 
         # Only one of two drops detected
-        assert metrics["drop_recall"] == 0.5
+        assert metrics["event_recall"] == 0.5
         # One drop detected, one detected as drop
-        assert metrics["drop_precision"] == 1.0
+        assert metrics["event_precision"] == 1.0
