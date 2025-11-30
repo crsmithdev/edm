@@ -222,8 +222,8 @@ class TestPostProcessSections:
 
         assert sections[-1].end_time == 120.0
 
-    def test_fills_gaps_between_sections(self):
-        """Test that gaps between sections are filled."""
+    def test_allows_gaps_between_sections(self):
+        """Test that gaps between sections are preserved (not filled)."""
         input_sections = [
             Section(label="intro", start_time=0.0, end_time=30.0, confidence=0.9),
             Section(label="drop", start_time=35.0, end_time=96.0, confidence=0.85),  # Gap of 5s
@@ -231,8 +231,9 @@ class TestPostProcessSections:
 
         sections = _post_process_sections(input_sections, 96.0)
 
-        # First section should be extended to fill gap
-        assert sections[0].end_time == 35.0
+        # Gap should be preserved - sections not extended
+        assert sections[0].end_time == 30.0
+        assert sections[1].start_time == 35.0
 
     def test_handles_overlapping_sections(self):
         """Test handling of overlapping sections."""

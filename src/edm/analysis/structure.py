@@ -199,8 +199,8 @@ def _post_process_sections(sections: list[Section], duration: float | None) -> l
     Ensures:
     - Sections are sorted by start time
     - No overlaps between sections
-    - Full track coverage (if duration known)
-    - No gaps between sections
+    - Full track coverage at start/end (if duration known)
+    - Gaps between sections are allowed (interpreted as unclassified regions)
 
     Args:
         sections: List of detected sections.
@@ -245,15 +245,7 @@ def _post_process_sections(sections: list[Section], duration: float | None) -> l
                 confidence=section.confidence,
             )
 
-        # Handle gap
-        elif section.start_time > prev.end_time + 0.1:
-            # Extend previous section to fill gap
-            processed[-1] = Section(
-                label=prev.label,
-                start_time=prev.start_time,
-                end_time=section.start_time,
-                confidence=prev.confidence,
-            )
+        # Gaps are allowed - don't extend previous section
 
         # Skip zero-duration sections
         if section.end_time <= section.start_time:

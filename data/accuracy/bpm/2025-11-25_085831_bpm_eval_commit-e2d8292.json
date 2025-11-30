@@ -1,0 +1,545 @@
+{
+  "metadata": {
+    "analysis_type": "bpm",
+    "timestamp": "2025-11-25T08:58:31.402651",
+    "git_commit": "e2d8292",
+    "git_branch": "main",
+    "sample_size": 47,
+    "sampling_strategy": "random",
+    "sampling_seed": 42,
+    "reference_source": "metadata",
+    "tolerance": 2.5
+  },
+  "summary": {
+    "total_files": 47,
+    "successful": 47,
+    "failed": 0,
+    "mean_absolute_error": 0.6876965978613403,
+    "root_mean_square_error": 0.828176221196453,
+    "accuracy_within_tolerance": 100.0,
+    "error_distribution": {
+      "[-10, -5)": 0,
+      "[-5, 0)": 25,
+      "[0, 5)": 22,
+      "[5, 10)": 0,
+      "[10+)": 0
+    }
+  },
+  "outliers": [
+    {
+      "file": "/mnt/c/music/library/Flexus, Estefano Haze - Time Spirit (Original Mix).flac",
+      "reference": 138.0,
+      "computed": 136.36363636363706,
+      "error": -1.636363636362944,
+      "success": true,
+      "computation_time": 32.36969804763794,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Hertz - Push the Throttle.flac",
+      "reference": 138.0,
+      "computed": 139.534883720928,
+      "error": 1.5348837209280077,
+      "success": true,
+      "computation_time": 23.876723051071167,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Animato, Atmos, Born Sleepy - Senior Junkies (Original Mix).flac",
+      "reference": 138.0,
+      "computed": 139.534883720928,
+      "error": 1.5348837209280077,
+      "success": true,
+      "computation_time": 33.68893623352051,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Umek, Hertz - Ivory.flac",
+      "reference": 138.0,
+      "computed": 139.534883720928,
+      "error": 1.5348837209280077,
+      "success": true,
+      "computation_time": 22.942516088485718,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Saekone - Insane.flac",
+      "reference": 135.0,
+      "computed": 136.36363636362827,
+      "error": 1.3636363636282738,
+      "success": true,
+      "computation_time": 23.36422848701477,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Shakta - Lepton Head (Shanti v Deedrah Remix).flac",
+      "reference": 145.0,
+      "computed": 146.34146341463284,
+      "error": 1.341463414632841,
+      "success": true,
+      "computation_time": 29.78901720046997,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Lacchesi, Leo Pol - United We Scream.flac",
+      "reference": 145.0,
+      "computed": 146.34146341462522,
+      "error": 1.341463414625224,
+      "success": true,
+      "computation_time": 23.83814263343811,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Kaspar - Morpheus.flac",
+      "reference": 132.0,
+      "computed": 133.33333333332828,
+      "error": 1.3333333333282837,
+      "success": true,
+      "computation_time": 19.829299211502075,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/In Verruf - I See The Devil.flac",
+      "reference": 144.0,
+      "computed": 142.85714285714468,
+      "error": -1.1428571428553198,
+      "success": true,
+      "computation_time": 24.563014030456543,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Tomek - Blue River (Original Mix).flac",
+      "reference": 121.0,
+      "computed": 120.0,
+      "error": -1.0,
+      "success": true,
+      "computation_time": 32.214534521102905,
+      "error_message": null
+    }
+  ],
+  "results": [
+    {
+      "file": "/mnt/c/music/library/Agents Of Time - Zodiac.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 24.24437689781189,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Hertz - Push the Throttle.flac",
+      "reference": 138.0,
+      "computed": 139.534883720928,
+      "error": 1.5348837209280077,
+      "success": true,
+      "computation_time": 23.876723051071167,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Girlwoman - Prisma (Klanglos Remix).flac",
+      "reference": 128.0,
+      "computed": 127.65957446808541,
+      "error": -0.34042553191459035,
+      "success": true,
+      "computation_time": 23.82858681678772,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Flowjob - Penumbra (Original Mix).flac",
+      "reference": 137.0,
+      "computed": 136.36363636363706,
+      "error": -0.6363636363629439,
+      "success": true,
+      "computation_time": 29.43349862098694,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Boticka - Disappear (Original Mix).flac",
+      "reference": 150.0,
+      "computed": 149.99999999999787,
+      "error": -2.1316282072803006e-12,
+      "success": true,
+      "computation_time": 19.287426471710205,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Zankee Gulati - Mind Opener.flac",
+      "reference": 122.0,
+      "computed": 122.44897959183446,
+      "error": 0.44897959183445835,
+      "success": true,
+      "computation_time": 34.027236461639404,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Section303 - Bunker.flac",
+      "reference": 136.0,
+      "computed": 136.36363636363706,
+      "error": 0.3636363636370561,
+      "success": true,
+      "computation_time": 30.14326286315918,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Bizzarro Universe, AUTOFLOWER - Love Dream (AUTOFLOWER Remix).flac",
+      "reference": 131.0,
+      "computed": 130.4347826086954,
+      "error": -0.5652173913045999,
+      "success": true,
+      "computation_time": 14.268353462219238,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Submelody - Carousel.flac",
+      "reference": 120.0,
+      "computed": 120.0,
+      "error": 0.0,
+      "success": true,
+      "computation_time": 28.334105253219604,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Molac - Vanta Black.flac",
+      "reference": 123.0,
+      "computed": 122.44897959183623,
+      "error": -0.5510204081637653,
+      "success": true,
+      "computation_time": 31.35229182243347,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Anthony G - Pravda (Rick Pier O'Neil Remix).flac",
+      "reference": 123.0,
+      "computed": 122.44897959183623,
+      "error": -0.5510204081637653,
+      "success": true,
+      "computation_time": 30.898127555847168,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Animato, Atmos, Born Sleepy - Senior Junkies (Original Mix).flac",
+      "reference": 138.0,
+      "computed": 139.534883720928,
+      "error": 1.5348837209280077,
+      "success": true,
+      "computation_time": 33.68893623352051,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Blame the Mono - MOULD THE BEAT.flac",
+      "reference": 146.0,
+      "computed": 146.34146341463537,
+      "error": 0.34146341463537055,
+      "success": true,
+      "computation_time": 20.961480855941772,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Flexus, Estefano Haze - Time Spirit (Original Mix).flac",
+      "reference": 138.0,
+      "computed": 136.36363636363706,
+      "error": -1.636363636362944,
+      "success": true,
+      "computation_time": 32.36969804763794,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/GAR - Rudimentary.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 30.53406596183777,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Rick Pier O'Neil - Traveling (RPO Part 1).flac",
+      "reference": 125.0,
+      "computed": 124.99999999999896,
+      "error": -1.0373923942097463e-12,
+      "success": true,
+      "computation_time": 25.512778282165527,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/TH;EN - Get Down.flac",
+      "reference": 123.0,
+      "computed": 122.44897959183801,
+      "error": -0.5510204081619889,
+      "success": true,
+      "computation_time": 17.0085346698761,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Agustin Pietrocola - Sizer.flac",
+      "reference": 123.0,
+      "computed": 122.44897959183623,
+      "error": -0.5510204081637653,
+      "success": true,
+      "computation_time": 27.43401575088501,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Simon Doty - Lady Danger (Extended Mix).flac",
+      "reference": 128.0,
+      "computed": 127.65957446808541,
+      "error": -0.34042553191459035,
+      "success": true,
+      "computation_time": 30.222281217575073,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Estiva - Via Infinita (Extended Mix).flac",
+      "reference": 124.0,
+      "computed": 124.99999999999527,
+      "error": 0.9999999999952678,
+      "success": true,
+      "computation_time": 27.280956983566284,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Umek, Hertz - Ivory.flac",
+      "reference": 138.0,
+      "computed": 139.534883720928,
+      "error": 1.5348837209280077,
+      "success": true,
+      "computation_time": 22.942516088485718,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Modd, Voice of Babylon - Hymn Of The Fern.flac",
+      "reference": 122.0,
+      "computed": 122.44897959183446,
+      "error": 0.44897959183445835,
+      "success": true,
+      "computation_time": 28.050705194473267,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Flowjob - 10000 Smiles Away.flac",
+      "reference": 139.0,
+      "computed": 139.534883720928,
+      "error": 0.5348837209280077,
+      "success": true,
+      "computation_time": 29.6609365940094,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Oliver Koletzki - Don't Stop Me Now.flac",
+      "reference": 123.0,
+      "computed": 122.44897959183668,
+      "error": -0.5510204081633248,
+      "success": true,
+      "computation_time": 22.457459449768066,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Sub Kulture - Anthurium (Radio Edit).flac",
+      "reference": 127.0,
+      "computed": 127.65957446808541,
+      "error": 0.6595744680854096,
+      "success": true,
+      "computation_time": 16.651721000671387,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Hessian - Blue.flac",
+      "reference": 125.0,
+      "computed": 124.99999999999989,
+      "error": -1.1368683772161603e-13,
+      "success": true,
+      "computation_time": 22.01391100883484,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/AUTOFLOWER - THE ONLY ONE.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 14.529116153717041,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Derek Christopher - Transferencia (Extended Mix).flac",
+      "reference": 130.0,
+      "computed": 130.4347826086959,
+      "error": 0.4347826086959117,
+      "success": true,
+      "computation_time": 25.913564205169678,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Kaspar - Morpheus.flac",
+      "reference": 132.0,
+      "computed": 133.33333333332828,
+      "error": 1.3333333333282837,
+      "success": true,
+      "computation_time": 19.829299211502075,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Darlyn Vlys, Panthera, Damon Jee - Flame (Damon Jee Remix).flac",
+      "reference": 125.0,
+      "computed": 124.99999999999896,
+      "error": -1.0373923942097463e-12,
+      "success": true,
+      "computation_time": 26.875076293945312,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Fideles - Overcome.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 24.800023555755615,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Kasablanca - Phoenix.flac",
+      "reference": 124.0,
+      "computed": 124.99999999999896,
+      "error": 0.9999999999989626,
+      "success": true,
+      "computation_time": 16.943927764892578,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Liquid Soul, Zyce - Anjuna.flac",
+      "reference": 136.0,
+      "computed": 136.36363636363706,
+      "error": 0.3636363636370561,
+      "success": true,
+      "computation_time": 32.62517166137695,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Bob Moses - Enough to Believe.flac",
+      "reference": 117.0,
+      "computed": 117.64705882352823,
+      "error": 0.6470588235282264,
+      "success": true,
+      "computation_time": 39.431723833084106,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Lacchesi, Leo Pol - United We Scream.flac",
+      "reference": 145.0,
+      "computed": 146.34146341462522,
+      "error": 1.341463414625224,
+      "success": true,
+      "computation_time": 23.83814263343811,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Kaspar - Valhalla.flac",
+      "reference": 136.0,
+      "computed": 136.36363636363706,
+      "error": 0.3636363636370561,
+      "success": true,
+      "computation_time": 20.83797550201416,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/TONCO - Andimar.flac",
+      "reference": 123.0,
+      "computed": 122.44897959183801,
+      "error": -0.5510204081619889,
+      "success": true,
+      "computation_time": 15.397530794143677,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/HI-LO, Oliver Heldens - CRESCENDO.flac",
+      "reference": 131.0,
+      "computed": 130.43478260869742,
+      "error": -0.565217391302582,
+      "success": true,
+      "computation_time": 23.23006558418274,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Artento Divini - Drip On.flac",
+      "reference": 143.0,
+      "computed": 142.85714285714226,
+      "error": -0.14285714285773565,
+      "success": true,
+      "computation_time": 11.197091579437256,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Paul van Dyk, Aly & Fila - Is This Only a Dream (A Dreamstate Anthem) (Festival Mix).flac",
+      "reference": 142.0,
+      "computed": 142.85714285713743,
+      "error": 0.8571428571374327,
+      "success": true,
+      "computation_time": 22.22874093055725,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Saekone - Insane.flac",
+      "reference": 135.0,
+      "computed": 136.36363636362827,
+      "error": 1.3636363636282738,
+      "success": true,
+      "computation_time": 23.36422848701477,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Clap Codex, Sabura - Rogue Planet.flac",
+      "reference": 128.0,
+      "computed": 127.65957446808541,
+      "error": -0.34042553191459035,
+      "success": true,
+      "computation_time": 29.293378353118896,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Liquid Soul, Ritmo - Be Right (Asgard Remix).flac",
+      "reference": 142.0,
+      "computed": 142.85714285713743,
+      "error": 0.8571428571374327,
+      "success": true,
+      "computation_time": 32.979321002960205,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Because of Art - Elevate.flac",
+      "reference": 125.0,
+      "computed": 124.99999999999989,
+      "error": -1.1368683772161603e-13,
+      "success": true,
+      "computation_time": 14.612351179122925,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Shakta - Lepton Head (Shanti v Deedrah Remix).flac",
+      "reference": 145.0,
+      "computed": 146.34146341463284,
+      "error": 1.341463414632841,
+      "success": true,
+      "computation_time": 29.78901720046997,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/In Verruf - I See The Devil.flac",
+      "reference": 144.0,
+      "computed": 142.85714285714468,
+      "error": -1.1428571428553198,
+      "success": true,
+      "computation_time": 24.563014030456543,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Tomek - Blue River (Original Mix).flac",
+      "reference": 121.0,
+      "computed": 120.0,
+      "error": -1.0,
+      "success": true,
+      "computation_time": 32.214534521102905,
+      "error_message": null
+    }
+  ]
+}

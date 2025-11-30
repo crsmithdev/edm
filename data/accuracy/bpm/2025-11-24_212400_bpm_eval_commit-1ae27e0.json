@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "analysis_type": "bpm",
+    "timestamp": "2025-11-24T21:24:00.632930",
+    "git_commit": "1ae27e0",
+    "git_branch": "main",
+    "sample_size": 3,
+    "sampling_strategy": "random",
+    "sampling_seed": 42,
+    "reference_source": "metadata",
+    "tolerance": 2.5
+  },
+  "summary": {
+    "total_files": 3,
+    "successful": 3,
+    "failed": 0,
+    "mean_absolute_error": 0.9584364176133088,
+    "root_mean_square_error": 1.0757567227373475,
+    "accuracy_within_tolerance": 100.0,
+    "error_distribution": {
+      "[-10, -5)": 0,
+      "[-5, 0)": 2,
+      "[0, 5)": 1,
+      "[5, 10)": 0,
+      "[10+)": 0
+    }
+  },
+  "outliers": [
+    {
+      "file": "/mnt/c/music/library/Hertz - Push the Throttle.flac",
+      "reference": 138.0,
+      "computed": 139.534883720928,
+      "error": 1.5348837209280077,
+      "success": true,
+      "computation_time": 24.27823495864868,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Agents Of Time - Zodiac.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 25.926048278808594,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Girlwoman - Prisma (Klanglos Remix).flac",
+      "reference": 128.0,
+      "computed": 127.65957446808541,
+      "error": -0.34042553191459035,
+      "success": true,
+      "computation_time": 24.493846654891968,
+      "error_message": null
+    }
+  ],
+  "results": [
+    {
+      "file": "/mnt/c/music/library/Agents Of Time - Zodiac.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 25.926048278808594,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Hertz - Push the Throttle.flac",
+      "reference": 138.0,
+      "computed": 139.534883720928,
+      "error": 1.5348837209280077,
+      "success": true,
+      "computation_time": 24.27823495864868,
+      "error_message": null
+    },
+    {
+      "file": "/mnt/c/music/library/Girlwoman - Prisma (Klanglos Remix).flac",
+      "reference": 128.0,
+      "computed": 127.65957446808541,
+      "error": -0.34042553191459035,
+      "success": true,
+      "computation_time": 24.493846654891968,
+      "error_message": null
+    }
+  ]
+}

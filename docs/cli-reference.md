@@ -108,7 +108,7 @@ edm evaluate bpm [OPTIONS]
 | `--source` | DIRECTORY | Yes | - | Directory containing audio files |
 | `--reference` | TEXT | Yes | - | Reference source: `metadata` or path to CSV/JSON |
 | `--sample-size` | INTEGER | No | `100` | Number of files to sample |
-| `--output` | DIRECTORY | No | `benchmarks/results/accuracy/bpm/` | Output directory |
+| `--output` | DIRECTORY | No | `data/accuracy/bpm/` | Output directory |
 | `--seed` | INTEGER | No | - | Random seed for reproducible sampling |
 | `--full` | FLAG | No | - | Evaluate all files (ignore `--sample-size`) |
 | `--tolerance` | FLOAT | No | `2.5` | BPM tolerance for accuracy calculation |
@@ -125,7 +125,7 @@ edm evaluate bpm [OPTIONS]
 
 ```bash
 # Evaluate against CSV reference
-uv run edm evaluate bpm --source ~/music --reference tests/fixtures/reference/bpm_tagged.csv
+uv run edm evaluate bpm --source ~/music --reference data/annotations/bpm_tagged.csv
 
 # Evaluate against file metadata
 uv run edm evaluate bpm --source ~/music --reference metadata
@@ -156,7 +156,7 @@ edm evaluate structure [OPTIONS]
 | `--source` | DIRECTORY | Yes | - | Directory containing audio files |
 | `--reference` | PATH | Yes | - | Path to CSV file with ground truth annotations |
 | `--sample-size` | INTEGER | No | `100` | Number of files to sample |
-| `--output` | DIRECTORY | No | `benchmarks/results/accuracy/structure/` | Output directory |
+| `--output` | DIRECTORY | No | `data/accuracy/structure/` | Output directory |
 | `--seed` | INTEGER | No | - | Random seed for reproducible sampling |
 | `--full` | FLAG | No | - | Evaluate all files (ignore `--sample-size`) |
 | `--tolerance` | FLOAT | No | `2.0` | Boundary tolerance in seconds for section matching |

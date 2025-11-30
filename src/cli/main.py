@@ -60,7 +60,7 @@ def analyze(
         None,
         "--types",
         "-t",
-        help="Comma-separated list of analysis types (bpm,grid,structure)",
+        help="Comma-separated list of analysis types (bpm,beats,grid,structure)",
     ),
     output: Path | None = typer.Option(
         None,
@@ -72,7 +72,7 @@ def analyze(
         "table",
         "--format",
         "-f",
-        help="Output format (table, json)",
+        help="Output format (table, json, yaml)",
     ),
     config: Path | None = typer.Option(
         None,
@@ -166,6 +166,8 @@ def analyze(
         edm analyze track.mp3
 
         edm analyze track.mp3 --types bpm,grid
+
+        edm analyze track.mp3 --types beats  # Beat/downbeat detection
 
         edm analyze *.mp3 --output results.json
 

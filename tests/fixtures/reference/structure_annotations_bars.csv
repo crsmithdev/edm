@@ -1,6 +1,0 @@
-filename,start_bar,end_bar,label,bpm
-example_track.flac,0,16,intro,128
-example_track.flac,16,32,buildup,128
-example_track.flac,32,64,drop,128
-example_track.flac,64,80,breakdown,128
-example_track.flac,80,96,drop,128

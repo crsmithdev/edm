@@ -32,7 +32,7 @@ def evaluate_bpm_command(
     output: Path | None = typer.Option(
         None,
         "--output",
-        help="Output directory (default: benchmarks/results/accuracy/bpm/)",
+        help="Output directory (default: data/accuracy/bpm/)",
         file_okay=False,
         dir_okay=True,
     ),
@@ -62,7 +62,7 @@ def evaluate_bpm_command(
 
     Examples:
 
-        edm evaluate bpm --source ~/music --reference tests/fixtures/reference/bpm_tagged.csv
+        edm evaluate bpm --source ~/music --reference data/annotations/bpm_tagged.csv
 
         edm evaluate bpm --source ~/music --reference spotify
 
@@ -114,7 +114,7 @@ def evaluate_structure_command(
     output: Path | None = typer.Option(
         None,
         "--output",
-        help="Output directory (default: benchmarks/results/accuracy/structure/)",
+        help="Output directory (default: data/accuracy/structure/)",
         file_okay=False,
         dir_okay=True,
     ),

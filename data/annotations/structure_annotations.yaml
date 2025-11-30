@@ -1,0 +1,88 @@
+file: /home/crsmi/music/MRPHLNDR - LOVE CODE 101.flac
+duration: 160.0
+tempo: {bpm: 132.0}
+structure:
+- [1, 1, intro]
+- [1, 5, drop]
+- [5, 11, drop]
+- [11, 25, other]
+- [25, 32, other]
+- [32, 40, other]
+- [40, 49, other]
+- [49, 55, buildup]
+- [55, 70, drop]
+- [70, 88, drop]
+- [88, 89, outro]
+---
+file: /home/crsmi/music/NULLHERTZ - Acid Devine (Original Mix).flac
+duration: 303.0
+tempo: {bpm: 141.0}
+structure:
+- [1, 1, intro]
+- [1, 5, breakdown]
+- [5, 15, breakdown]
+- [15, 29, drop]
+- [29, 50, drop]
+- [50, 58, other]
+- [58, 66, other]
+- [66, 81, other]
+- [81, 88, drop]
+- [88, 96, other]
+- [96, 109, drop]
+- [109, 130, drop]
+- [130, 138, other]
+- [138, 144, other]
+- [144, 161, drop]
+- [161, 168, drop]
+- [168, 178, breakdown]
+- [178, 179, outro]
+---
+file: /home/crsmi/music/Rauschhaus - Patches & Patterns.flac
+duration: 361.0
+tempo: {bpm: 123.0}
+structure:
+- [1, 1, intro]
+- [1, 17, drop]
+- [17, 78, drop]
+- [78, 100, breakdown]
+- [100, 113, breakdown]
+- [113, 165, drop]
+- [165, 185, drop]
+- [185, 186, outro]
+---
+file: /home/crsmi/music/Simon Doty - Lady Danger (Extended Mix).flac
+duration: 457.5
+tempo: {bpm: 128.0}
+structure:
+- [1, 1, intro]
+- [1, 21, drop]
+- [21, 32, drop]
+- [32, 41, drop]
+- [41, 73, drop]
+- [73, 96, other]
+- [96, 104, drop]
+- [104, 112, drop]
+- [112, 120, drop]
+- [120, 129, drop]
+- [129, 143, breakdown]
+- [143, 155, breakdown]
+- [155, 169, buildup]
+- [169, 176, drop]
+- [176, 193, drop]
+- [193, 200, drop]
+- [200, 209, other]
+- [209, 224, drop]
+- [224, 244, drop]
+- [244, 245, outro]
+---
+file: /home/crsmi/music/Talla 2XLC, Das Licht, RRAW! - Traumwelten.flac
+duration: 164.4
+tempo: {bpm: 135.0}
+structure:
+- [1, 1, intro]
+- [1, 20, breakdown]
+- [20, 39, drop]
+- [39, 70, drop]
+- [70, 85, drop]
+- [85, 93, drop]
+- [93, 93, outro]

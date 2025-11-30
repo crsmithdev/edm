@@ -1,0 +1,554 @@
+{
+  "metadata": {
+    "analysis_type": "bpm",
+    "timestamp": "2025-11-26T14:04:19.578564",
+    "git_commit": "41e788c",
+    "git_branch": "main",
+    "sample_size": 48,
+    "sampling_strategy": "random",
+    "sampling_seed": null,
+    "reference_source": "metadata",
+    "tolerance": 2.5
+  },
+  "summary": {
+    "total_files": 48,
+    "successful": 48,
+    "failed": 0,
+    "mean_absolute_error": 1.4424877658555584,
+    "root_mean_square_error": 1.6833267589455532,
+    "accuracy_within_tolerance": 89.58333333333334,
+    "error_distribution": {
+      "[-10, -5)": 0,
+      "[-5, 0)": 26,
+      "[0, 5)": 22,
+      "[5, 10)": 0,
+      "[10+)": 0
+    }
+  },
+  "outliers": [
+    {
+      "file": "/home/crsmi/music/Lycii - Breath (ABGT650) (Mixed).flac",
+      "reference": 127.0,
+      "computed": 130.43478260869338,
+      "error": 3.434782608693382,
+      "success": true,
+      "computation_time": 2.702202558517456,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Gregory Esayan - Cradle.flac",
+      "reference": 122.0,
+      "computed": 124.99999999999896,
+      "error": 2.9999999999989626,
+      "success": true,
+      "computation_time": 2.3378241062164307,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Pete K - Close To You.flac",
+      "reference": 122.0,
+      "computed": 124.99999999999527,
+      "error": 2.999999999995268,
+      "success": true,
+      "computation_time": 2.583407163619995,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Trudge - Vaulted.flac",
+      "reference": 140.0,
+      "computed": 142.85714285713743,
+      "error": 2.8571428571374327,
+      "success": true,
+      "computation_time": 8.501371383666992,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Under Black Helmet - Have You Ever Had a Dream.flac",
+      "reference": 133.0,
+      "computed": 130.43478260870145,
+      "error": -2.565217391298546,
+      "success": true,
+      "computation_time": 3.2074313163757324,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Rodg - The Coaster.flac",
+      "reference": 128.0,
+      "computed": 130.43478260869338,
+      "error": 2.434782608693382,
+      "success": true,
+      "computation_time": 2.420194625854492,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Rick Pier O'Neil, Elan Myles - Quantum Shadows.flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 8.892220973968506,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Simon Doty - Lady Danger (Extended Mix).flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 4.458887577056885,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Abity - Roots (Gai Barone Remix).flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 9.361305236816406,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Highlite - Otherdisco.flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 9.106702089309692,
+      "error_message": null
+    }
+  ],
+  "results": [
+    {
+      "file": "/home/crsmi/music/Trudge - Vaulted.flac",
+      "reference": 140.0,
+      "computed": 142.85714285713743,
+      "error": 2.8571428571374327,
+      "success": true,
+      "computation_time": 8.501371383666992,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Abity - Roots (Gai Barone Remix).flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 9.361305236816406,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Highlite - Otherdisco.flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 9.106702089309692,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Victor Ruiz, Wehbba - Silo (Original Mix).flac",
+      "reference": 138.0,
+      "computed": 136.36363636363706,
+      "error": -1.636363636362944,
+      "success": true,
+      "computation_time": 9.145420789718628,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/i_o - Another Level.flac",
+      "reference": 130.0,
+      "computed": 130.4347826086944,
+      "error": 0.4347826086944053,
+      "success": true,
+      "computation_time": 8.422680854797363,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Rick Pier O'Neil, Elan Myles - Quantum Shadows.flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 8.892220973968506,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/MXV - When I Needed You (Tritonia 516).flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 7.51438045501709,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Body Clinic - T-Minus.flac",
+      "reference": 136.0,
+      "computed": 136.36363636363706,
+      "error": 0.3636363636370561,
+      "success": true,
+      "computation_time": 9.134698152542114,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/In Verruf - I See The Devil.flac",
+      "reference": 144.0,
+      "computed": 142.85714285714468,
+      "error": -1.1428571428553198,
+      "success": true,
+      "computation_time": 8.737666845321655,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Liquid Soul - Devotion (Original Mix).flac",
+      "reference": 135.0,
+      "computed": 136.36363636363706,
+      "error": 1.363636363637056,
+      "success": true,
+      "computation_time": 9.17430329322815,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Shingo Nakamura - Depict.flac",
+      "reference": 126.0,
+      "computed": 125.0,
+      "error": -1.0,
+      "success": true,
+      "computation_time": 4.775025844573975,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/James And The Cat - Some Techno Beat.flac",
+      "reference": 129.0,
+      "computed": 130.43478260869338,
+      "error": 1.4347826086933821,
+      "success": true,
+      "computation_time": 2.4943532943725586,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Back From The Wave, Endrik Schroeder - Raver.flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 3.268913745880127,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Tiefstone, CAMILA (AR) - The Void.flac",
+      "reference": 123.0,
+      "computed": 124.99999999999896,
+      "error": 1.9999999999989626,
+      "success": true,
+      "computation_time": 3.1413052082061768,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/OFF  GRID - Dubwork.flac",
+      "reference": 144.0,
+      "computed": 142.8571428571435,
+      "error": -1.1428571428565135,
+      "success": true,
+      "computation_time": 3.0025386810302734,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",
+      "reference": 131.0,
+      "computed": 130.43478260869742,
+      "error": -0.565217391302582,
+      "success": true,
+      "computation_time": 3.7356631755828857,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Kasablanca - Higher Resolution.flac",
+      "reference": 124.0,
+      "computed": 124.99999999999896,
+      "error": 0.9999999999989626,
+      "success": true,
+      "computation_time": 2.8529701232910156,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Invexis - Elektronenwind.flac",
+      "reference": 143.0,
+      "computed": 142.85714285714226,
+      "error": -0.14285714285773565,
+      "success": true,
+      "computation_time": 3.5739190578460693,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Regent - Delta Hyve.flac",
+      "reference": 144.0,
+      "computed": 142.8571428571429,
+      "error": -1.1428571428571104,
+      "success": true,
+      "computation_time": 3.5742249488830566,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Artbat - Artefact.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 3.489959478378296,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Exotek - Descent (Original Mix).flac",
+      "reference": 126.0,
+      "computed": 125.00000000000081,
+      "error": -0.99999999999919,
+      "success": true,
+      "computation_time": 4.256816387176514,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/BOTICKA - Red Room (Original Mix).flac",
+      "reference": 150.0,
+      "computed": 149.99999999999787,
+      "error": -2.1316282072803006e-12,
+      "success": true,
+      "computation_time": 2.0399954319000244,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/AUTOFLOWER - When It's Over (Extended Mix).flac",
+      "reference": 124.0,
+      "computed": 124.99999999999896,
+      "error": 0.9999999999989626,
+      "success": true,
+      "computation_time": 2.3879711627960205,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Kasablanca, Lane 8 - Remission.flac",
+      "reference": 125.0,
+      "computed": 125.00000000000036,
+      "error": 3.552713678800501e-13,
+      "success": true,
+      "computation_time": 2.290769577026367,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Artbat, Shall Ocin, braev - Origin.flac",
+      "reference": 126.0,
+      "computed": 124.99999999999991,
+      "error": -1.0000000000000853,
+      "success": true,
+      "computation_time": 3.653212785720825,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Home Shell - Cosmic Guardian.flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 3.2303738594055176,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Pete K - Close To You.flac",
+      "reference": 122.0,
+      "computed": 124.99999999999527,
+      "error": 2.999999999995268,
+      "success": true,
+      "computation_time": 2.583407163619995,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Lloyd Barwood - Hey Hey (Extended).flac",
+      "reference": 125.0,
+      "computed": 124.99999999999989,
+      "error": -1.1368683772161603e-13,
+      "success": true,
+      "computation_time": 4.084800958633423,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Shall Ocin - Jagged.flac",
+      "reference": 127.0,
+      "computed": 125.00000000000267,
+      "error": -1.9999999999973284,
+      "success": true,
+      "computation_time": 2.8052802085876465,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Teiko Yume - Savanth.flac",
+      "reference": 124.0,
+      "computed": 124.99999999999527,
+      "error": 0.9999999999952678,
+      "success": true,
+      "computation_time": 3.7211556434631348,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Hraach - Attention.flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 4.477743148803711,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/L. Doblado - Lie Alone (16BL Remix).flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 3.856518507003784,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Axel Karakasis - Control of Influence.flac",
+      "reference": 142.0,
+      "computed": 142.85714285714226,
+      "error": 0.8571428571422643,
+      "success": true,
+      "computation_time": 3.0666003227233887,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Lycii - Breath (ABGT650) (Mixed).flac",
+      "reference": 127.0,
+      "computed": 130.43478260869338,
+      "error": 3.434782608693382,
+      "success": true,
+      "computation_time": 2.702202558517456,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/East Cafe - The Inverted Pyramid (Andrea Cassino Rmx).flac",
+      "reference": 121.0,
+      "computed": 120.0,
+      "error": -1.0,
+      "success": true,
+      "computation_time": 3.7239811420440674,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Gregory Esayan - Cradle.flac",
+      "reference": 122.0,
+      "computed": 124.99999999999896,
+      "error": 2.9999999999989626,
+      "success": true,
+      "computation_time": 2.3378241062164307,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Because of Art - Elevate.flac",
+      "reference": 125.0,
+      "computed": 124.99999999999989,
+      "error": -1.1368683772161603e-13,
+      "success": true,
+      "computation_time": 2.6008872985839844,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Under Black Helmet - Have You Ever Had a Dream.flac",
+      "reference": 133.0,
+      "computed": 130.43478260870145,
+      "error": -2.565217391298546,
+      "success": true,
+      "computation_time": 3.2074313163757324,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Rodg - The Coaster.flac",
+      "reference": 128.0,
+      "computed": 130.43478260869338,
+      "error": 2.434782608693382,
+      "success": true,
+      "computation_time": 2.420194625854492,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Simon Doty - Lady Danger (Extended Mix).flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 4.458887577056885,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Innervoix, \u00d8ulitis - Never (AUTOFLOWER Remix).flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 2.928952932357788,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Anthony G - Pravda (Rick Pier O'Neil Remix).flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 3.651162624359131,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Cristoph - Come With Me.flac",
+      "reference": 123.0,
+      "computed": 124.99999999999896,
+      "error": 1.9999999999989626,
+      "success": true,
+      "computation_time": 1.5906906127929688,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Indira Paganotto, Nile Rodgers - Arte Como Amante.flac",
+      "reference": 143.0,
+      "computed": 142.85714285714226,
+      "error": -0.14285714285773565,
+      "success": true,
+      "computation_time": 1.9826397895812988,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Hessian - Be Yourself.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 3.4163691997528076,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/shinyflvres, Jason Johnson - Interstellar.flac",
+      "reference": 132.0,
+      "computed": 130.43478260869742,
+      "error": -1.565217391302582,
+      "success": true,
+      "computation_time": 3.4237396717071533,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Regent - Gradient.flac",
+      "reference": 144.0,
+      "computed": 142.8571428571429,
+      "error": -1.1428571428571104,
+      "success": true,
+      "computation_time": 2.8018224239349365,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/GAR - Rudimentary.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000081,
+      "error": -0.99999999999919,
+      "success": true,
+      "computation_time": 3.2934482097625732,
+      "error_message": null
+    }
+  ]
+}

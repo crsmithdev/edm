@@ -1,0 +1,554 @@
+{
+  "metadata": {
+    "analysis_type": "bpm",
+    "timestamp": "2025-11-26T14:01:23.596026",
+    "git_commit": "41e788c",
+    "git_branch": "main",
+    "sample_size": 48,
+    "sampling_strategy": "random",
+    "sampling_seed": null,
+    "reference_source": "metadata",
+    "tolerance": 2.5
+  },
+  "summary": {
+    "total_files": 48,
+    "successful": 48,
+    "failed": 0,
+    "mean_absolute_error": 1.3296351394156813,
+    "root_mean_square_error": 1.607169930282622,
+    "accuracy_within_tolerance": 93.75,
+    "error_distribution": {
+      "[-10, -5)": 0,
+      "[-5, 0)": 19,
+      "[0, 5)": 29,
+      "[5, 10)": 0,
+      "[10+)": 0
+    }
+  },
+  "outliers": [
+    {
+      "file": "/home/crsmi/music/Automates, RAUMM, Bxtr, Sacha Jea - Revival.flac",
+      "reference": 153.0,
+      "computed": 150.0000000000032,
+      "error": -2.9999999999967883,
+      "success": true,
+      "computation_time": 2.702446699142456,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Dave Walker, Fordal - Quantum Verse.flac",
+      "reference": 122.0,
+      "computed": 124.99999999999527,
+      "error": 2.999999999995268,
+      "success": true,
+      "computation_time": 6.155534029006958,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Flowjob - 10000 Smiles Away.flac",
+      "reference": 139.0,
+      "computed": 136.36363636363706,
+      "error": -2.636363636362944,
+      "success": true,
+      "computation_time": 2.5458288192749023,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Monogato - Miami Vibe (Omnia Remix).flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 13.440687894821167,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/F4T4L3RR0R - Homage (Album Mix).flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 13.2542142868042,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/T.F.F. - Kimahri.flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 3.7047178745269775,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Peter Illias - One Of Us (Terry Da Libra Remix).flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 5.476895809173584,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Kounterpart - Evermore.flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 3.222710609436035,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Krystal Klear - Entity.flac",
+      "reference": 134.0,
+      "computed": 136.36363636363637,
+      "error": 2.363636363636374,
+      "success": true,
+      "computation_time": 12.121382236480713,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Ferdinger - Darkness at Noon.flac",
+      "reference": 145.0,
+      "computed": 142.85714285714712,
+      "error": -2.1428571428528755,
+      "success": true,
+      "computation_time": 3.2310595512390137,
+      "error_message": null
+    }
+  ],
+  "results": [
+    {
+      "file": "/home/crsmi/music/Monogato - Miami Vibe (Omnia Remix).flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 13.440687894821167,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Hraach - Attention.flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 13.373297452926636,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Krystal Klear - Entity.flac",
+      "reference": 134.0,
+      "computed": 136.36363636363637,
+      "error": 2.363636363636374,
+      "success": true,
+      "computation_time": 12.121382236480713,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Hertz - Gear Shift.flac",
+      "reference": 138.0,
+      "computed": 136.36363636363706,
+      "error": -1.636363636362944,
+      "success": true,
+      "computation_time": 13.05864930152893,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Derek Christopher - Transferencia (Extended Mix).flac",
+      "reference": 130.0,
+      "computed": 130.43478260869742,
+      "error": 0.434782608697418,
+      "success": true,
+      "computation_time": 13.27939486503601,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Energy 52 - Cafe del Mar (Tale of Us Renaissance Remix).flac",
+      "reference": 125.0,
+      "computed": 124.99999999999896,
+      "error": -1.0373923942097463e-12,
+      "success": true,
+      "computation_time": 13.434922218322754,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Agustin Pietrocola - Sizer.flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 13.326564311981201,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Kinky Sound - Yellow 911.flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 12.877344608306885,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/F4T4L3RR0R - Homage (Album Mix).flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 13.2542142868042,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/RAUMM - Les eaux.flac",
+      "reference": 149.0,
+      "computed": 149.99999999999787,
+      "error": 0.9999999999978684,
+      "success": true,
+      "computation_time": 12.064751863479614,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Kaspar - Nova.flac",
+      "reference": 130.0,
+      "computed": 130.4347826086954,
+      "error": 0.4347826086954001,
+      "success": true,
+      "computation_time": 2.8963193893432617,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Kasablanca - Higher Resolution.flac",
+      "reference": 124.0,
+      "computed": 124.99999999999896,
+      "error": 0.9999999999989626,
+      "success": true,
+      "computation_time": 2.132141351699829,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Ezequiel Arias - ReAnimation.flac",
+      "reference": 125.0,
+      "computed": 125.0,
+      "error": 0.0,
+      "success": true,
+      "computation_time": 2.0906906127929688,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Flowjob - 10000 Smiles Away.flac",
+      "reference": 139.0,
+      "computed": 136.36363636363706,
+      "error": -2.636363636362944,
+      "success": true,
+      "computation_time": 2.5458288192749023,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Reinier Zonneveld, Hi-lo, Oliver Heldens - Flying Octopus.flac",
+      "reference": 131.0,
+      "computed": 130.4347826086954,
+      "error": -0.5652173913045999,
+      "success": true,
+      "computation_time": 1.7820754051208496,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Township Rebellion - Leave No Trace.flac",
+      "reference": 125.0,
+      "computed": 124.99999999999989,
+      "error": -1.1368683772161603e-13,
+      "success": true,
+      "computation_time": 2.6690988540649414,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Dh, Dustin Husain - Scenic Drive (Original Mix).flac",
+      "reference": 126.0,
+      "computed": 125.00000000000081,
+      "error": -0.99999999999919,
+      "success": true,
+      "computation_time": 2.733102560043335,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Cristoph - Come With Me.flac",
+      "reference": 123.0,
+      "computed": 124.99999999999896,
+      "error": 1.9999999999989626,
+      "success": true,
+      "computation_time": 1.4737462997436523,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Helsloot - Beautiful Losers (feat. Rangleklods).flac",
+      "reference": 124.0,
+      "computed": 124.99999999999896,
+      "error": 0.9999999999989626,
+      "success": true,
+      "computation_time": 2.0867674350738525,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Lavion - Dimensions.flac",
+      "reference": 125.0,
+      "computed": 125.0,
+      "error": 0.0,
+      "success": true,
+      "computation_time": 1.8173766136169434,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Call Me Sleeper - Losers Legacy.flac",
+      "reference": 110.0,
+      "computed": 111.11111111111275,
+      "error": 1.1111111111127485,
+      "success": true,
+      "computation_time": 1.6950490474700928,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Sainte Vie - Heart.flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 4.01599383354187,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Pryda - Allein.flac",
+      "reference": 126.0,
+      "computed": 125.00000000000267,
+      "error": -0.9999999999973284,
+      "success": true,
+      "computation_time": 1.6771793365478516,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/T.F.F. - Kimahri.flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 3.7047178745269775,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Space Food - Dark Force.flac",
+      "reference": 122.0,
+      "computed": 120.0,
+      "error": -2.0,
+      "success": true,
+      "computation_time": 2.881910800933838,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Caravel - Queen of Darkness.flac",
+      "reference": 150.0,
+      "computed": 150.00000000000054,
+      "error": 5.400124791776761e-13,
+      "success": true,
+      "computation_time": 2.553010940551758,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Boticka - Disappear (Original Mix).flac",
+      "reference": 150.0,
+      "computed": 150.00000000000054,
+      "error": 5.400124791776761e-13,
+      "success": true,
+      "computation_time": 3.1637754440307617,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Ferdinger - Darkness at Noon.flac",
+      "reference": 145.0,
+      "computed": 142.85714285714712,
+      "error": -2.1428571428528755,
+      "success": true,
+      "computation_time": 3.2310595512390137,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Dave Walker, Fordal - Quantum Verse.flac",
+      "reference": 122.0,
+      "computed": 124.99999999999527,
+      "error": 2.999999999995268,
+      "success": true,
+      "computation_time": 6.155534029006958,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/RAUMM - Sexto sexto discoth\u00e8que.flac",
+      "reference": 149.0,
+      "computed": 149.99999999999787,
+      "error": 0.9999999999978684,
+      "success": true,
+      "computation_time": 2.806297540664673,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Peter Illias - One Of Us (Terry Da Libra Remix).flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 5.476895809173584,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Axel Karakasis - Control of Influence.flac",
+      "reference": 142.0,
+      "computed": 142.85714285714226,
+      "error": 0.8571428571422643,
+      "success": true,
+      "computation_time": 4.1996636390686035,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/shinyflvres, Jason Johnson - Interstellar.flac",
+      "reference": 132.0,
+      "computed": 130.43478260869742,
+      "error": -1.565217391302582,
+      "success": true,
+      "computation_time": 3.9825122356414795,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Tanzanfall - I Bleed the Same Color as Lavender.flac",
+      "reference": 143.0,
+      "computed": 142.85714285714226,
+      "error": -0.14285714285773565,
+      "success": true,
+      "computation_time": 3.5213232040405273,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Paraleven, Mont Blvck - Hide.flac",
+      "reference": 121.0,
+      "computed": 120.0,
+      "error": -1.0,
+      "success": true,
+      "computation_time": 2.6412267684936523,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Automates, RAUMM, Bxtr, Sacha Jea - Revival.flac",
+      "reference": 153.0,
+      "computed": 150.0000000000032,
+      "error": -2.9999999999967883,
+      "success": true,
+      "computation_time": 2.702446699142456,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Molac - Vanta Black.flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 4.6622092723846436,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Kounterpart - Evermore.flac",
+      "reference": 128.0,
+      "computed": 130.43478260868534,
+      "error": 2.434782608685339,
+      "success": true,
+      "computation_time": 3.222710609436035,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Mark Porter - Moon Drift.flac",
+      "reference": 143.0,
+      "computed": 142.85714285714226,
+      "error": -0.14285714285773565,
+      "success": true,
+      "computation_time": 3.254213571548462,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Gorkiz - Antimatter (Gowzer Remix).flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 3.6169514656066895,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Ormus - Nehorah (Original Mix).flac",
+      "reference": 124.0,
+      "computed": 124.99999999999896,
+      "error": 0.9999999999989626,
+      "success": true,
+      "computation_time": 3.74473237991333,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Township Rebellion, Victor Pilava, Roemisch - Fantasia on a Theme.flac",
+      "reference": 124.0,
+      "computed": 124.99999999999896,
+      "error": 0.9999999999989626,
+      "success": true,
+      "computation_time": 3.9927515983581543,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Pointcloud - Sparks.flac",
+      "reference": 124.0,
+      "computed": 124.99999999999896,
+      "error": 0.9999999999989626,
+      "success": true,
+      "computation_time": 2.107750177383423,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Sound Quelle, Diana Miro - Summer Rain.flac",
+      "reference": 116.0,
+      "computed": 115.38461538461627,
+      "error": -0.6153846153837321,
+      "success": true,
+      "computation_time": 1.6846399307250977,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Modd, Voice of Babylon - Bomond.flac",
+      "reference": 125.0,
+      "computed": 124.99999999999896,
+      "error": -1.0373923942097463e-12,
+      "success": true,
+      "computation_time": 3.4697153568267822,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Huminal - Mountainside (Hicky & Kalo Remix) (Mixed).flac",
+      "reference": 123.0,
+      "computed": 124.99999999999896,
+      "error": 1.9999999999989626,
+      "success": true,
+      "computation_time": 2.6165146827697754,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/Max Graham, Second Sine - Chance to Escape (Fabri Lopez Remix).flac",
+      "reference": 123.0,
+      "computed": 124.99999999999527,
+      "error": 1.9999999999952678,
+      "success": true,
+      "computation_time": 3.447295904159546,
+      "error_message": null
+    },
+    {
+      "file": "/home/crsmi/music/INNERPHONIC - Galactic Trip (K Loveski Remix).flac",
+      "reference": 121.0,
+      "computed": 120.0,
+      "error": -1.0,
+      "success": true,
+      "computation_time": 3.579253673553467,
+      "error_message": null
+    }
+  ]
+}

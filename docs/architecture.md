@@ -109,7 +109,7 @@ Tests analysis accuracy against reference data:
 
 **BPM Evaluation** (`src/edm/evaluation/evaluators/bpm.py`):
 - Compares computed BPM against reference values
-- Results saved to `benchmarks/results/accuracy/bpm/`
+- Results saved to `data/accuracy/bpm/`
 
 **Structure Evaluation** (`src/edm/evaluation/evaluators/structure.py`):
 - Compares detected sections against ground truth annotations
@@ -117,7 +117,7 @@ Tests analysis accuracy against reference data:
 - Bar-based annotations automatically converted to time using BPM
 - Boundary tolerance matching (default ±2 seconds)
 - Per-section-type metrics (precision/recall/F1 for each label)
-- Results saved to `benchmarks/results/accuracy/structure/`
+- Results saved to `data/accuracy/structure/`
 
 ### Logging (`src/edm/logging.py:26`)
 

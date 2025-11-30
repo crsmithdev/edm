@@ -68,7 +68,7 @@ def bars_to_time(
     bar: float,
     bpm: Optional[float],
     time_signature: TimeSignature = (4, 4),
-    beat_grid: Optional[Any] = None,
+    first_downbeat: float = 0.0,
 ) -> Optional[float]:
     """Convert bar position to time in seconds.
 
@@ -77,8 +77,7 @@ def bars_to_time(
         bpm: Beats per minute. If None, returns None.
         time_signature: Time signature as (beats_per_bar, beat_note_value).
             Default is (4, 4) for 4/4 time.
-        beat_grid: Optional beat grid for precise beat positions. Reserved for
-            future implementation. Currently unused.
+        first_downbeat: Time in seconds where bar 1 begins. Default 0.0.
 
     Returns:
         Time in seconds or None if BPM unavailable.
@@ -92,12 +91,11 @@ def bars_to_time(
         15.0  # Bar 9 starts at 15s (8 bars elapsed)
         >>> bars_to_time(16.0, None)
         None  # BPM unavailable
+        >>> bars_to_time(1.0, 128, (4, 4), first_downbeat=2.0)
+        2.0  # Bar 1 starts at 2s when first_downbeat offset is 2.0
     """
     if bpm is None or bpm <= 0:
         return None
-
-    # Future: Use beat_grid if available for precise positions
-    # For now: constant tempo calculation
 
     beats_per_bar, _ = time_signature
 
@@ -106,7 +104,7 @@ def bars_to_time(
 
     # Convert beats to time
     beats_per_second = bpm / 60.0
-    time_seconds = total_beats / beats_per_second
+    time_seconds = first_downbeat + (total_beats / beats_per_second)
 
     return time_seconds
 

@@ -196,7 +196,7 @@ def evaluate_bpm(
         source_path: Directory containing audio files
         reference_source: Reference source ('spotify', 'metadata', or file path)
         sample_size: Number of files to sample (ignored if full=True)
-        output_dir: Output directory for results (default: benchmarks/results/accuracy/bpm/)
+        output_dir: Output directory for results (default: data/accuracy/bpm/)
         seed: Random seed for reproducibility
         full: Use all files instead of sampling
         tolerance: BPM tolerance for accuracy calculation
@@ -312,7 +312,7 @@ def evaluate_bpm(
 
     # Save results
     if output_dir is None:
-        output_dir = Path("benchmarks/results/accuracy/bpm")
+        output_dir = Path("data/accuracy/bpm")
 
     output_dir.mkdir(parents=True, exist_ok=True)
 

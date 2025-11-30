@@ -1,0 +1,63 @@
+filename,start_bar,end_bar,label,bpm,first_downbeat
+"3LAU, Dnmo - Falling.flac",1,2,intro,130.4,0.92
+"3LAU, Dnmo - Falling.flac",2,7,drop,130.4,0.92
+"3LAU, Dnmo - Falling.flac",7,17,other,130.4,0.92
+"3LAU, Dnmo - Falling.flac",17,25,other,130.4,0.92
+"3LAU, Dnmo - Falling.flac",25,34,drop,130.4,0.92
+"3LAU, Dnmo - Falling.flac",34,42,drop,130.4,0.92
+"3LAU, Dnmo - Falling.flac",42,50,drop,130.4,0.92
+"3LAU, Dnmo - Falling.flac",50,58,drop,130.4,0.92
+"3LAU, Dnmo - Falling.flac",58,66,drop,130.4,0.92
+"3LAU, Dnmo - Falling.flac",66,74,other,130.4,0.92
+"3LAU, Dnmo - Falling.flac",74,81,other,130.4,0.92
+"3LAU, Dnmo - Falling.flac",81,89,other,130.4,0.92
+"3LAU, Dnmo - Falling.flac",89,98,drop,130.4,0.92
+"3LAU, Dnmo - Falling.flac",98,116,drop,130.4,0.92
+"3LAU, Dnmo - Falling.flac",116,116,outro,130.4,0.92
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",1,1,intro,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",1,5,breakdown,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",5,67,drop,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",67,76,other,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",76,118,other,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",118,125,other,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",125,161,drop,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",161,172,drop,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",172,182,drop,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",182,189,other,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",189,203,drop,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",203,213,drop,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",213,225,other,130.4,0.0
+"ANDATA Teenage Mutants - Black Milk (Teenage Mutants Remix).flac",225,225,outro,130.4,0.0
+"AUTOFLOWER - Dimension.flac",1,1,intro,130.4,0.02
+"AUTOFLOWER - Dimension.flac",1,46,drop,130.4,0.02
+"AUTOFLOWER - Dimension.flac",46,51,drop,130.4,0.02
+"AUTOFLOWER - Dimension.flac",51,59,breakdown,130.4,0.02
+"AUTOFLOWER - Dimension.flac",59,70,breakdown,130.4,0.02
+"AUTOFLOWER - Dimension.flac",70,95,drop,130.4,0.02
+"AUTOFLOWER - Dimension.flac",95,127,drop,130.4,0.02
+"AUTOFLOWER - Dimension.flac",127,127,outro,130.4,0.02
+"AUTOFLOWER - THE ONLY ONE.flac",1,2,intro,125.0,0.04
+"AUTOFLOWER - THE ONLY ONE.flac",2,8,drop,125.0,0.04
+"AUTOFLOWER - THE ONLY ONE.flac",8,34,drop,125.0,0.04
+"AUTOFLOWER - THE ONLY ONE.flac",34,61,drop,125.0,0.04
+"AUTOFLOWER - THE ONLY ONE.flac",61,99,drop,125.0,0.04
+"AUTOFLOWER - THE ONLY ONE.flac",99,106,drop,125.0,0.04
+"AUTOFLOWER - THE ONLY ONE.flac",106,115,drop,125.0,0.04
+"AUTOFLOWER - THE ONLY ONE.flac",115,115,outro,125.0,0.04
+"AUTOFLOWER - Wallflower.flac",1,1,intro,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",1,8,buildup,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",8,17,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",17,24,other,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",24,42,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",42,50,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",50,58,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",58,66,breakdown,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",66,73,breakdown,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",73,81,buildup,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",81,90,other,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",90,98,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",98,105,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",105,114,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",114,121,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",121,131,drop,125.0,0.1
+"AUTOFLOWER - Wallflower.flac",131,131,outro,125.0,0.1
