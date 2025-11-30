@@ -1,5 +1,7 @@
 """Structure detection implementations."""
 
+import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -115,10 +117,13 @@ class MSAFDetector:
         try:
             # Run MSAF segmentation
             assert self._msaf is not None  # Verified by is_available()
+            # Use per-process cache file to avoid concurrent write conflicts
+            cache_file = os.path.join(tempfile.gettempdir(), f".features_msaf_{os.getpid()}.json")
             boundaries, labels = self._msaf.process(
                 str(filepath),
                 boundaries_id=self._boundary_algorithm,
                 labels_id=self._label_algorithm,
+                out_file=cache_file,
             )
 
             # Get audio duration for the last segment
@@ -249,9 +254,9 @@ class MSAFDetector:
                 label = "breakdown"
                 confidence = 0.8
             else:
-                # Mid-energy section - could be verse or transition
-                label = "buildup" if gradient > 0 else "breakdown"
-                confidence = 0.6
+                # Mid-energy section - doesn't fit known EDM categories
+                label = "other"
+                confidence = 0.5
 
             # Clamp confidence
             confidence = float(min(confidence, 0.99))
@@ -439,18 +444,9 @@ class EnergyDetector:
                 label = "breakdown"
                 confidence = 0.75
             else:
-                # Check if energy is rising
-                if end_frame > start_frame + 1:
-                    energy_trend = float(rms_norm[end_frame - 1] - rms_norm[start_frame])
-                    if energy_trend > 0.1:
-                        label = "buildup"
-                        confidence = 0.7
-                    else:
-                        label = "breakdown"
-                        confidence = 0.6
-                else:
-                    label = "buildup"
-                    confidence = 0.6
+                # Mid-energy section - doesn't fit known EDM categories
+                label = "other"
+                confidence = 0.5
 
             confidence = float(min(confidence, 0.99))
 
