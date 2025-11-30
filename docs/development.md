@@ -201,7 +201,7 @@ uv run edm analyze track.mp3 --no-color
 uv run edm evaluate bpm --source ~/music --reference metadata
 
 # Against CSV reference
-uv run edm evaluate bpm --source ~/music --reference tests/fixtures/reference/bpm_tagged.csv
+uv run edm evaluate bpm --source ~/music --reference data/annotations/bpm_tagged.csv
 
 # Full evaluation with seed
 uv run edm evaluate bpm --source ~/music --reference metadata --full --seed 42
@@ -227,7 +227,7 @@ Calculated in `src/edm/evaluation/common.py`:
 
 ### Results
 
-Output to `benchmarks/results/accuracy/bpm/`:
+Output to `data/accuracy/bpm/`:
 - `<timestamp>_<commit>.json` - Full results
 - `<timestamp>_<commit>.md` - Summary
 - `latest.*` - Symlinks to most recent
