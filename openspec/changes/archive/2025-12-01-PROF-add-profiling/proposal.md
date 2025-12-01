@@ -23,6 +23,24 @@ Out of scope:
 - Real-time monitoring dashboards
 
 ## Status
-- [ ] Design approved
-- [ ] Full proposal created (specs + tasks)
+- [x] Design approved
+- [x] Full proposal created (specs + tasks)
 - [ ] Implementation complete
+
+## Implementation Summary
+
+**Core Capabilities:**
+1. CPU profiling with cProfile and py-spy flamegraphs
+2. Memory profiling with tracemalloc
+3. Baseline storage and regression detection (JSON format)
+4. CLI integration via `--profile` flag on analyze/evaluate commands
+5. Decorator-based function profiling with zero overhead when disabled
+6. pytest benchmark integration
+
+**Key Design Decisions:**
+- JSON-based baseline storage (git-friendly, human-readable)
+- py-spy for flamegraph generation (built-in, no external tools)
+- Opt-in via CLI flags and decorators (no performance impact by default)
+- Relative regression thresholds (20% tolerance) for non-deterministic timing
+
+See `design.md` for architecture details and `tasks.md` for implementation steps.

@@ -9,6 +9,7 @@ from rich.console import Console
 
 from cli.commands.analyze import analyze_command
 from cli.commands.evaluate import evaluate_app
+from cli.commands.profile import profile_app
 from edm import __version__ as lib_version
 from edm.io.audio import clear_audio_cache, set_cache_size
 from edm.logging import configure_logging
@@ -22,6 +23,7 @@ app = typer.Typer(
 
 # Add subcommands
 app.add_typer(evaluate_app, name="evaluate")
+app.add_typer(profile_app, name="profile")
 
 console = Console()
 
@@ -141,7 +143,7 @@ def analyze(
     structure_detector: str = typer.Option(
         "auto",
         "--structure-detector",
-        help="Structure detection method: auto (default), msaf, or energy",
+        help="Structure detection method: auto/msaf (default, required), or energy (fallback)",
     ),
 ):
     """Analyze EDM tracks for BPM, structure, and other features.

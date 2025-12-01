@@ -16,14 +16,14 @@ class AnalysisConfig(BaseModel):
         detect_structure: Enable structure detection.
         use_madmom: Use beat_this for BPM detection (legacy parameter name).
         use_librosa: Use librosa for BPM detection.
-        structure_detector: Structure detector type ('auto', 'msaf', 'energy').
+        structure_detector: Structure detector type ('auto'/'msaf', 'energy').
     """
 
     detect_bpm: bool = True
     detect_structure: bool = True
     use_madmom: bool = True  # Legacy name - controls beat_this library
     use_librosa: bool = False
-    structure_detector: str = "auto"  # 'auto', 'msaf', 'energy'
+    structure_detector: str = "auto"  # 'auto'/'msaf' (required), 'energy' (explicit fallback)
 
 
 class EDMConfig(BaseModel):

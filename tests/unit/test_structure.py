@@ -72,11 +72,6 @@ class TestDetectedSection:
 class TestEnergyDetector:
     """Tests for EnergyDetector class."""
 
-    def test_is_available(self):
-        """Test energy detector is always available."""
-        detector = EnergyDetector()
-        assert detector.is_available() is True
-
     def test_initialization_defaults(self):
         """Test default initialization parameters."""
         detector = EnergyDetector()
@@ -127,16 +122,6 @@ class TestMSAFDetector:
         assert detector._boundary_algorithm == "foote"
         assert detector._label_algorithm == "scluster"
 
-    def test_is_available_without_msaf(self):
-        """Test is_available returns False when msaf not installed."""
-        detector = MSAFDetector()
-        detector._msaf = None
-
-        # Mock the import to raise ImportError
-        with patch("edm.analysis.structure_detector.MSAFDetector.is_available") as mock_avail:
-            mock_avail.return_value = False
-            assert mock_avail() is False
-
     def test_boundaries_to_sections(self):
         """Test boundary conversion to sections."""
         detector = MSAFDetector()
@@ -163,22 +148,23 @@ class TestGetDetector:
         detector = get_detector("energy")
         assert isinstance(detector, EnergyDetector)
 
-    def test_get_auto_falls_back_to_energy(self):
-        """Test auto mode falls back to energy when msaf unavailable."""
-        with patch.object(MSAFDetector, "is_available", return_value=False):
-            detector = get_detector("auto")
-            assert isinstance(detector, EnergyDetector)
+    def test_get_auto_returns_msaf(self):
+        """Test auto mode returns msaf detector (msaf is required)."""
+        detector = get_detector("auto")
+        assert isinstance(detector, MSAFDetector)
 
-    def test_get_unknown_returns_none(self):
-        """Test unknown detector type returns None."""
-        detector = get_detector("invalid_detector")
-        assert detector is None
+    def test_get_msaf_detector(self):
+        """Test getting msaf detector."""
+        detector = get_detector("msaf")
+        assert isinstance(detector, MSAFDetector)
 
-    def test_get_msaf_when_unavailable(self):
-        """Test requesting msaf when unavailable returns None."""
-        with patch.object(MSAFDetector, "is_available", return_value=False):
-            detector = get_detector("msaf")
-            assert detector is None
+    def test_get_unknown_raises_error(self):
+        """Test unknown detector type raises ValueError."""
+        try:
+            get_detector("invalid_detector")
+            assert False, "Expected ValueError"
+        except ValueError as e:
+            assert "Unknown detector type" in str(e)
 
 
 class TestPostProcessSections:
@@ -284,37 +270,6 @@ class TestAnalyzeStructure:
 
         mock_get_detector.assert_called_once_with("energy")
         assert isinstance(result, StructureResult)
-
-    @patch("edm.analysis.structure.get_detector")
-    @patch("edm.analysis.structure.MutagenFile")
-    def test_falls_back_to_energy_on_error(self, mock_mutagen, mock_get_detector):
-        """Test fallback to energy detector when msaf fails."""
-        mock_audio = MagicMock()
-        mock_audio.info.length = 180.0
-        mock_mutagen.return_value = mock_audio
-
-        # First call returns msaf detector that fails
-        mock_msaf = MagicMock(spec=MSAFDetector)
-        mock_msaf.detect.side_effect = RuntimeError("MSAF failed")
-
-        # Second call for fallback returns energy detector
-        mock_energy = MagicMock(spec=EnergyDetector)
-        mock_energy.detect.return_value = [
-            DetectedSection(start_time=0.0, end_time=180.0, label="intro", confidence=0.9),
-        ]
-
-        def detector_factory(dtype):
-            if dtype == "auto":
-                return mock_msaf
-            return mock_energy
-
-        mock_get_detector.side_effect = detector_factory
-
-        with patch("edm.analysis.structure.EnergyDetector", return_value=mock_energy):
-            result = analyze_structure(Path("test.mp3"), detector="auto")
-
-        assert isinstance(result, StructureResult)
-        assert result.detector == "energy"
 
     @patch("edm.analysis.structure.get_detector")
     @patch("edm.analysis.structure.MutagenFile")

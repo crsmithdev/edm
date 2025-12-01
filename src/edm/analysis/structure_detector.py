@@ -1,14 +1,20 @@
 """Structure detection implementations."""
 
-import os
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
 import librosa
 import numpy as np
+import scipy
 import structlog
+
+# Patch scipy.inf for compatibility with msaf (scipy 1.12+ removed scipy.inf)
+# Must be done before importing msaf
+if not hasattr(scipy, "inf"):
+    scipy.inf = np.inf
+
+import msaf  # noqa: E402
 
 logger = structlog.get_logger(__name__)
 
@@ -38,10 +44,6 @@ class DetectedSection:
 
 class StructureDetector(Protocol):
     """Protocol for structure detection implementations."""
-
-    def is_available(self) -> bool:
-        """Check if this detector is available for use."""
-        ...
 
     def detect(self, filepath: Path, sr: int = 22050) -> list[DetectedSection]:
         """Detect structure sections in an audio file.
@@ -74,25 +76,6 @@ class MSAFDetector:
         """
         self._boundary_algorithm = boundary_algorithm
         self._label_algorithm = label_algorithm
-        self._msaf = None
-
-    def is_available(self) -> bool:
-        """Check if MSAF is available."""
-        try:
-            # Patch scipy.inf for compatibility with msaf (scipy 1.12+ removed scipy.inf)
-            import numpy as np
-            import scipy
-
-            if not hasattr(scipy, "inf"):
-                scipy.inf = np.inf
-
-            import msaf
-
-            self._msaf = msaf
-            return True
-        except ImportError:
-            logger.debug("msaf not available")
-            return False
 
     def detect(self, filepath: Path, sr: int = 22050) -> list[DetectedSection]:
         """Detect structure using MSAF.
@@ -104,9 +87,6 @@ class MSAFDetector:
         Returns:
             List of detected sections with EDM labels.
         """
-        if not self.is_available():
-            raise RuntimeError("MSAF is not available")
-
         logger.debug(
             "running msaf detection",
             filepath=str(filepath),
@@ -116,14 +96,10 @@ class MSAFDetector:
 
         try:
             # Run MSAF segmentation
-            assert self._msaf is not None  # Verified by is_available()
-            # Use per-process cache file to avoid concurrent write conflicts
-            cache_file = os.path.join(tempfile.gettempdir(), f".features_msaf_{os.getpid()}.json")
-            boundaries, labels = self._msaf.process(
+            boundaries, labels = msaf.process(
                 str(filepath),
                 boundaries_id=self._boundary_algorithm,
                 labels_id=self._label_algorithm,
-                out_file=cache_file,
             )
 
             # Get audio duration for the last segment
@@ -296,10 +272,6 @@ class EnergyDetector:
         self._min_section_duration = min_section_duration
         self._energy_threshold_high = energy_threshold_high
         self._energy_threshold_low = energy_threshold_low
-
-    def is_available(self) -> bool:
-        """Energy detector is always available (uses librosa)."""
-        return True
 
     def detect(self, filepath: Path, sr: int = 22050) -> list[DetectedSection]:
         """Detect structure using energy analysis.
@@ -494,32 +466,23 @@ class EnergyDetector:
         return merged
 
 
-def get_detector(detector_type: str) -> StructureDetector | None:
+def get_detector(detector_type: str) -> StructureDetector:
     """Get a structure detector by type.
 
     Args:
-        detector_type: Detector type ('auto', 'msaf', 'energy').
+        detector_type: Detector type ('msaf', 'energy').
 
     Returns:
-        Detector instance, or None if not available.
+        Detector instance.
+
+    Raises:
+        ValueError: If detector_type is unknown.
     """
     if detector_type == "energy":
         return EnergyDetector()
 
-    if detector_type == "msaf":
-        detector = MSAFDetector()
-        if detector.is_available():
-            return detector
-        logger.warning("msaf detector requested but not available")
-        return None
+    if detector_type in ("msaf", "auto"):
+        # 'auto' is now an alias for 'msaf' (msaf is required)
+        return MSAFDetector()
 
-    if detector_type == "auto":
-        # Try MSAF first, fall back to energy
-        msaf_detector = MSAFDetector()
-        if msaf_detector.is_available():
-            return msaf_detector
-        logger.info("msaf not available, using energy detector")
-        return EnergyDetector()
-
-    logger.warning("unknown detector type", detector_type=detector_type)
-    return None
+    raise ValueError(f"Unknown detector type: {detector_type}")

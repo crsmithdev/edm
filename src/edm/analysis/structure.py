@@ -114,9 +114,6 @@ def analyze_structure(
 
     # Get detector
     structure_detector = get_detector(detector)
-    if structure_detector is None:
-        logger.warning("no detector available, using energy fallback")
-        structure_detector = EnergyDetector()
 
     # Determine detector name for reporting
     if isinstance(structure_detector, MSAFDetector):
@@ -126,19 +123,8 @@ def analyze_structure(
     else:
         detector_name = "unknown"
 
-    # Run detection
-    try:
-        detected_sections = structure_detector.detect(filepath)
-    except Exception as e:
-        logger.error("structure detection failed", error=str(e))
-        # Fall back to energy detector if MSAF fails
-        if detector_name == "msaf":
-            logger.info("falling back to energy detector")
-            structure_detector = EnergyDetector()
-            detector_name = "energy"
-            detected_sections = structure_detector.detect(filepath)
-        else:
-            raise
+    # Run detection - errors propagate
+    detected_sections = structure_detector.detect(filepath)
 
     # Get BPM for bar calculations if requested
     result_bpm = bpm

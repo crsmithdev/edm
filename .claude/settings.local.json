@@ -4,7 +4,8 @@
       "Bash",
       "WebFetch",
       "WebSearch",
-      "Mcp"
+      "Mcp",
+      "SlashCommand(/ship)"
     ],
     "deny": [],
     "ask": []
