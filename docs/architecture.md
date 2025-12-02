@@ -4,6 +4,78 @@
 
 EDM is a Python library and CLI for analyzing EDM tracks. It provides BPM detection and structure analysis using neural network-based audio processing.
 
+## Design Patterns
+
+### Two-Tier Abstraction
+
+Analysis modules use a two-tier pattern separating public API from detector implementations:
+
+**Tier 1: Public API** (`bpm.py`, `structure.py`)
+- Simple function interface: `analyze_bpm(filepath)`, `analyze_structure(filepath)`
+- Strategy selection and fallback logic
+- Result aggregation and formatting
+- User-facing documentation
+
+**Tier 2: Detectors** (`bpm_detector.py`, `structure_detector.py`)
+- Algorithm implementations: beat_this, librosa, MSAF, energy
+- Internal data models: `ComputedBPM`, `DetectedSection`
+- No strategy logic (focused on single algorithm)
+- Technical implementation details
+
+**Benefits**:
+- Public API stable across detector changes
+- Easy to add new detectors without breaking callers
+- Clear separation of concerns (strategy vs implementation)
+
+**Example**:
+```python
+# Public API (bpm.py)
+def analyze_bpm(filepath):
+    # Try metadata first
+    # Fall back to beat_this detector
+    # Fall back to librosa detector
+    return BPMResult(...)
+
+# Detector (bpm_detector.py)
+def compute_bpm_beat_this(filepath):
+    # Pure beat_this implementation
+    return ComputedBPM(...)
+```
+
+### Audio Caching Strategy
+
+Audio loading is expensive (I/O + decoding). Cache implemented in `src/edm/io/audio.py`:
+
+**LRU Cache**:
+- OrderedDict-based LRU eviction
+- Configurable size (default: 10 tracks)
+- Cache key: `(filepath, sample_rate)`
+- Thread-safe for future async support
+
+**Usage**:
+```python
+# First call: loads from disk
+audio1, sr = load_audio(path, sr=22050)  # cache miss
+
+# Second call (same path + sr): returns cached
+audio2, sr = load_audio(path, sr=22050)  # cache hit
+
+# Different sample rate: new cache entry
+audio3, sr = load_audio(path, sr=44100)  # cache miss (different key)
+```
+
+**Cache Control**:
+- `set_cache_size(n)`: Change max cached files
+- `clear_audio_cache()`: Flush all cached audio
+- `cache_size=0`: Disable caching entirely
+
+**Benefits**:
+- Multiple analyses (BPM + structure) load audio once
+- Evaluation loops reuse audio across reference comparisons
+- Memory-bounded (doesn't grow indefinitely)
+
+Implementation: `src/edm/io/audio.py:16`
+
 ## Module Organization
 
 ```
@@ -134,6 +206,51 @@ Pydantic models with:
 - TOML config file support (planned)
 - Nested configs: `AnalysisConfig`
 
+## Module Dependency Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ CLI Layer (src/cli/)                                        │
+│ ┌─────────────┐  ┌─────────────┐  ┌──────────────┐         │
+│ │ main.py     │  │ analyze.py  │  │ evaluate.py  │         │
+│ └──────┬──────┘  └──────┬──────┘  └──────┬───────┘         │
+└────────┼─────────────────┼─────────────────┼────────────────┘
+         │                 │                 │
+         ▼                 ▼                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Analysis Layer (src/edm/analysis/)                          │
+│ ┌──────────┐   ┌─────────────────┐   ┌────────────┐        │
+│ │ bpm.py   │   │ structure.py    │   │ bars.py    │        │
+│ └────┬─────┘   └────┬────────────┘   └─────┬──────┘        │
+│      │              │                       │               │
+│      ▼              ▼                       │               │
+│ ┌───────────────┐  ┌───────────────────┐   │               │
+│ │bpm_detector.py│  │structure_detector │   │               │
+│ └───────┬───────┘  └──────┬────────────┘   │               │
+└─────────┼──────────────────┼────────────────┼───────────────┘
+          │                  │                │
+          ▼                  ▼                ▼
+┌─────────────────────────────────────────────────────────────┐
+│ I/O Layer (src/edm/io/)                                     │
+│ ┌──────────┐   ┌──────────┐                                │
+│ │ audio.py │   │metadata  │                                │
+│ │(caching) │   │  .py     │                                │
+│ └──────────┘   └──────────┘                                │
+└─────────────────────────────────────────────────────────────┘
+
+External Dependencies:
+  bpm_detector.py → beat_this, librosa
+  structure_detector.py → msaf, librosa
+  audio.py → librosa
+  metadata.py → mutagen
+```
+
+**Key Dependencies**:
+- Public APIs (`bpm.py`, `structure.py`) depend on detectors but not vice versa
+- Detectors are independent (can be tested in isolation)
+- All analysis depends on `io/audio.py` for audio loading
+- CLI layer only imports public APIs (never detectors directly)
+
 ## Data Flow
 
 ### Analysis Flow
@@ -143,7 +260,9 @@ Audio File → Metadata Read → BPM Strategy → Result
                 ↓
             (if needed)
                 ↓
-            Audio Load → beat_this/librosa → BPM Computation
+            Audio Load (cached) → beat_this/librosa → BPM Computation
+                ↑
+                └─ LRU Cache (10 tracks)
 ```
 
 ### Evaluation Flow

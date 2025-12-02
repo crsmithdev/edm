@@ -1,0 +1,150 @@
+<python-context>
+  <purpose>Python code style, Typer CLI patterns, testing conventions for EDM project</purpose>
+
+  <code-style>
+    <formatter>ruff format (line length 100, double quotes)</formatter>
+    <linter>ruff check --fix</linter>
+    <types>
+      Required for all functions/methods
+      Modern Python 3.12+ syntax: list[str] not List[str]
+      Use | for unions: str | None not Optional[str]
+    </types>
+    <docstrings>
+      Google style for all public functions/classes
+      Args/Returns/Raises sections
+      Example: See src/edm/analysis/bpm.py:36
+    </docstrings>
+  </code-style>
+
+  <imports>
+    <order>
+      1. Standard library (alphabetized)
+      2. Third-party (alphabetized)
+      3. Local imports (alphabetized)
+      Blank line between groups
+    </order>
+    <style>
+      from typing import Literal (not import typing)
+      import structlog (not from structlog import get_logger)
+      Avoid star imports: from foo import * (never use)
+    </style>
+  </imports>
+
+  <exceptions>
+    <hierarchy>
+      All custom exceptions derive from EDMError (src/edm/exceptions.py)
+      Preserve chains: raise NewError(...) from e
+      Never swallow exceptions silently
+    </hierarchy>
+    <examples>
+      BPMDetectionError, StructureDetectionError, AudioLoadError
+    </examples>
+  </exceptions>
+
+  <pydantic>
+    <version>Pydantic v2 (not v1)</version>
+    <models>
+      Use Field() for constraints: Field(gt=0, le=1)
+      model_validator for cross-field validation
+      Dataclasses for simple types (Section, BPMResult)
+    </models>
+    <validation>
+      Validate at boundaries (CLI input, file I/O)
+      Trust internal code (no validation between modules)
+    </validation>
+  </pydantic>
+
+  <logging>
+    <library>
+      structlog with get_logger(__name__)
+      Natural language messages: "Analyzing BPM for {file}"
+      Bind context: logger.bind(file=filepath)
+    </library>
+    <levels>
+      debug: Algorithm internals, detailed steps
+      info: High-level progress (default CLI output)
+      warning: Missing data, fallbacks used
+      error: Failures (with exception info)
+    </levels>
+    <config>
+      Console: colored, human-readable (dev)
+      JSON: structured output (production/file)
+      CLI flags: --log-level, --json-logs, --log-file
+    </config>
+  </logging>
+
+  <typer-cli>
+    <structure>
+      Main app: src/cli/main.py (Typer app definition)
+      Commands: src/cli/commands/*.py (one per command)
+      Registration: app.command()(analyze_command)
+    </structure>
+    <patterns>
+      <arguments>
+        typer.Argument(..., help="Description", exists=True)
+        Use list[Path] for multiple files
+      </arguments>
+      <options>
+        typer.Option(default, "--flag", "-f", help="Description")
+        Boolean flags: is_flag=True
+        Enums for choices: OutputFormat (enum.Enum)
+      </options>
+      <output>
+        Rich tables for structured data (Console.print)
+        JSON/YAML for machine-readable (typer.echo)
+        --format flag: table|json|yaml
+      </output>
+    </patterns>
+    <example>
+      @app.command()
+      def analyze(
+          files: list[Path] = typer.Argument(..., help="Audio files"),
+          ignore_metadata: bool = typer.Option(False, "--ignore-metadata"),
+      ):
+          # Implementation
+    </example>
+  </typer-cli>
+
+  <testing>
+    <framework>pytest (src/tests/)</framework>
+    <structure>
+      tests/unit/ - Fast, isolated unit tests
+      tests/integration/ - Full pipeline tests with fixtures
+      conftest.py - Shared fixtures (sample audio files)
+    </structure>
+    <fixtures>
+      Use @pytest.fixture for reusable test data
+      Sample audio: tests/fixtures/*.mp3
+      Reference data: tests/fixtures/*.yaml
+    </fixtures>
+    <assertions>
+      assert actual == expected (simple)
+      pytest.approx() for floats: assert bpm == pytest.approx(128.0, abs=0.5)
+      pytest.raises() for exceptions
+    </assertions>
+    <commands>
+      uv run pytest -v (all tests)
+      uv run pytest tests/unit/test_bpm.py::test_metadata (single test)
+      uv run pytest -k "bpm" (pattern match)
+    </commands>
+  </testing>
+
+  <async>
+    <library>
+      asyncio for concurrency (asyncio.TaskGroup)
+      httpx for async HTTP (not requests)
+    </library>
+    <patterns>
+      Use async/await for I/O-bound tasks (file reading, network)
+      Avoid for CPU-bound (audio processing already synchronous)
+      asyncio.run() in CLI entry points
+    </patterns>
+  </async>
+
+  <commands>
+    <run>uv run edm analyze track.mp3</run>
+    <test>uv run pytest -v</test>
+    <lint>uv run ruff check --fix . && ruff format .</lint>
+    <typecheck>uv run mypy src/</typecheck>
+  </commands>
+</python-context>

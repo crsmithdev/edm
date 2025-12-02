@@ -1,0 +1,31 @@
+file: /home/crsmi/music/Atmos, Born Sleepy - Ritual Girl (Original mix).flac
+duration: 6:54.20s
+bpm: 135.0
+downbeat: 0.0
+time_signature: 4/4
+annotations:
+- [2, intro, '0:01.78s']
+- [19, drop, '0:32.00s']
+- [36, drop, '1:02.22s']
+- [52, drop, '1:30.67s']
+- [111, other, '3:15.56s']
+- [128, drop, '3:45.78s']
+- [154, drop, '4:32.00s']
+- [168, drop, '4:56.89s']
+- [194, drop, '5:43.11s']
+- [234, outro, '6:54.22s']
+
+---
+# --- Raw detected events (original analysis, do not edit) ---
+# - intro: 0:00.00s - 0:30.28s bars=1.00-18.00 (conf=0.90)
+# - drop: 0:30.28s - 1:01.39s bars=18.00-35.00 (conf=0.98)
+# - drop: 1:01.39s - 1:28.93s bars=35.00-51.00 (conf=0.99)
+# - drop: 1:28.93s - 3:14.49s bars=51.00-110.00 (conf=0.99)
+# - other: 3:14.49s - 3:44.26s bars=110.00-127.00 (conf=0.50)
+# - drop: 3:44.26s - 4:31.16s bars=127.00-153.00 (conf=0.92)
+# - drop: 4:31.16s - 4:56.05s bars=153.00-167.00 (conf=0.99)
+# - drop: 4:56.05s - 5:42.26s bars=167.00-193.00 (conf=0.96)
+# - drop: 5:42.26s - 6:09.80s bars=193.00-209.00 (conf=0.98)
+# - other: 6:09.80s - 6:54.20s bars=209.00-233.00 (conf=0.50)
+# - outro: 6:54.20s - 6:54.22s bars=233.00-233.00 (conf=0.90)
+# --- End raw events ---

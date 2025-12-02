@@ -1,6 +1,7 @@
 """Track structure and section detection."""
 
 from dataclasses import dataclass
+from math import ceil, floor
 from pathlib import Path
 
 import structlog
@@ -9,6 +10,7 @@ from mutagen import File as MutagenFile
 from edm.analysis.bars import TimeSignature, bar_count_for_range, time_to_bars
 from edm.analysis.bpm import analyze_bpm
 from edm.analysis.structure_detector import (
+    DetectedSection,
     EnergyDetector,
     MSAFDetector,
     get_detector,
@@ -41,20 +43,49 @@ class Section:
 
 
 @dataclass
+class RawSection:
+    """Raw detected section with full detail for debugging.
+
+    Attributes:
+        start: Start time in seconds.
+        end: End time in seconds.
+        start_bar: Start bar position (fractional).
+        end_bar: End bar position (fractional).
+        label: Section label from detector.
+        confidence: Confidence score between 0 and 1.
+    """
+
+    start: float
+    end: float
+    start_bar: float | None
+    end_bar: float | None
+    label: str
+    confidence: float
+
+
+@dataclass
 class StructureResult:
     """Result of structure analysis.
 
     Attributes:
-        sections: Detected sections in chronological order.
+        sections: Detected span sections in chronological order.
+        events: Detected moment-based events (drops, kicks).
+        raw: Raw detected sections with full detail (timestamps, fractional bars, confidence).
         duration: Total track duration in seconds.
         detector: Name of the detector used.
         bpm: BPM used for bar calculations. None if unavailable.
+        downbeat: Time of first beat in seconds.
+        time_signature: Time signature as (numerator, denominator) tuple.
     """
 
     sections: list[Section]
+    events: list[tuple[int, str]]
+    raw: list[RawSection]
     duration: float
     detector: str
     bpm: float | None = None
+    downbeat: float | None = None
+    time_signature: TimeSignature = (4, 4)
 
 
 def analyze_structure(
@@ -126,19 +157,27 @@ def analyze_structure(
     # Run detection - errors propagate
     detected_sections = structure_detector.detect(filepath)
 
-    # Get BPM for bar calculations if requested
+    # Get BPM and beat information for bar calculations if requested
     result_bpm = bpm
+    result_downbeat = None
     if include_bars and bpm is None:
         try:
-            logger.debug("analyzing BPM for bar calculations", filepath=str(filepath))
+            logger.debug("analyzing BPM and beat grid for bar calculations", filepath=str(filepath))
             bpm_result = analyze_bpm(filepath)
             result_bpm = bpm_result.bpm
             logger.debug("bpm detected for bar calculations", bpm=result_bpm)
-        except Exception as e:
-            logger.debug("bpm analysis failed, bar calculations will be skipped", error=str(e))
-            result_bpm = None
 
-    # Convert to Section objects
+            # Also get beat grid for downbeat
+            from edm.analysis.beat_detector import detect_beats
+            beat_grid = detect_beats(filepath)
+            result_downbeat = beat_grid.first_beat_time
+            logger.debug("downbeat detected", downbeat=result_downbeat)
+        except Exception as e:
+            logger.debug("bpm/beat analysis failed, bar calculations will be skipped", error=str(e))
+            result_bpm = None
+            result_downbeat = None
+
+    # Convert to Section objects (only for non-event sections)
     sections = [
         Section(
             label=s.label,
@@ -147,14 +186,43 @@ def analyze_structure(
             confidence=s.confidence,
         )
         for s in detected_sections
+        if not s.is_event
     ]
 
     # Post-process sections
     sections = _post_process_sections(sections, duration)
 
+    # Merge consecutive 'other' sections
+    sections = _merge_consecutive_other(sections)
+
     # Add bar calculations if requested and BPM available
     if include_bars and result_bpm is not None:
         sections = _add_bar_calculations(sections, result_bpm, time_signature)
+
+    # Format events with bar numbers
+    events: list[tuple[int, str]] = []
+    if include_bars and result_bpm is not None and result_downbeat is not None:
+        event_sections = [s for s in detected_sections if s.is_event]
+        _, events = _format_structure_output(event_sections, result_bpm, time_signature, result_downbeat)
+
+    # Build raw sections with fractional bar positions
+    raw_sections: list[RawSection] = []
+    for s in detected_sections:
+        start_bar = None
+        end_bar = None
+        if result_bpm is not None and result_downbeat is not None:
+            start_bar, _ = time_to_bars(s.start_time, result_bpm, time_signature, result_downbeat)
+            end_bar, _ = time_to_bars(s.end_time, result_bpm, time_signature, result_downbeat)
+        raw_sections.append(
+            RawSection(
+                start=round(s.start_time, 2),
+                end=round(s.end_time, 2),
+                start_bar=round(start_bar, 2) if start_bar is not None else None,
+                end_bar=round(end_bar, 2) if end_bar is not None else None,
+                label=s.label,
+                confidence=round(s.confidence, 2),
+            )
+        )
 
     # Update duration from detection if not available
     if duration is None and sections:
@@ -168,14 +236,22 @@ def analyze_structure(
         filepath=str(filepath),
         detector=detector_name,
         sections=len(sections),
+        events=len(events),
+        raw=len(raw_sections),
         duration=duration,
+        bpm=result_bpm,
+        downbeat=result_downbeat,
     )
 
     return StructureResult(
         sections=sections,
+        events=events,
+        raw=raw_sections,
         duration=duration,
         detector=detector_name,
         bpm=result_bpm,
+        downbeat=result_downbeat,
+        time_signature=time_signature,
     )
 
 
@@ -251,6 +327,85 @@ def _post_process_sections(sections: list[Section], duration: float | None) -> l
             )
 
     return processed
+
+
+def _format_structure_output(
+    detected_sections: list[DetectedSection],
+    bpm: float,
+    time_signature: TimeSignature,
+    downbeat: float,
+) -> tuple[list[tuple[int, int, str]], list[tuple[int, str]]]:
+    """Format detected sections into spans and events with 1-indexed bars.
+
+    Args:
+        detected_sections: List of detected sections from detector.
+        bpm: BPM for bar calculations.
+        time_signature: Time signature tuple.
+        downbeat: Time of first downbeat in seconds.
+
+    Returns:
+        Tuple of (spans, events) where:
+        - spans: List of [start_bar, end_bar, label] (1-indexed, inclusive)
+        - events: List of [bar, label] (1-indexed)
+    """
+    spans = []
+    events = []
+
+    for section in detected_sections:
+        if section.is_event:
+            # Event: single bar number
+            bar_num, _ = time_to_bars(section.start_time, bpm, time_signature, downbeat)
+            bar_1indexed = int(ceil(bar_num)) + 1
+            events.append((bar_1indexed, section.label))
+        else:
+            # Span: start and end bars
+            start_bar_num, _ = time_to_bars(section.start_time, bpm, time_signature, downbeat)
+            end_bar_num, _ = time_to_bars(section.end_time, bpm, time_signature, downbeat)
+
+            start_bar_1indexed = int(ceil(start_bar_num)) + 1
+            end_bar_1indexed = int(floor(end_bar_num))
+
+            # Ensure start <= end
+            if end_bar_1indexed < start_bar_1indexed:
+                end_bar_1indexed = start_bar_1indexed
+
+            spans.append((start_bar_1indexed, end_bar_1indexed, section.label))
+
+    return spans, events
+
+
+def _merge_consecutive_other(sections: list[Section]) -> list[Section]:
+    """Merge consecutive sections with label='other'.
+
+    Args:
+        sections: List of sections.
+
+    Returns:
+        List with consecutive 'other' sections merged.
+    """
+    if not sections:
+        return []
+
+    merged = [sections[0]]
+
+    for section in sections[1:]:
+        prev = merged[-1]
+
+        if section.label == "other" and prev.label == "other":
+            # Merge: extend previous section's end time
+            merged[-1] = Section(
+                label="other",
+                start_time=prev.start_time,
+                end_time=section.end_time,
+                confidence=max(prev.confidence, section.confidence),
+                start_bar=prev.start_bar,
+                end_bar=section.end_bar,
+                bar_count=None,  # Recalculate if needed
+            )
+        else:
+            merged.append(section)
+
+    return merged
 
 
 def _add_bar_calculations(

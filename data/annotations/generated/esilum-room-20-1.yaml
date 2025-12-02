@@ -1,0 +1,32 @@
+file: /home/crsmi/music/Esilum - Room 20-1.flac
+duration: 5:36.00s
+bpm: 141.0
+downbeat: 0.12
+time_signature: 4/4
+annotations:
+- [2, intro, '0:01.82s']
+- [2, drop, '0:01.82s']
+- [44, drop, '1:13.31s']
+- [51, drop, '1:25.23s']
+- [66, breakdown, '1:50.76s']
+- [82, drop, '2:17.99s']
+- [105, other, '2:57.14s']
+- [113, drop, '3:10.76s']
+- [165, drop, '4:39.27s']
+- [172, drop, '4:51.18s']
+- [199, outro, '5:37.14s']
+
+---
+# --- Raw detected events (original analysis, do not edit) ---
+# - intro: 0:00.00s - 0:00.14s bars=1.00-1.00 (conf=0.90)
+# - drop: 0:00.14s - 1:12.96s bars=1.00-43.00 (conf=0.99)
+# - drop: 1:12.96s - 1:24.43s bars=43.00-50.00 (conf=0.85)
+# - drop: 1:24.43s - 1:49.09s bars=50.00-65.00 (conf=0.99)
+# - breakdown: 1:49.09s - 2:16.35s bars=65.00-81.00 (conf=0.80)
+# - drop: 2:16.35s - 2:55.50s bars=81.00-104.00 (conf=0.99)
+# - other: 2:55.50s - 3:09.52s bars=104.00-112.00 (conf=0.50)
+# - drop: 3:09.52s - 4:38.45s bars=112.00-164.00 (conf=0.98)
+# - drop: 4:38.45s - 4:49.55s bars=164.00-171.00 (conf=0.99)
+# - drop: 4:49.55s - 5:35.99s bars=171.00-198.00 (conf=0.94)
+# - outro: 5:35.99s - 5:36.00s bars=198.00-198.00 (conf=0.90)
+# --- End raw events ---

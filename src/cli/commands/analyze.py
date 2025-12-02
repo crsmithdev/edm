@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
 from rich.table import Table
 
+from edm.analysis.bars import bars_to_time
 from edm.analysis.beat_detector import detect_beats
 from edm.analysis.bpm import analyze_bpm
 from edm.analysis.structure import analyze_structure
@@ -22,23 +23,41 @@ from edm.processing.parallel import ParallelProcessor
 logger = structlog.get_logger(__name__)
 
 
+def format_time(seconds: float) -> str:
+    """Format seconds as M:SS.ss or MM:SS.ss.
+
+    Args:
+        seconds: Time in seconds.
+
+    Returns:
+        Formatted time string like '2:32.02s'.
+    """
+    minutes = int(seconds // 60)
+    secs = seconds % 60
+    return f"{minutes}:{secs:05.2f}s"
+
+
 @dataclass
 class TrackAnalysis:
-    """Analysis result for a single track with new hierarchical schema."""
+    """Analysis result for a single track with flat schema."""
 
     file: str
     duration: float | None = None
-    tempo: dict | None = None
+    bpm: float | None = None
+    downbeat: float | None = None
+    time_signature: str | None = None
     key: str | None = None
     structure: list[list] | None = None
+    events: list[list] | None = None
+    raw: list[dict] | None = None
     error: str | None = None
     time: float | None = None
 
     def to_dict(self) -> dict:
-        """Convert to dictionary in new schema format.
+        """Convert to dictionary in flat schema format.
 
         Returns:
-            Dictionary with hierarchical structure for YAML/JSON output.
+            Dictionary with flat structure for YAML/JSON output.
         """
         result: dict = {"file": self.file}
 
@@ -51,14 +70,26 @@ class TrackAnalysis:
         if self.duration is not None:
             result["duration"] = self.duration
 
-        if self.tempo:
-            result["tempo"] = self.tempo
+        if self.bpm is not None:
+            result["bpm"] = self.bpm
+
+        if self.downbeat is not None:
+            result["downbeat"] = self.downbeat
+
+        if self.time_signature is not None:
+            result["time_signature"] = self.time_signature
 
         if self.key:
             result["key"] = self.key
 
         if self.structure:
             result["structure"] = self.structure
+
+        if self.events:
+            result["events"] = self.events
+
+        if self.raw:
+            result["raw"] = self.raw
 
         return result
 
@@ -129,49 +160,80 @@ def _analyze_file_impl(
         structure_detector: Structure detection method (auto, msaf, energy).
 
     Returns:
-        TrackAnalysis with hierarchical schema.
+        TrackAnalysis with flat schema.
     """
-    tempo: dict = {}
+    bpm: float | None = None
+    downbeat: float | None = None
+    time_signature: str | None = None
     duration: float | None = None
     structure: list[list] | None = None
+    events: list[list] | None = None
+    raw: list[dict] | None = None
 
     if run_bpm:
         bpm_result = analyze_bpm(filepath, offline=offline, ignore_metadata=ignore_metadata)
-        tempo["bpm"] = round(bpm_result.bpm, 1)
+        bpm = round(bpm_result.bpm, 1)
 
     if run_beats:
         beat_grid = detect_beats(filepath)
-        tempo["bpm"] = round(beat_grid.bpm, 1)
-        tempo["downbeat"] = round(beat_grid.first_beat_time, 3)
-        tempo["time_signature"] = f"{beat_grid.time_signature[0]}/{beat_grid.time_signature[1]}"
+        bpm = round(beat_grid.bpm, 1)
+        downbeat = round(beat_grid.first_beat_time, 3)
+        time_signature = f"{beat_grid.time_signature[0]}/{beat_grid.time_signature[1]}"
 
     if run_structure:
         structure_result = analyze_structure(filepath, detector=structure_detector)  # type: ignore[arg-type]
         duration = round(structure_result.duration, 1)
         if structure_result.bpm:
-            tempo["bpm"] = round(structure_result.bpm, 1)
-        # Polymorphic format: events [bar, label], spans [start_bar, end_bar, label]
-        event_labels = {"drop"}
+            bpm = round(structure_result.bpm, 1)
+        if structure_result.downbeat is not None:
+            downbeat = round(structure_result.downbeat, 3)
+        if structure_result.time_signature:
+            time_signature = (
+                f"{structure_result.time_signature[0]}/{structure_result.time_signature[1]}"
+            )
+
+        # Format structure spans with 1-indexed bars
         structure = []
         for s in structure_result.sections:
-            if s.label in event_labels:
-                # Events: single bar marker
-                if s.start_bar is not None:
-                    structure.append([int(s.start_bar), s.label])
-                else:
-                    structure.append([round(s.start_time, 1), s.label])
+            if s.start_bar is not None and s.end_bar is not None:
+                # Convert 0-indexed internal bars to 1-indexed output
+                structure.append([int(s.start_bar) + 1, int(s.end_bar) + 1, s.label])
             else:
-                # Spans: start and end
-                if s.start_bar is not None and s.end_bar is not None:
-                    structure.append([int(s.start_bar), int(s.end_bar), s.label])
-                else:
-                    structure.append([round(s.start_time, 1), round(s.end_time, 1), s.label])
+                structure.append([round(s.start_time, 1), round(s.end_time, 1), s.label])
+
+        # Format events (already 1-indexed from analyze_structure)
+        events = (
+            [[bar, label] for bar, label in structure_result.events]
+            if structure_result.events
+            else None
+        )
+
+        # Format raw sections
+        raw = (
+            [
+                {
+                    "start": r.start,
+                    "end": r.end,
+                    "start_bar": r.start_bar,
+                    "end_bar": r.end_bar,
+                    "label": r.label,
+                    "confidence": r.confidence,
+                }
+                for r in structure_result.raw
+            ]
+            if structure_result.raw
+            else None
+        )
 
     return TrackAnalysis(
         file=str(filepath),
         duration=duration,
-        tempo=tempo if tempo else None,
+        bpm=bpm,
+        downbeat=downbeat,
+        time_signature=time_signature,
         structure=structure,
+        events=events,
+        raw=raw,
     )
 
 
@@ -188,6 +250,7 @@ def analyze_command(
     console: Console,
     workers: int = 1,
     structure_detector: str = "auto",
+    annotations: bool = False,
 ):
     """Execute the analyze command.
 
@@ -204,6 +267,7 @@ def analyze_command(
         console: Rich console for output.
         workers: Number of parallel workers (default: 1 for sequential).
         structure_detector: Structure detection method (auto, msaf, energy).
+        annotations: Also output simplified .annotations.yaml templates.
     """
     # Load configuration
     load_config(config_path)
@@ -263,7 +327,9 @@ def analyze_command(
     total_time = time.time() - start_time
 
     # Display results
-    if format == "yaml":
+    if annotations:
+        output_annotations(results, output, console, quiet)
+    elif format == "yaml":
         output_yaml(results, output, console, quiet)
     elif format == "json" or output:
         output_json(results, output, console, quiet)
@@ -425,6 +491,124 @@ def output_yaml(results: list[dict], output_path: Path | None, console: Console,
         console.print(yaml_str)
 
 
+def output_annotations(
+    results: list[dict], output_path: Path | None, console: Console, quiet: bool
+):
+    """Output results as simplified annotation templates.
+
+    Args:
+        results: Analysis results.
+        output_path: File to write YAML to (None for stdout).
+        console: Rich console for output.
+        quiet: Suppress output messages.
+    """
+    output_lines = []
+
+    for result in results:
+        if "error" in result:
+            continue
+
+        # Extract timing info for timestamp calculation
+        bpm = result.get("bpm")
+        downbeat = result.get("downbeat", 0.0)
+
+        # Build simplified annotation list from structure and events
+        annotations = []
+
+        # Add structure section starts
+        if result.get("structure"):
+            for section in result["structure"]:
+                if len(section) >= 3:
+                    start_bar, _, label = section[0], section[1], section[2]
+                    # Calculate timestamp for this bar
+                    if bpm:
+                        time_seconds = bars_to_time(start_bar, bpm, first_downbeat=downbeat)
+                        timestamp = (
+                            format_time(time_seconds) if time_seconds is not None else "0:00.00s"
+                        )
+                    else:
+                        timestamp = "0:00.00s"
+                    annotations.append([start_bar, label, timestamp])
+
+        # Add events
+        if result.get("events"):
+            for event in result["events"]:
+                if len(event) >= 2:
+                    bar, label = event[0], event[1]
+                    # Calculate timestamp for this bar
+                    if bpm:
+                        time_seconds = bars_to_time(bar, bpm, first_downbeat=downbeat)
+                        timestamp = (
+                            format_time(time_seconds) if time_seconds is not None else "0:00.00s"
+                        )
+                    else:
+                        timestamp = "0:00.00s"
+                    annotations.append([bar, label, timestamp])
+
+        # Sort by bar number
+        annotations.sort(key=lambda x: x[0])
+
+        # Build annotation document with formatted duration
+        duration_sec = result.get("duration")
+        duration_str = format_time(duration_sec) if duration_sec else None
+
+        doc = {
+            "file": result["file"],
+            "duration": duration_str,
+            "bpm": result.get("bpm"),
+            "downbeat": result.get("downbeat"),
+            "time_signature": result.get("time_signature"),
+            "annotations": annotations,
+        }
+
+        # Dump the main document
+        yaml_str = yaml.dump(
+            doc,
+            default_flow_style=None,
+            allow_unicode=True,
+            sort_keys=False,
+        )
+        output_lines.append(yaml_str)
+
+        # Build commented raw events section with original detected times
+        raw_lines = ["# --- Raw detected events (original analysis, do not edit) ---"]
+
+        if result.get("raw"):
+            for raw_item in result["raw"]:
+                start_sec = raw_item.get("start", 0)
+                end_sec = raw_item.get("end", 0)
+                start_bar = raw_item.get("start_bar")
+                end_bar = raw_item.get("end_bar")
+                label = raw_item.get("label", "unknown")
+                confidence = raw_item.get("confidence", 0)
+
+                # Format times as MM:SS.ss
+                start_fmt = format_time(start_sec)
+                end_fmt = format_time(end_sec)
+
+                # Build info string
+                bar_info = ""
+                if start_bar is not None and end_bar is not None:
+                    bar_info = f" bars={start_bar:.2f}-{end_bar:.2f}"
+
+                raw_lines.append(
+                    f"# - {label}: {start_fmt} - {end_fmt}{bar_info} (conf={confidence:.2f})"
+                )
+
+        raw_lines.append("# --- End raw events ---")
+        output_lines.append("\n".join(raw_lines))
+
+    # Join documents with YAML document separator
+    final_output = "\n---\n".join(output_lines)
+
+    if output_path:
+        output_path.write_text(final_output)
+        if not quiet:
+            console.print(f"Annotations written to {output_path}")
+    else:
+        console.print(final_output)
+
+
 def output_table(results: list[dict], console: Console, quiet: bool):
     """Output results as a Rich table.
 
@@ -453,9 +637,8 @@ def output_table(results: list[dict], console: Console, quiet: bool):
                 "",
             )
         else:
-            tempo = result.get("tempo", {}) or {}
-            bpm = tempo.get("bpm", "N/A")
-            time_sig = tempo.get("time_signature", "N/A")
+            bpm = result.get("bpm", "N/A")
+            time_sig = result.get("time_signature", "N/A")
             duration = result.get("duration", "N/A")
             duration_str = f"{duration}s" if duration != "N/A" else "N/A"
             sections = len(result.get("structure", [])) if result.get("structure") else "N/A"

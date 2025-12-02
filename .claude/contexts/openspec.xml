@@ -1,0 +1,96 @@
+<openspec-context>
+  <purpose>OpenSpec workflow: structured change management with proposals, designs, tasks</purpose>
+
+  <workflow>
+    <propose>
+      Create proposal → write design → break down into tasks → implement
+      Commands: /propose (scaffolds structure), /list (view all), /apply (implement)
+    </propose>
+    <structure>
+      openspec/
+      ├── specs/              # System requirements (authoritative truth)
+      ├── changes/            # Active changes (one per feature/fix)
+      │   └── [CODE-name]/
+      │       ├── proposal.md # Why/what/impact
+      │       ├── design.md   # How (technical approach)
+      │       └── tasks.md    # Checklist (markdown tasks)
+      └── archive/            # Deployed changes (reference only)
+    </structure>
+    <states>
+      draft → in-progress → ready → deployed → archived
+    </states>
+  </workflow>
+
+  <spec-format>
+    <validation>
+      Specs define constraints, not implementations
+      Changes must reference affected specs in proposal.md
+      Specs validated after deployment via /archive
+    </validation>
+    <examples>
+      - development-workflow.md: Git, testing, CI requirements
+      - api-design.md: REST conventions, error handling
+      - performance.md: Latency/throughput constraints
+    </examples>
+  </spec-format>
+
+  <proposal-format>
+    <frontmatter>
+      status: draft|in-progress|ready|deployed
+      created: YYYY-MM-DD
+      updated: YYYY-MM-DD (auto-updated)
+    </frontmatter>
+    <sections>
+      Why: Problem statement, motivation
+      What Changes: Files/specs affected (bullet list)
+      Impact: Breaking changes, migrations, risks
+    </sections>
+    <naming>
+      Prefix with unique code: [CODE]Proposal Name
+      Example: [AUTH]Add JWT Authentication
+      Codes used for brevity in conversation
+    </naming>
+  </proposal-format>
+
+  <design-format>
+    <sections>
+      Approach: High-level strategy (algorithms, patterns)
+      Implementation: File-by-file changes
+      Testing: Test strategy, edge cases
+      Risks: Trade-offs, potential issues
+    </sections>
+    <style>
+      Concise technical details, not prose
+      Focus on "how" (proposal covers "why")
+    </style>
+  </design-format>
+
+  <tasks-format>
+    <structure>
+      Hierarchical markdown checklist
+      Group by phase: "## 1. Core Implementation"
+      Atomic tasks: "- [ ] 1.1 Create foo.py"
+    </structure>
+    <tracking>
+      Mark completed: "- [x] 1.1 Create foo.py"
+      Update during /apply, never manually
+    </tracking>
+  </tasks-format>
+
+  <validation-rules>
+    <strict>
+      - Proposals must reference affected specs
+      - Design must cover implementation approach
+      - Tasks must be checkable (no ambiguous items)
+      - Changes stay scoped (no feature creep)
+      - Archive updates specs to reflect deployed state
+    </strict>
+  </validation-rules>
+
+  <commands>
+    <propose>/propose → scaffold new change</propose>
+    <list>/list → view all proposals and status</list>
+    <apply>/apply CODE → implement change, update tasks</apply>
+    <archive>/archive CODE → move to archive, update specs</archive>
+  </commands>
+</openspec-context>

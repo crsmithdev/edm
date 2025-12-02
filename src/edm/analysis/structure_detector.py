@@ -28,6 +28,7 @@ class DetectedSection:
         end_time: End time in seconds.
         label: Section label (generic or EDM-specific).
         confidence: Confidence score between 0 and 1.
+        is_event: True for moment-based events (drops, kicks), False for spans.
         start_bar: Start bar position (0-indexed). None if BPM unavailable.
         end_bar: End bar position. None if BPM unavailable.
         bar_count: Number of bars in section. None if BPM unavailable.
@@ -37,6 +38,7 @@ class DetectedSection:
     end_time: float
     label: str
     confidence: float
+    is_event: bool = False
     start_bar: float | None = None
     end_bar: float | None = None
     bar_count: float | None = None
@@ -213,7 +215,8 @@ class MSAFDetector:
             energy = float(normalized_energies[i])
             gradient = float(gradients[i])
 
-            # Determine EDM label
+            # Determine EDM label and whether it's an event
+            is_event = False
             if i == 0:
                 label = "intro"
                 confidence = 0.9
@@ -223,6 +226,7 @@ class MSAFDetector:
             elif energy > 0.7:
                 label = "drop"
                 confidence = 0.85 + (energy - 0.7) * 0.5  # Higher energy = higher confidence
+                is_event = True  # Drops are events
             elif gradient > 0.15:
                 label = "buildup"
                 confidence = 0.75 + gradient
@@ -243,6 +247,7 @@ class MSAFDetector:
                     end_time=float(section.end_time),
                     label=label,
                     confidence=confidence,
+                    is_event=is_event,
                 )
             )
 
@@ -402,7 +407,8 @@ class EnergyDetector:
             else:
                 avg_energy = 0.5
 
-            # Determine label
+            # Determine label and whether it's an event
+            is_event = False
             if i == 0:
                 label = "intro"
                 confidence = 0.9
@@ -412,6 +418,7 @@ class EnergyDetector:
             elif avg_energy > self._energy_threshold_high:
                 label = "drop"
                 confidence = 0.8 + float(avg_energy - self._energy_threshold_high) * 0.5
+                is_event = True  # Drops are events
             elif avg_energy < self._energy_threshold_low:
                 label = "breakdown"
                 confidence = 0.75
@@ -428,6 +435,7 @@ class EnergyDetector:
                     end_time=float(end),
                     label=label,
                     confidence=confidence,
+                    is_event=is_event,
                 )
             )
 
