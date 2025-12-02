@@ -55,4 +55,4 @@ Thumbs.db
 # Cache
 .cache/
 *.cache
-.mypy_cache
+.mypy_cachedata/annotations/generated/
