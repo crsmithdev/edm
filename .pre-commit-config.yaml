@@ -16,6 +16,12 @@ repos:
       - id: mypy
         additional_dependencies:
           - types-pyyaml
+          - types-requests
+          - numpy
+          - librosa
+          - torch
+          - mutagen
+          - structlog
         args: [--config-file=pyproject.toml]
         files: ^src/
 

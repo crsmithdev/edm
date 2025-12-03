@@ -1,18 +1,29 @@
 ---
-name: Generate Annotations
-description: Generate annotation files for audio tracks matching a glob pattern
-category: Analysis
-tags: [analysis, annotations]
+name: Annotation Workflow
+description: Generate, merge, and save track annotations
+category: Annotations
+tags: [annotations, workflow]
 arguments:
-  - name: pattern
-    description: Glob pattern for audio files (e.g., "~/music/*.flac", "~/music/**/*.mp3")
+  - name: command
+    description: "Command: generate [files], merge, save, help"
     required: true
 ---
 
-Run the annotation generation script with the provided glob pattern:
+Run the annotation workflow:
 
 ```bash
-.claude/scripts/generate-annotations.sh '$ARGUMENTS.pattern'
+.claude/scripts/annotate.sh $ARGUMENTS.command
 ```
 
-Output files are written to `data/annotations/generated/` with one YAML file per track.
+**Commands:**
+- `generate ~/music/*.flac` - Analyze audio → generated/
+- `generate` (no args) - Re-analyze files from reference/
+- `merge` - Merge reference + generated → working/
+- `save` - Save working → reference/
+
+**Workflow:**
+1. `/annotate generate ~/music/*.flac`
+2. `/annotate merge`
+3. Edit files in `data/annotations/working/`
+4. `/annotate save`
+5. `/evaluate`

@@ -55,4 +55,8 @@ Thumbs.db
 # Cache
 .cache/
 *.cache
-.mypy_cachedata/annotations/generated/
+.mypy_cache/
+
+# Annotations (generated and working are disposable, reference is tracked)
+data/annotations/generated/
+data/annotations/working/

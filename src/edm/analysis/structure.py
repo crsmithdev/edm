@@ -199,8 +199,8 @@ def analyze_structure(
     # Post-process sections
     sections = _post_process_sections(sections, duration)
 
-    # Merge consecutive 'other' sections
-    sections = _merge_consecutive_other(sections)
+    # Merge consecutive sections with same label
+    sections = _merge_consecutive_same_label(sections)
 
     # Add bar calculations if requested and BPM available
     if include_bars and result_bpm is not None:
@@ -386,13 +386,20 @@ def _format_structure_output(
     for section in detected_sections:
         if section.is_event:
             # Event: single bar number
-            bar_num, _ = time_to_bars(section.start_time, bpm, time_signature, downbeat)
+            bar_result = time_to_bars(section.start_time, bpm, time_signature, downbeat)
+            if bar_result is None:
+                continue
+            bar_num, _ = bar_result
             bar_1indexed = int(ceil(bar_num)) + 1
             events.append((bar_1indexed, section.label))
         else:
             # Span: start and end bars
-            start_bar_num, _ = time_to_bars(section.start_time, bpm, time_signature, downbeat)
-            end_bar_num, _ = time_to_bars(section.end_time, bpm, time_signature, downbeat)
+            start_bar_result = time_to_bars(section.start_time, bpm, time_signature, downbeat)
+            end_bar_result = time_to_bars(section.end_time, bpm, time_signature, downbeat)
+            if start_bar_result is None or end_bar_result is None:
+                continue
+            start_bar_num, _ = start_bar_result
+            end_bar_num, _ = end_bar_result
 
             start_bar_1indexed = int(ceil(start_bar_num)) + 1
             end_bar_1indexed = int(floor(end_bar_num))
@@ -406,14 +413,14 @@ def _format_structure_output(
     return spans, events
 
 
-def _merge_consecutive_other(sections: list[Section]) -> list[Section]:
-    """Merge consecutive sections with label='other'.
+def _merge_consecutive_same_label(sections: list[Section]) -> list[Section]:
+    """Merge consecutive sections with the same label.
 
     Args:
         sections: List of sections.
 
     Returns:
-        List with consecutive 'other' sections merged.
+        List with consecutive same-label sections merged.
     """
     if not sections:
         return []
@@ -423,10 +430,10 @@ def _merge_consecutive_other(sections: list[Section]) -> list[Section]:
     for section in sections[1:]:
         prev = merged[-1]
 
-        if section.label == "other" and prev.label == "other":
+        if section.label == prev.label:
             # Merge: extend previous section's end time
             merged[-1] = Section(
-                label="other",
+                label=prev.label,
                 start_time=prev.start_time,
                 end_time=section.end_time,
                 confidence=max(prev.confidence, section.confidence),

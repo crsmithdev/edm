@@ -108,11 +108,8 @@ class MSAFDetector:
             y, _ = librosa.load(str(filepath), sr=sr, mono=True)
             duration = len(y) / sr
 
-            # Convert to sections
+            # Convert to sections with MSAF cluster labels
             sections = self._boundaries_to_sections(boundaries, labels, duration)
-
-            # Map to EDM labels using energy analysis
-            sections = self._map_to_edm_labels(filepath, sections, sr)
 
             logger.debug(
                 "msaf detection complete",
@@ -132,18 +129,20 @@ class MSAFDetector:
 
         Args:
             boundaries: Array of boundary times.
-            labels: Array of segment labels.
+            labels: Array of segment cluster IDs from MSAF.
             duration: Total audio duration.
 
         Returns:
-            List of detected sections.
+            List of detected sections with cluster-based labels (e.g., "segment1").
         """
         sections = []
 
         for i in range(len(boundaries) - 1):
             start = float(boundaries[i])
             end = float(boundaries[i + 1])
-            label = f"segment_{int(labels[i])}" if i < len(labels) else "unknown"
+            # Use 1-indexed segment labels based on MSAF cluster ID
+            cluster_id = int(labels[i]) + 1 if i < len(labels) else 0
+            label = f"segment{cluster_id}"
 
             sections.append(
                 DetectedSection(
@@ -164,94 +163,6 @@ class MSAFDetector:
             )
 
         return sections
-
-    def _map_to_edm_labels(
-        self, filepath: Path, sections: list[DetectedSection], sr: int
-    ) -> list[DetectedSection]:
-        """Map generic segment labels to EDM labels using energy analysis.
-
-        Args:
-            filepath: Path to the audio file.
-            sections: Sections with generic labels.
-            sr: Sample rate.
-
-        Returns:
-            Sections with EDM labels.
-        """
-        if not sections:
-            return sections
-
-        # Load audio for energy analysis
-        y, _ = librosa.load(str(filepath), sr=sr, mono=True)
-
-        # Calculate RMS energy per section
-        section_energies = []
-        for section in sections:
-            start_sample = int(section.start_time * sr)
-            end_sample = int(section.end_time * sr)
-            segment = y[start_sample:end_sample]
-
-            if len(segment) > 0:
-                rms = np.sqrt(np.mean(segment**2))
-                section_energies.append(rms)
-            else:
-                section_energies.append(0.0)
-
-        if not section_energies:
-            return sections
-
-        # Normalize energies
-        max_energy = max(section_energies) if max(section_energies) > 0 else 1.0
-        normalized_energies = [e / max_energy for e in section_energies]
-
-        # Calculate energy gradients for buildup detection
-        gradients = [0.0]  # First section has no gradient
-        for i in range(1, len(normalized_energies)):
-            gradients.append(normalized_energies[i] - normalized_energies[i - 1])
-
-        # Map labels based on energy characteristics
-        edm_sections = []
-        for i, section in enumerate(sections):
-            energy = float(normalized_energies[i])
-            gradient = float(gradients[i])
-
-            # Determine EDM label and whether it's an event
-            is_event = False
-            if i == 0:
-                label = "intro"
-                confidence = 0.9
-            elif i == len(sections) - 1:
-                label = "outro"
-                confidence = 0.9
-            elif energy > 0.7:
-                label = "drop"
-                confidence = 0.85 + (energy - 0.7) * 0.5  # Higher energy = higher confidence
-                is_event = True  # Drops are events
-            elif gradient > 0.15:
-                label = "buildup"
-                confidence = 0.75 + gradient
-            elif energy < 0.4:
-                label = "breakdown"
-                confidence = 0.8
-            else:
-                # Mid-energy section - doesn't fit known EDM categories
-                label = "other"
-                confidence = 0.5
-
-            # Clamp confidence
-            confidence = float(min(confidence, 0.99))
-
-            edm_sections.append(
-                DetectedSection(
-                    start_time=float(section.start_time),
-                    end_time=float(section.end_time),
-                    label=label,
-                    confidence=confidence,
-                    is_event=is_event,
-                )
-            )
-
-        return edm_sections
 
 
 def merge_short_sections(

@@ -1,0 +1,31 @@
+<evaluate-context>
+  <cmd>uv run edm evaluate</cmd>
+  <flags json="machine-readable output"/>
+
+  <reference path="data/annotations/reference/*.yaml">
+    <field name="bpm" type="float"/>
+    <field name="downbeat" type="float" unit="seconds"/>
+    <field name="annotations" type="list">
+      <item format="[bar, label, timestamp]"/>
+    </field>
+    <bar-to-time formula="downbeat + (bar-1) * 60/bpm * 4" index="1-based"/>
+  </reference>
+
+  <metrics>
+    <boundary-f1 tolerance="±2s"/>
+    <label-accuracy when="boundary matched"/>
+    <event precision="detected∩reference" recall="reference∩detected"/>
+  </metrics>
+
+  <workflow>
+    <prereq>/annotate save</prereq>
+    <run>/evaluate</run>
+    <iterate>Fix annotations → save → evaluate</iterate>
+  </workflow>
+
+  <files>
+    <f path="src/cli/commands/evaluate.py" role="CLI"/>
+    <f path="src/edm/evaluation/" role="logic"/>
+    <f path="data/annotations/reference/" role="ground-truth (git-tracked)"/>
+  </files>
+</evaluate-context>
