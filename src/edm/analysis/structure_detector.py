@@ -254,6 +254,71 @@ class MSAFDetector:
         return edm_sections
 
 
+def merge_short_sections(
+    sections: list[DetectedSection],
+    bpm: float | None = None,
+    min_section_bars: int = 8,
+    time_signature: tuple[int, int] = (4, 4),
+) -> list[DetectedSection]:
+    """Merge sections shorter than minimum bar count.
+
+    Args:
+        sections: List of sections to process.
+        bpm: BPM for bar calculation. If None, uses a default 8-second minimum.
+        min_section_bars: Minimum section length in bars. Default 8.
+        time_signature: Time signature tuple. Default (4, 4).
+
+    Returns:
+        List with short sections merged into adjacent sections.
+    """
+    if len(sections) <= 1:
+        return sections
+
+    # Calculate minimum duration in seconds
+    # At typical EDM tempos (120-150 BPM), 8 bars = 16-13 seconds
+    # Use 8 seconds as fallback if no BPM (conservative estimate for ~150 BPM)
+    beats_per_bar = time_signature[0]
+    if bpm and bpm > 0:
+        seconds_per_beat = 60.0 / bpm
+        min_duration = min_section_bars * beats_per_bar * seconds_per_beat
+    else:
+        min_duration = 8.0  # Fallback: 8 seconds
+
+    logger.debug(
+        "merging short sections",
+        min_bars=min_section_bars,
+        min_duration_seconds=round(min_duration, 2),
+        input_sections=len(sections),
+    )
+
+    merged: list[DetectedSection] = []
+
+    for section in sections:
+        duration = section.end_time - section.start_time
+
+        if not merged:
+            merged.append(section)
+            continue
+
+        prev = merged[-1]
+
+        if duration < min_duration:
+            # Merge with previous section (extend previous to cover this one)
+            merged[-1] = DetectedSection(
+                start_time=prev.start_time,
+                end_time=section.end_time,
+                label=prev.label,  # Keep previous label
+                confidence=max(prev.confidence, section.confidence),
+                is_event=prev.is_event,
+            )
+        else:
+            merged.append(section)
+
+    logger.debug("merged short sections", output_sections=len(merged))
+
+    return merged
+
+
 class EnergyDetector:
     """Energy-based structure detection using librosa.
 

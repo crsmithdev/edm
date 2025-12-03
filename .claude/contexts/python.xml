@@ -1,144 +1,49 @@
 <python-context>
-  <purpose>Python code style, Typer CLI patterns, testing conventions for EDM project</purpose>
+  <purpose>Python code style, Typer CLI, testing for EDM project</purpose>
 
-  <code-style>
-    <formatter>ruff format (line length 100, double quotes)</formatter>
-    <linter>ruff check --fix</linter>
-    <types>
-      Required for all functions/methods
-      Modern Python 3.12+ syntax: list[str] not List[str]
-      Use | for unions: str | None not Optional[str]
-    </types>
-    <docstrings>
-      Google style for all public functions/classes
-      Args/Returns/Raises sections
-      Example: See src/edm/analysis/bpm.py:36
-    </docstrings>
-  </code-style>
+  <style>
+    <format tool="ruff" line="100" quotes="double"/>
+    <types required="all" syntax="3.12+" unions="str | None" lists="list[str]"/>
+    <docstrings style="Google" example="src/edm/analysis/bpm.py:36"/>
+  </style>
 
-  <imports>
-    <order>
-      1. Standard library (alphabetized)
-      2. Third-party (alphabetized)
-      3. Local imports (alphabetized)
-      Blank line between groups
-    </order>
-    <style>
-      from typing import Literal (not import typing)
-      import structlog (not from structlog import get_logger)
-      Avoid star imports: from foo import * (never use)
-    </style>
+  <imports order="stdlib → third-party → local" separator="blank line">
+    <prefer>from typing import Literal</prefer>
+    <prefer>import structlog</prefer>
+    <avoid>from foo import *</avoid>
   </imports>
 
-  <exceptions>
-    <hierarchy>
-      All custom exceptions derive from EDMError (src/edm/exceptions.py)
-      Preserve chains: raise NewError(...) from e
-      Never swallow exceptions silently
-    </hierarchy>
-    <examples>
-      BPMDetectionError, StructureDetectionError, AudioLoadError
-    </examples>
+  <exceptions base="EDMError" file="src/edm/exceptions.py">
+    <rule>Preserve chains: raise NewError(...) from e</rule>
+    <types>BPMDetectionError, StructureDetectionError, AudioLoadError</types>
   </exceptions>
 
-  <pydantic>
-    <version>Pydantic v2 (not v1)</version>
-    <models>
-      Use Field() for constraints: Field(gt=0, le=1)
-      model_validator for cross-field validation
-      Dataclasses for simple types (Section, BPMResult)
-    </models>
-    <validation>
-      Validate at boundaries (CLI input, file I/O)
-      Trust internal code (no validation between modules)
-    </validation>
+  <pydantic version="v2">
+    <models>Field(gt=0, le=1), model_validator for cross-field</models>
+    <validate at="boundaries (CLI, file I/O)" trust="internal code"/>
   </pydantic>
 
-  <logging>
-    <library>
-      structlog with get_logger(__name__)
-      Natural language messages: "Analyzing BPM for {file}"
-      Bind context: logger.bind(file=filepath)
-    </library>
-    <levels>
-      debug: Algorithm internals, detailed steps
-      info: High-level progress (default CLI output)
-      warning: Missing data, fallbacks used
-      error: Failures (with exception info)
-    </levels>
-    <config>
-      Console: colored, human-readable (dev)
-      JSON: structured output (production/file)
-      CLI flags: --log-level, --json-logs, --log-file
-    </config>
+  <logging lib="structlog">
+    <init>get_logger(__name__)</init>
+    <levels debug="internals" info="progress" warning="fallbacks" error="failures"/>
+    <output console="colored" json="structured" flags="--log-level, --json-logs"/>
   </logging>
 
-  <typer-cli>
-    <structure>
-      Main app: src/cli/main.py (Typer app definition)
-      Commands: src/cli/commands/*.py (one per command)
-      Registration: app.command()(analyze_command)
-    </structure>
-    <patterns>
-      <arguments>
-        typer.Argument(..., help="Description", exists=True)
-        Use list[Path] for multiple files
-      </arguments>
-      <options>
-        typer.Option(default, "--flag", "-f", help="Description")
-        Boolean flags: is_flag=True
-        Enums for choices: OutputFormat (enum.Enum)
-      </options>
-      <output>
-        Rich tables for structured data (Console.print)
-        JSON/YAML for machine-readable (typer.echo)
-        --format flag: table|json|yaml
-      </output>
-    </patterns>
-    <example>
-      @app.command()
-      def analyze(
-          files: list[Path] = typer.Argument(..., help="Audio files"),
-          ignore_metadata: bool = typer.Option(False, "--ignore-metadata"),
-      ):
-          # Implementation
-    </example>
-  </typer-cli>
+  <typer>
+    <files main="src/cli/main.py" commands="src/cli/commands/*.py"/>
+    <arg syntax="typer.Argument(..., help='...')"/>
+    <opt syntax="typer.Option(default, '--flag', '-f', help='...')"/>
+    <output table="Rich Console" machine="JSON/YAML" flag="--format"/>
+  </typer>
 
-  <testing>
-    <framework>pytest (src/tests/)</framework>
-    <structure>
-      tests/unit/ - Fast, isolated unit tests
-      tests/integration/ - Full pipeline tests with fixtures
-      conftest.py - Shared fixtures (sample audio files)
-    </structure>
-    <fixtures>
-      Use @pytest.fixture for reusable test data
-      Sample audio: tests/fixtures/*.mp3
-      Reference data: tests/fixtures/*.yaml
-    </fixtures>
-    <assertions>
-      assert actual == expected (simple)
-      pytest.approx() for floats: assert bpm == pytest.approx(128.0, abs=0.5)
-      pytest.raises() for exceptions
-    </assertions>
-    <commands>
-      uv run pytest -v (all tests)
-      uv run pytest tests/unit/test_bpm.py::test_metadata (single test)
-      uv run pytest -k "bpm" (pattern match)
-    </commands>
+  <testing framework="pytest" dir="src/tests/">
+    <structure unit="tests/unit/" integration="tests/integration/" fixtures="conftest.py"/>
+    <assert floats="pytest.approx(128.0, abs=0.5)" exceptions="pytest.raises()"/>
   </testing>
 
-  <async>
-    <library>
-      asyncio for concurrency (asyncio.TaskGroup)
-      httpx for async HTTP (not requests)
-    </library>
-    <patterns>
-      Use async/await for I/O-bound tasks (file reading, network)
-      Avoid for CPU-bound (audio processing already synchronous)
-      asyncio.run() in CLI entry points
-    </patterns>
+  <async lib="asyncio" http="httpx">
+    <use>I/O-bound tasks</use>
+    <avoid>CPU-bound (audio processing)</avoid>
   </async>
 
   <commands>

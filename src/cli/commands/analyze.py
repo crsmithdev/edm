@@ -24,17 +24,17 @@ logger = structlog.get_logger(__name__)
 
 
 def format_time(seconds: float) -> str:
-    """Format seconds as M:SS.ss or MM:SS.ss.
+    """Format seconds as M:SS.mm (minutes:seconds.centiseconds).
 
     Args:
         seconds: Time in seconds.
 
     Returns:
-        Formatted time string like '2:32.02s'.
+        Formatted time string like '4:02.20'.
     """
     minutes = int(seconds // 60)
     secs = seconds % 60
-    return f"{minutes}:{secs:05.2f}s"
+    return f"{minutes}:{secs:05.2f}"
 
 
 @dataclass

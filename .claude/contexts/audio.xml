@@ -1,148 +1,53 @@
 <audio-context>
-  <purpose>EDM audio analysis: BPM, beats, structure, bars (drops, buildups, breakdowns)</purpose>
+  <purpose>EDM audio analysis: BPM, beats, structure, bars</purpose>
 
-  <algorithms>
-    <bpm>
-      <cascade>
-        1. Metadata (ID3/FLAC/MP4 tags) - instant
-        2. Computed (beat_this → librosa) - 5-10s per track
-      </cascade>
-      <beat_this>
-        Neural beat tracker (ISMIR 2024)
-        Best for EDM, handles tempo multiplicity (half/double time)
-        Returns confidence based on beat interval consistency
-        Files: src/edm/analysis/bpm_detector.py:224
-      </beat_this>
-      <librosa>
-        Fallback tempo estimator
-        Spectral flux + autocorrelation
-        Faster but less accurate for complex EDM
-      </librosa>
-    </bpm>
+  <bpm>
+    <cascade>1. metadata (ID3/FLAC/MP4) → 2. beat_this → 3. librosa</cascade>
+    <detector name="beat_this" file="src/edm/analysis/bpm_detector.py:224">
+      Neural beat tracker (ISMIR 2024), handles tempo multiplicity
+    </detector>
+    <detector name="librosa">Spectral flux + autocorrelation fallback</detector>
+  </bpm>
 
-    <structure>
-      <detectors>
-        auto (default): MSAF if available → energy fallback
-        msaf: Spectral flux boundaries + energy-based EDM labeling
-        energy: Rule-based RMS energy analysis
-      </detectors>
-      <msaf>
-        Music Structure Analysis Framework (ISMIR 2016)
-        Boundary detection: spectral flux algorithm
-        Label mapping: energy thresholds to EDM terminology
-        Files: src/edm/analysis/structure_detector.py:55
-      </msaf>
-      <energy>
-        RMS energy + spectral contrast analysis
-        Gradient peaks for boundary detection
-        Drop detection via high-energy sections
-        Ensures full track coverage, no gaps
-        Minimum section: 8 seconds
-        Files: src/edm/analysis/structure_detector.py:260
-      </energy>
-      <labels>
-        intro, buildup, drop, breakdown, outro
-        Confidence based on energy characteristics
-        High energy → drop, low energy → breakdown
-      </labels>
-    </structure>
+  <structure>
+    <cascade>auto: MSAF → energy fallback</cascade>
+    <detector name="msaf" file="src/edm/analysis/structure_detector.py:55">
+      Spectral flux boundaries + energy-based EDM labeling
+    </detector>
+    <detector name="energy" file="src/edm/analysis/structure_detector.py:260">
+      RMS + spectral contrast, gradient peaks, min 8s sections
+    </detector>
+    <labels>intro|buildup|drop|breakdown|outro</labels>
+  </structure>
 
-    <bars>
-      Musical bar/measure calculation from time positions
-      Default 4/4 time signature (supports 3/4, 6/8, etc.)
-      1-indexed bars (bar 1 = first bar, DJ convention)
-      Graceful degradation: bar fields None when BPM unavailable
-      Files: src/edm/analysis/bars.py
-      Functions: time_to_bars(), bars_to_time(), bar_count_for_range()
-    </bars>
+  <bars file="src/edm/analysis/bars.py">
+    <fn>time_to_bars(), bars_to_time(), bar_count_for_range()</fn>
+    <default time_sig="4/4" index="1-based"/>
+    <graceful>bar fields None when BPM unavailable</graceful>
+  </bars>
 
-    <beat-grid>
-      Future feature (placeholder parameter exists)
-      Will anchor beats to first downbeat for precise bar alignment
-      Currently: bars calculated from BPM + time signature only
-    </beat-grid>
-  </algorithms>
+  <models>
+    <BPMResult bpm="float" confidence="0-1" source="metadata|computed"
+               method="beat-this|librosa|id3" alternatives="list[float]"/>
+    <Section label="str" start_time="float" end_time="float" confidence="0-1"
+             start_bar="float|None" end_bar="float|None" bar_count="float|None"/>
+    <StructureResult sections="list[Section]" events="list[Event]" duration="float"
+                     detector="msaf|energy" bpm="float|None" downbeat="float" time_sig="tuple"/>
+  </models>
 
-  <data-models>
-    <BPMResult>
-      bpm: float
-      confidence: float (0-1)
-      source: "metadata" | "computed"
-      method: "beat-this" | "librosa" | "id3" | None
-      computation_time: seconds
-      alternatives: list[float] (tempo multiplicity)
-    </BPMResult>
-
-    <Section>
-      label: str (intro/buildup/drop/breakdown/outro)
-      start_time: float (seconds)
-      end_time: float (seconds)
-      confidence: float (0-1)
-      start_bar: float | None (fractional, 1-indexed)
-      end_bar: float | None
-      bar_count: float | None
-    </Section>
-
-    <StructureResult>
-      sections: list[Section] (chronological)
-      events: list[Event] (moment-based: drop kick, etc.)
-      raw: list[RawSection] (debug detail)
-      duration: float (total track seconds)
-      detector: str (msaf/energy)
-      bpm: float | None
-      downbeat: float (first beat time)
-      time_signature: tuple[int, int] (4/4 default)
-    </StructureResult>
-  </data-models>
-
-  <module-layout>
-    src/edm/analysis/
-    ├── bpm.py              # Public API: analyze_bpm()
-    ├── bpm_detector.py     # Internal: beat_this, librosa implementations
-    ├── beat_detector.py    # Beat tracking (unused in BPM)
-    ├── beat_grid.py        # Future beat grid alignment
-    ├── structure.py        # Public API: analyze_structure()
-    ├── structure_detector.py # Internal: MSAFDetector, EnergyDetector
-    └── bars.py             # Bar/measure calculations
-  </module-layout>
+  <files>
+    <f path="src/edm/analysis/bpm.py" api="analyze_bpm()"/>
+    <f path="src/edm/analysis/structure.py" api="analyze_structure()"/>
+    <f path="src/edm/analysis/bpm_detector.py" role="implementations"/>
+    <f path="src/edm/analysis/structure_detector.py" role="implementations"/>
+    <f path="src/edm/analysis/bars.py" role="bar calculations"/>
+  </files>
 
   <patterns>
-    <two-tier>
-      Public API (bpm.py, structure.py): Simple interface, strategy selection
-      Detectors (*_detector.py): Algorithm implementations, fallback chains
-    </two-tier>
-    <caching>
-      Audio loaded once, cached in memory (src/edm/io/audio.py)
-      Cache size configurable (default: 10 tracks)
-      Clear cache: clear_audio_cache()
-    </caching>
-    <fallbacks>
-      Always provide graceful degradation (metadata → computation)
-      Return partial results when possible (bars None if no BPM)
-      Log warnings for missing data, never crash
-    </fallbacks>
+    <two-tier>Public API (bpm.py, structure.py) → Detectors (*_detector.py)</two-tier>
+    <caching file="src/edm/io/audio.py" size="10 tracks"/>
+    <fallbacks>Graceful degradation, partial results, log warnings</fallbacks>
   </patterns>
 
-  <evaluation>
-    <reference-sources>
-      File metadata (ID3/FLAC tags)
-      CSV/YAML annotations (time-based or bar-based)
-      Bar annotations auto-converted to time using BPM
-    </reference-sources>
-    <metrics>
-      BPM: MAE, RMSE, accuracy within ±0.5 BPM
-      Structure: Precision, Recall, F1 per section type
-      Boundary tolerance: ±2 seconds (default)
-    </metrics>
-    <output>
-      data/accuracy/bpm/ - JSON + Markdown results
-      data/accuracy/structure/ - JSON + Markdown results
-    </output>
-  </evaluation>
-
-  <constraints>
-    <performance>30s max per track, 4GB memory, consumer GPU ok</performance>
-    <accuracy>BPM ±0.5, beat grid ±50ms, drop precision >90%</accuracy>
-    <files>Under 500 lines per file (split when needed)</files>
-  </constraints>
+  <constraints perf="30s/track, 4GB RAM" accuracy="BPM ±0.5, drop precision >90%"/>
 </audio-context>

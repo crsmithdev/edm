@@ -181,26 +181,33 @@ def _evaluate_file_worker(args: tuple) -> dict:
 
         # Convert detected sections to comparable format
         detected = []
+
+        # Add span sections (non-events)
         for s in result.sections:
-            if s.label in EVENT_LABELS:
-                detected.append(
-                    {
-                        "label": s.label,
-                        "time": s.start_time,
-                        "is_event": True,
-                        "confidence": s.confidence,
-                    }
-                )
-            else:
-                detected.append(
-                    {
-                        "label": s.label,
-                        "start": s.start_time,
-                        "end": s.end_time,
-                        "is_event": False,
-                        "confidence": s.confidence,
-                    }
-                )
+            detected.append(
+                {
+                    "label": s.label,
+                    "start": s.start_time,
+                    "end": s.end_time,
+                    "is_event": False,
+                    "confidence": s.confidence,
+                }
+            )
+
+        # Add events (drops, etc.) from result.events
+        # Events are stored as (bar_number, label) tuples - convert to time
+        if result.events and result.bpm:
+            for bar, label in result.events:
+                event_time = bars_to_time(bar, result.bpm, result.time_signature)
+                if event_time is not None:
+                    detected.append(
+                        {
+                            "label": label,
+                            "time": event_time,
+                            "is_event": True,
+                            "confidence": 0.9,  # Events from detector have high confidence
+                        }
+                    )
 
         # Calculate metrics
         metrics = _calculate_structure_metrics(ref_sections, detected, tolerance)

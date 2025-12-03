@@ -2,95 +2,49 @@
   <purpose>OpenSpec workflow: structured change management with proposals, designs, tasks</purpose>
 
   <workflow>
-    <propose>
-      Create proposal → write design → break down into tasks → implement
-      Commands: /propose (scaffolds structure), /list (view all), /apply (implement)
-    </propose>
-    <structure>
-      openspec/
-      ├── specs/              # System requirements (authoritative truth)
-      ├── changes/            # Active changes (one per feature/fix)
-      │   └── [CODE-name]/
-      │       ├── proposal.md # Why/what/impact
-      │       ├── design.md   # How (technical approach)
-      │       └── tasks.md    # Checklist (markdown tasks)
-      └── archive/            # Deployed changes (reference only)
-    </structure>
-    <states>
-      draft → in-progress → ready → deployed → archived
-    </states>
+    <flow>proposal → design → tasks → implement</flow>
+    <states>draft → in-progress → ready → deployed → archived</states>
   </workflow>
 
-  <spec-format>
-    <validation>
-      Specs define constraints, not implementations
-      Changes must reference affected specs in proposal.md
-      Specs validated after deployment via /archive
-    </validation>
-    <examples>
-      - development-workflow.md: Git, testing, CI requirements
-      - api-design.md: REST conventions, error handling
-      - performance.md: Latency/throughput constraints
-    </examples>
-  </spec-format>
+  <structure>
+    <dir path="openspec/specs/" role="system requirements (authoritative)"/>
+    <dir path="openspec/changes/[CODE-name]/">
+      <file name="proposal.md" content="why/what/impact"/>
+      <file name="design.md" content="how (technical)"/>
+      <file name="tasks.md" content="checklist"/>
+    </dir>
+    <dir path="openspec/archive/" role="deployed changes (reference)"/>
+  </structure>
 
-  <proposal-format>
-    <frontmatter>
-      status: draft|in-progress|ready|deployed
-      created: YYYY-MM-DD
-      updated: YYYY-MM-DD (auto-updated)
-    </frontmatter>
-    <sections>
-      Why: Problem statement, motivation
-      What Changes: Files/specs affected (bullet list)
-      Impact: Breaking changes, migrations, risks
-    </sections>
-    <naming>
-      Prefix with unique code: [CODE]Proposal Name
-      Example: [AUTH]Add JWT Authentication
-      Codes used for brevity in conversation
-    </naming>
-  </proposal-format>
+  <proposal>
+    <frontmatter status="draft|in-progress|ready|deployed" created="YYYY-MM-DD" updated="auto"/>
+    <sections why="problem/motivation" what="files/specs affected" impact="breaking/migrations/risks"/>
+    <naming format="[CODE]Proposal Name" example="[AUTH]Add JWT Authentication"/>
+  </proposal>
 
-  <design-format>
-    <sections>
-      Approach: High-level strategy (algorithms, patterns)
-      Implementation: File-by-file changes
-      Testing: Test strategy, edge cases
-      Risks: Trade-offs, potential issues
-    </sections>
-    <style>
-      Concise technical details, not prose
-      Focus on "how" (proposal covers "why")
-    </style>
-  </design-format>
+  <design>
+    <sections approach="strategy" implementation="file-by-file" testing="strategy" risks="trade-offs"/>
+    <style>Concise technical, not prose</style>
+  </design>
 
-  <tasks-format>
-    <structure>
-      Hierarchical markdown checklist
-      Group by phase: "## 1. Core Implementation"
-      Atomic tasks: "- [ ] 1.1 Create foo.py"
-    </structure>
-    <tracking>
-      Mark completed: "- [x] 1.1 Create foo.py"
-      Update during /apply, never manually
-    </tracking>
-  </tasks-format>
+  <tasks>
+    <format>Hierarchical markdown checklist</format>
+    <group by="phase" example="## 1. Core Implementation"/>
+    <item format="- [ ] 1.1 Create foo.py" done="- [x] 1.1 Create foo.py"/>
+  </tasks>
 
-  <validation-rules>
-    <strict>
-      - Proposals must reference affected specs
-      - Design must cover implementation approach
-      - Tasks must be checkable (no ambiguous items)
-      - Changes stay scoped (no feature creep)
-      - Archive updates specs to reflect deployed state
-    </strict>
-  </validation-rules>
+  <rules>
+    <strict>Proposals reference affected specs</strict>
+    <strict>Design covers implementation approach</strict>
+    <strict>Tasks are checkable (no ambiguity)</strict>
+    <strict>Changes stay scoped (no feature creep)</strict>
+    <strict>Archive updates specs to reflect deployed state</strict>
+  </rules>
 
   <commands>
-    <propose>/propose → scaffold new change</propose>
-    <list>/list → view all proposals and status</list>
-    <apply>/apply CODE → implement change, update tasks</apply>
-    <archive>/archive CODE → move to archive, update specs</archive>
+    <cmd name="/propose">scaffold new change</cmd>
+    <cmd name="/list">view all proposals and status</cmd>
+    <cmd name="/apply" arg="CODE">implement change, update tasks</cmd>
+    <cmd name="/archive" arg="CODE">move to archive, update specs</cmd>
   </commands>
 </openspec-context>

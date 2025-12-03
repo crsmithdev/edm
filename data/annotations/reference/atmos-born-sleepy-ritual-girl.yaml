@@ -4,16 +4,13 @@ bpm: 135.0
 downbeat: 0.0
 time_signature: 4/4
 annotations:
-- [2, intro, '0:01.78s']
-- [19, drop, '0:32.00s']
-- [36, drop, '1:02.22s']
-- [52, drop, '1:30.67s']
-- [111, other, '3:15.56s']
-- [128, drop, '3:45.78s']
-- [154, drop, '4:32.00s']
-- [168, drop, '4:56.89s']
-- [194, drop, '5:43.11s']
-- [234, outro, '6:54.22s']
+- [1, intro, '0:00.000']
+- [17, kick in, '0:28.444']
+- [33, other, '0:56.888']
+- [113, breakdown, '3:19.111']
+- [137, other, '4:01.777']
+- [193, outro, '5:41.435']
+- [255, kick out, '6:38.520']
 
 ---
 # --- Raw detected events (original analysis, do not edit) ---

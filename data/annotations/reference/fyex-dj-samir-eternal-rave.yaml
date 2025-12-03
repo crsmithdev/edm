@@ -1,0 +1,22 @@
+file: /home/crsmi/music/Fyex Dj Samir - Eternal Rave.flac
+duration: '2:01.90'
+bpm: 145.0
+downbeat: 0.04
+time_signature: 4/4
+annotations:
+- [1, intro, '0:00.086']
+- [4, other, '0:06.706']
+- [25, breakdown, '0:39.810']
+- [43, other, '1:09.603']
+- [71, kick out, '1:55.948']
+
+---
+# --- Raw detected events (original analysis, do not edit) ---
+# - intro: 0:00.00 - 0:00.09 bars=1.00-1.00 (conf=0.90)
+# - buildup: 0:00.09 - 0:09.06 bars=1.00-6.00 (conf=0.99)
+# - drop: 0:09.06 - 0:26.84 bars=6.00-17.00 (conf=0.99)
+# - drop: 0:26.84 - 0:39.66 bars=17.00-24.00 (conf=0.99)
+# - other: 0:39.66 - 1:30.14 bars=24.00-55.00 (conf=0.50)
+# - drop: 1:30.14 - 2:01.90 bars=55.00-74.00 (conf=0.96)
+# - outro: 2:01.90 - 2:01.91 bars=74.00-74.00 (conf=0.90)
+# --- End raw events ---

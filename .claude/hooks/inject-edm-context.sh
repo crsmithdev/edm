@@ -29,6 +29,16 @@ if echo "$PROMPT_LOWER" | grep -qE '(bpm|beat|tempo|structure|drop|breakdown|bui
     INJECT_FILES+=("$CONTEXTS_DIR/audio.xml")
 fi
 
+# Evaluation keywords: evaluate, accuracy, reference, metrics
+if echo "$PROMPT_LOWER" | grep -qE '(evaluat|accuracy|reference|metrics|ground.?truth|f1|precision|recall)'; then
+    INJECT_FILES+=("$CONTEXTS_DIR/evaluate.xml")
+fi
+
+# Annotation keywords: annotate, annotation, generate, yaml
+if echo "$PROMPT_LOWER" | grep -qE '(/annotate|annotation|generat.*yaml|label.*track)'; then
+    INJECT_FILES+=("$CONTEXTS_DIR/annotate.xml")
+fi
+
 # Python/CLI keywords: typer, cli, pydantic, pytest, ruff (always inject for code changes)
 if echo "$PROMPT_LOWER" | grep -qE '(typer|cli|command|pydantic|pytest|test|ruff|mypy|import|class|function|def |async|exception)'; then
     INJECT_FILES+=("$CONTEXTS_DIR/python.xml")
@@ -37,6 +47,16 @@ fi
 # Default: inject audio context for general queries (most common task)
 if [ ${#INJECT_FILES[@]} -eq 0 ]; then
     INJECT_FILES+=("$CONTEXTS_DIR/audio.xml")
+fi
+
+# Report which contexts were injected
+if [ ${#INJECT_FILES[@]} -gt 0 ]; then
+    NAMES=()
+    for file in "${INJECT_FILES[@]}"; do
+        NAMES+=("$(basename "$file" .xml)")
+    done
+    echo "<!-- contexts: ${NAMES[*]} -->"
+    echo
 fi
 
 # Inject contexts in order, then user prompt

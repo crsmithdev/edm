@@ -14,6 +14,7 @@ from edm.analysis.structure_detector import (
     EnergyDetector,
     MSAFDetector,
     get_detector,
+    merge_short_sections,
 )
 
 logger = structlog.get_logger(__name__)
@@ -169,6 +170,7 @@ def analyze_structure(
 
             # Also get beat grid for downbeat
             from edm.analysis.beat_detector import detect_beats
+
             beat_grid = detect_beats(filepath)
             result_downbeat = beat_grid.first_beat_time
             logger.debug("downbeat detected", downbeat=result_downbeat)
@@ -176,6 +178,11 @@ def analyze_structure(
             logger.debug("bpm/beat analysis failed, bar calculations will be skipped", error=str(e))
             result_bpm = None
             result_downbeat = None
+
+    # Merge short sections (minimum 8 bars)
+    detected_sections = merge_short_sections(
+        detected_sections, bpm=result_bpm, min_section_bars=8, time_signature=time_signature
+    )
 
     # Convert to Section objects (only for non-event sections)
     sections = [
@@ -203,22 +210,47 @@ def analyze_structure(
     events: list[tuple[int, str]] = []
     if include_bars and result_bpm is not None and result_downbeat is not None:
         event_sections = [s for s in detected_sections if s.is_event]
-        _, events = _format_structure_output(event_sections, result_bpm, time_signature, result_downbeat)
+        _, events = _format_structure_output(
+            event_sections, result_bpm, time_signature, result_downbeat
+        )
 
     # Build raw sections with fractional bar positions
+    # Musical convention: if section ends at bar B, next starts at B+1
     raw_sections: list[RawSection] = []
-    for s in detected_sections:
-        start_bar = None
-        end_bar = None
+    for i, s in enumerate(detected_sections):
+        start_bar: int | None = None
+        end_bar: int | None = None
         if result_bpm is not None and result_downbeat is not None:
-            start_bar, _ = time_to_bars(s.start_time, result_bpm, time_signature, result_downbeat)
-            end_bar, _ = time_to_bars(s.end_time, result_bpm, time_signature, result_downbeat)
+            start_result = time_to_bars(s.start_time, result_bpm, time_signature)
+            if start_result:
+                start_bar = start_result[0]
+                # For first section or if there's a gap, use calculated start
+                # Otherwise, use previous section's end_bar + 1
+                if i > 0 and raw_sections and raw_sections[-1].end_bar is not None:
+                    expected_start = raw_sections[-1].end_bar + 1
+                    # Use expected start if it's close to calculated (within 1 bar)
+                    if abs(expected_start - start_bar) <= 1:
+                        start_bar = int(expected_start)
+
+            end_result = time_to_bars(s.end_time, result_bpm, time_signature)
+            if end_result:
+                end_bar_num, frac_beat = end_result
+                # End bar is the last complete bar the section occupies
+                # If we're exactly on a bar boundary (frac_beat ≈ 0), use previous bar
+                if frac_beat < 0.01:
+                    end_bar = end_bar_num - 1
+                else:
+                    end_bar = end_bar_num
+                # Ensure end_bar >= start_bar
+                if start_bar is not None and end_bar < start_bar:
+                    end_bar = start_bar
+
         raw_sections.append(
             RawSection(
                 start=round(s.start_time, 2),
                 end=round(s.end_time, 2),
-                start_bar=round(start_bar, 2) if start_bar is not None else None,
-                end_bar=round(end_bar, 2) if end_bar is not None else None,
+                start_bar=start_bar,
+                end_bar=end_bar,
                 label=s.label,
                 confidence=round(s.confidence, 2),
             )

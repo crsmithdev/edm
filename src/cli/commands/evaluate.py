@@ -224,6 +224,7 @@ def load_yaml_annotations(annotations_dir: Path) -> dict[Path, list[dict]]:
                 continue
 
             sections = []
+            prev_label = None
             for i, ann in enumerate(annotations):
                 if len(ann) < 2:
                     continue
@@ -231,26 +232,40 @@ def load_yaml_annotations(annotations_dir: Path) -> dict[Path, list[dict]]:
                 bar, label = ann[0], ann[1]
                 label = label.strip().lower()
 
+                # Skip kick in/kick out events - they mark kick drum presence, not structure
+                if label in {"kick in", "kick out"}:
+                    continue
+
                 # Convert bar to time
                 time_val = bars_to_time(bar, bpm, first_downbeat=downbeat)
                 if time_val is None:
                     continue
 
-                # Determine end time (next annotation's start, or track end)
-                if i + 1 < len(annotations):
-                    next_bar = annotations[i + 1][0]
-                    end_time = bars_to_time(next_bar, bpm, first_downbeat=downbeat)
-                else:
-                    # Use duration if available, otherwise estimate
-                    end_time = None
+                # Determine end time (next non-kick annotation's start, or track end)
+                end_time = None
+                for j in range(i + 1, len(annotations)):
+                    next_label = annotations[j][1].strip().lower()
+                    if next_label not in {"kick in", "kick out"}:
+                        next_bar = annotations[j][0]
+                        end_time = bars_to_time(next_bar, bpm, first_downbeat=downbeat)
+                        break
 
-                # Check if this is an event label
-                is_event = label in {"drop", "kick", "hit"}
+                # Normalize labels:
+                # - 'other' after 'breakdown' implies a drop
+                # - 'build' is equivalent to 'buildup'
+                normalized_label = label
+                if label == "other" and prev_label == "breakdown":
+                    normalized_label = "drop"
+                elif label == "build":
+                    normalized_label = "buildup"
+
+                # Check if this is an event label (drops are detected as events by our system)
+                is_event = normalized_label == "drop"
 
                 if is_event:
                     sections.append(
                         {
-                            "label": label,
+                            "label": normalized_label,
                             "time": time_val,
                             "is_event": True,
                         }
@@ -258,12 +273,14 @@ def load_yaml_annotations(annotations_dir: Path) -> dict[Path, list[dict]]:
                 elif end_time is not None:
                     sections.append(
                         {
-                            "label": label,
+                            "label": normalized_label,
                             "start": time_val,
                             "end": end_time,
                             "is_event": False,
                         }
                     )
+
+                prev_label = label
 
             if sections:
                 reference[audio_path] = sections
