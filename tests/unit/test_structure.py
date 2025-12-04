@@ -9,7 +9,6 @@ from edm.analysis.structure import (
     RawSection,
     Section,
     StructureResult,
-    _merge_consecutive_other,
     _post_process_sections,
     analyze_structure,
 )
@@ -49,10 +48,16 @@ class TestStructureResult:
         ]
         events = [(33, "drop"), (65, "drop")]
         raw = [
-            RawSection(start=0.0, end=32.0, start_bar=0.0, end_bar=17.1, label="intro", confidence=0.9),
-            RawSection(start=32.0, end=96.0, start_bar=17.1, end_bar=51.2, label="buildup", confidence=0.85),
+            RawSection(
+                start=0.0, end=32.0, start_bar=0.0, end_bar=17.1, label="intro", confidence=0.9
+            ),
+            RawSection(
+                start=32.0, end=96.0, start_bar=17.1, end_bar=51.2, label="buildup", confidence=0.85
+            ),
         ]
-        result = StructureResult(sections=sections, events=events, raw=raw, duration=96.0, detector="energy")
+        result = StructureResult(
+            sections=sections, events=events, raw=raw, duration=96.0, detector="energy"
+        )
 
         assert len(result.sections) == 2
         assert len(result.events) == 2
@@ -66,9 +71,13 @@ class TestStructureResult:
             Section(label="intro", start_time=0.0, end_time=32.0, confidence=0.9),
         ]
         raw = [
-            RawSection(start=0.0, end=32.0, start_bar=None, end_bar=None, label="intro", confidence=0.9),
+            RawSection(
+                start=0.0, end=32.0, start_bar=None, end_bar=None, label="intro", confidence=0.9
+            ),
         ]
-        result = StructureResult(sections=sections, events=[], raw=raw, duration=32.0, detector="energy")
+        result = StructureResult(
+            sections=sections, events=[], raw=raw, duration=32.0, detector="energy"
+        )
 
         assert len(result.sections) == 1
         assert len(result.events) == 0
@@ -316,72 +325,6 @@ class TestPostProcessSections:
 
         for i in range(len(sections) - 1):
             assert sections[i].start_time <= sections[i + 1].start_time
-
-
-class TestMergeConsecutiveOther:
-    """Tests for _merge_consecutive_other function."""
-
-    def test_empty_list(self):
-        """Test merging empty list."""
-        result = _merge_consecutive_other([])
-        assert result == []
-
-    def test_single_section(self):
-        """Test single section remains unchanged."""
-        sections = [Section(label="other", start_time=0.0, end_time=30.0, confidence=0.5)]
-        result = _merge_consecutive_other(sections)
-        assert len(result) == 1
-        assert result[0].label == "other"
-
-    def test_merge_two_consecutive_other(self):
-        """Test merging two consecutive 'other' sections."""
-        sections = [
-            Section(label="other", start_time=0.0, end_time=30.0, confidence=0.5),
-            Section(label="other", start_time=30.0, end_time=60.0, confidence=0.6),
-        ]
-        result = _merge_consecutive_other(sections)
-        assert len(result) == 1
-        assert result[0].label == "other"
-        assert result[0].start_time == 0.0
-        assert result[0].end_time == 60.0
-        assert result[0].confidence == 0.6  # max of the two
-
-    def test_merge_three_consecutive_other(self):
-        """Test merging three consecutive 'other' sections."""
-        sections = [
-            Section(label="other", start_time=0.0, end_time=30.0, confidence=0.5),
-            Section(label="other", start_time=30.0, end_time=60.0, confidence=0.6),
-            Section(label="other", start_time=60.0, end_time=90.0, confidence=0.4),
-        ]
-        result = _merge_consecutive_other(sections)
-        assert len(result) == 1
-        assert result[0].end_time == 90.0
-        assert result[0].confidence == 0.6  # max of all three
-
-    def test_no_merge_different_labels(self):
-        """Test that different labels are not merged."""
-        sections = [
-            Section(label="intro", start_time=0.0, end_time=30.0, confidence=0.9),
-            Section(label="other", start_time=30.0, end_time=60.0, confidence=0.5),
-            Section(label="outro", start_time=60.0, end_time=90.0, confidence=0.9),
-        ]
-        result = _merge_consecutive_other(sections)
-        assert len(result) == 3
-
-    def test_merge_only_consecutive_other(self):
-        """Test that only consecutive 'other' sections are merged."""
-        sections = [
-            Section(label="other", start_time=0.0, end_time=30.0, confidence=0.5),
-            Section(label="other", start_time=30.0, end_time=60.0, confidence=0.5),
-            Section(label="breakdown", start_time=60.0, end_time=90.0, confidence=0.8),
-            Section(label="other", start_time=90.0, end_time=120.0, confidence=0.5),
-        ]
-        result = _merge_consecutive_other(sections)
-        assert len(result) == 3
-        assert result[0].label == "other"
-        assert result[0].end_time == 60.0  # First two merged
-        assert result[1].label == "breakdown"
-        assert result[2].label == "other"  # Third 'other' not merged
 
 
 class TestAnalyzeStructure:

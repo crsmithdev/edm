@@ -9,11 +9,9 @@ from rich.console import Console
 
 from cli.commands.analyze import analyze_command
 from cli.commands.evaluate import evaluate_command
-from cli.commands.profile import profile_app
 from edm import __version__ as lib_version
 from edm.io.audio import clear_audio_cache, set_cache_size
 from edm.logging import configure_logging
-from edm.processing.parallel import get_default_workers
 
 app = typer.Typer(
     name="edm",
@@ -23,7 +21,6 @@ app = typer.Typer(
 
 # Add subcommands
 app.command(name="evaluate")(evaluate_command)
-app.add_typer(profile_app, name="profile")
 
 console = Console()
 
@@ -93,30 +90,22 @@ def analyze(
         "--offline",
         help="Skip network lookups (Spotify API, etc.)",
     ),
-    ignore_metadata: bool = typer.Option(
+    no_metadata: bool = typer.Option(
         False,
-        "--ignore-metadata",
+        "--no-metadata",
         help="Skip reading metadata from audio files",
     ),
-    log_level: str = typer.Option(
-        "WARNING",
-        "--log-level",
-        help="Set log level (DEBUG, INFO, WARNING, ERROR)",
+    verbose: int = typer.Option(
+        0,
+        "--verbose",
+        "-v",
+        count=True,
+        help="Increase verbosity (-v for INFO, -vv for DEBUG)",
     ),
     log_file: Path | None = typer.Option(
         None,
         "--log-file",
         help="Write logs to file (JSON format)",
-    ),
-    json_logs: bool = typer.Option(
-        False,
-        "--json-logs",
-        help="Output logs in JSON format",
-    ),
-    verbose: bool = typer.Option(
-        False,
-        "--verbose",
-        help="Enable verbose logging (equivalent to --log-level DEBUG)",
     ),
     quiet: bool = typer.Option(
         False,
@@ -140,11 +129,6 @@ def analyze(
         "-w",
         help="Number of parallel workers for analysis (default: CPU count - 1)",
     ),
-    structure_detector: str = typer.Option(
-        "auto",
-        "--structure-detector",
-        help="Structure detection method: auto/msaf (default, required), or energy (fallback)",
-    ),
     annotations: bool = typer.Option(
         False,
         "--annotations",
@@ -164,9 +148,9 @@ def analyze(
 
     --offline: Skip Spotify API lookups (metadata → computed)
 
-    --ignore-metadata: Skip file metadata (Spotify → computed)
+    --no-metadata: Skip file metadata (Spotify → computed)
 
-    --offline --ignore-metadata: Force computation only
+    --offline --no-metadata: Force computation only
 
     Examples:
 
@@ -182,19 +166,24 @@ def analyze(
 
         edm analyze track.mp3 --offline  # Skip Spotify API
 
-        edm analyze track.mp3 --ignore-metadata  # Force Spotify or compute
+        edm analyze track.mp3 --no-metadata  # Force Spotify or compute
 
-        edm analyze track.mp3 --offline --ignore-metadata  # Compute only
+        edm analyze track.mp3 --offline --no-metadata  # Compute only
     """
-    # Determine log level (--verbose overrides --log-level)
-    effective_log_level = "DEBUG" if verbose else log_level.upper()
+    # Map verbosity count to log level
+    verbosity_map = {
+        0: "WARNING",
+        1: "INFO",
+        2: "DEBUG",
+    }
+    effective_log_level = verbosity_map.get(verbose, "DEBUG")
     if quiet:
         effective_log_level = "ERROR"
 
     # Set up logging
     configure_logging(
         level=effective_log_level,
-        json_format=json_logs,
+        json_format=False,
         log_file=log_file,
         no_color=no_color,
     )
@@ -205,12 +194,7 @@ def analyze(
     set_worker_log_level(effective_log_level)
 
     logger = structlog.get_logger(__name__)
-    logger.debug("cli started", log_level=effective_log_level, json_logs=json_logs)
-
-    # Set default workers if not specified
-    if workers is None:
-        workers = get_default_workers()
-        logger.debug("using default workers", workers=workers)
+    logger.debug("cli started", log_level=effective_log_level)
 
     # Disable colors if requested or not a TTY
     if no_color or not sys.stdout.isatty():
@@ -235,11 +219,11 @@ def analyze(
             config_path=config,
             recursive=recursive,
             offline=offline,
-            ignore_metadata=ignore_metadata,
+            ignore_metadata=no_metadata,
             quiet=quiet,
             console=console,
             workers=workers,
-            structure_detector=structure_detector,
+            structure_detector="auto",
             annotations=annotations,
         )
     except Exception as e:
