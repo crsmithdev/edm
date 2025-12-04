@@ -49,32 +49,17 @@ class EDMConfig(BaseModel):
 
 
 def load_config(config_path: Path | None = None) -> EDMConfig:
-    """Load configuration from file.
-
-    **NOTE:** TOML configuration file loading is not yet implemented.
-    This function currently only loads configuration from environment
-    variables and returns default configuration regardless of file contents.
+    """Load configuration.
 
     Args:
-        config_path: Path to TOML configuration file. If not provided, looks for
-            config in default location (~/.config/edm/config.toml).
+        config_path: Unused, kept for backward compatibility.
 
     Returns:
-        Loaded and validated configuration (currently always returns default config
-        with environment variable overrides only).
+        Configuration loaded from environment variables.
 
     Examples:
         >>> config = load_config()
         >>> print(f"Log level: {config.log_level}")
         Log level: INFO
     """
-    if config_path is None:
-        config_path = Path.home() / ".config" / "edm" / "config.toml"
-
-    if config_path.exists():
-        logger.info("loading config", config_path=str(config_path))
-        # TODO: Implement TOML loading with tomli
-        # Currently this logs the path but does not actually parse or load the file
-
-    # Load from environment variables only
     return EDMConfig()
