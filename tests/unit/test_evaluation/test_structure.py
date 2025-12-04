@@ -230,7 +230,6 @@ class TestCalculateStructureMetrics:
         assert metrics["boundary_precision"] == 1.0
         assert metrics["boundary_recall"] == 1.0
         assert metrics["boundary_f1"] == 1.0
-        assert metrics["label_accuracy"] == 1.0
 
     def test_boundary_within_tolerance(self):
         """Test boundaries within tolerance are matched."""

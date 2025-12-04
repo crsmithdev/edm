@@ -155,19 +155,13 @@ class TestEnergyDetector:
         """Test default initialization parameters."""
         detector = EnergyDetector()
         assert detector._min_section_duration == 8.0
-        assert detector._energy_threshold_high == 0.7
-        assert detector._energy_threshold_low == 0.4
 
     def test_initialization_custom(self):
         """Test custom initialization parameters."""
         detector = EnergyDetector(
             min_section_duration=4.0,
-            energy_threshold_high=0.8,
-            energy_threshold_low=0.3,
         )
         assert detector._min_section_duration == 4.0
-        assert detector._energy_threshold_high == 0.8
-        assert detector._energy_threshold_low == 0.3
 
     def test_merge_short_sections(self):
         """Test that short sections are merged."""
@@ -254,7 +248,7 @@ class TestPostProcessSections:
         sections = _post_process_sections([], 180.0)
 
         assert len(sections) == 1
-        assert sections[0].label == "intro"
+        assert sections[0].label == "segment1"
         assert sections[0].start_time == 0.0
         assert sections[0].end_time == 180.0
 
@@ -264,15 +258,15 @@ class TestPostProcessSections:
         assert sections == []
 
     def test_adds_intro_if_not_at_zero(self):
-        """Test adding intro section if first section doesn't start at 0."""
+        """Test adding initial section if first section doesn't start at 0."""
         input_sections = [
-            Section(label="drop", start_time=32.0, end_time=96.0, confidence=0.9),
+            Section(label="segment1", start_time=32.0, end_time=96.0, confidence=0.9),
         ]
 
         sections = _post_process_sections(input_sections, 96.0)
 
         assert len(sections) == 2
-        assert sections[0].label == "intro"
+        assert sections[0].label == "segment0"
         assert sections[0].start_time == 0.0
         assert sections[0].end_time == 32.0
 

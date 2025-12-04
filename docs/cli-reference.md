@@ -31,12 +31,12 @@ Analyzes EDM tracks for BPM, structure, and other features.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `--types`, `-t` | TEXT | all | Comma-separated analysis types: `bpm`, `grid`, `structure` |
+| `--types`, `-t` | TEXT | all | Comma-separated analysis types: `bpm`, `beats`, `grid`, `structure` |
 | `--output`, `-o` | PATH | - | Save results to JSON file |
 | `--format`, `-f` | TEXT | `table` | Output format: `table`, `json` |
 | `--config`, `-c` | PATH | - | Path to configuration file |
 | `--recursive`, `-r` | FLAG | - | Recursively analyze directories |
-| `--ignore-metadata` | FLAG | - | Skip reading BPM from audio file metadata |
+| `--no-metadata` | FLAG | - | Skip reading BPM from audio file metadata |
 | `--structure-detector` | TEXT | `auto` | Structure detection method: `auto`, `msaf`, `energy` |
 | `--log-level` | TEXT | `WARNING` | Log level: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 | `--log-file` | PATH | - | Write logs to file (JSON format) |
@@ -52,7 +52,7 @@ Default: metadata → computed
 | Flags | Strategy |
 |-------|----------|
 | (none) | metadata → computed |
-| `--ignore-metadata` | computed only |
+| `--no-metadata` | computed only |
 
 #### Structure Detection Options
 
@@ -78,7 +78,7 @@ uv run edm analyze *.mp3 --output results.json
 uv run edm analyze /path/to/tracks/ --recursive
 
 # Force computation only (skip metadata)
-uv run edm analyze track.mp3 --ignore-metadata
+uv run edm analyze track.mp3 --no-metadata
 
 # Structure analysis only with energy detector
 uv run edm analyze track.mp3 --types structure --structure-detector energy

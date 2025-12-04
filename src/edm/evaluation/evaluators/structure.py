@@ -237,7 +237,6 @@ def _evaluate_file_worker(args: tuple) -> dict:
             "boundary_precision": 0.0,
             "boundary_recall": 0.0,
             "boundary_f1": 0.0,
-            "label_accuracy": 0.0,
             "event_precision": 0.0,
             "event_recall": 0.0,
             "event_f1": 0.0,
@@ -262,7 +261,6 @@ def _calculate_structure_metrics(
             "boundary_precision": 0.0,
             "boundary_recall": 0.0,
             "boundary_f1": 0.0,
-            "label_accuracy": 0.0,
             "event_precision": 0.0,
             "event_recall": 0.0,
             "event_f1": 0.0,
@@ -350,32 +348,10 @@ def _calculate_structure_metrics(
         else 0.0
     )
 
-    # Calculate label accuracy for matched span segments
-    label_matches = 0
-    label_total = 0
-
-    for ref_s in ref_spans:
-        best_overlap = 0.0
-        best_match = None
-
-        for det_s in det_spans:
-            overlap = _calculate_overlap(ref_s, det_s)
-            if overlap > best_overlap:
-                best_overlap = overlap
-                best_match = det_s
-
-        if best_match and best_overlap > 0.5:
-            label_total += 1
-            if _labels_match(ref_s["label"], best_match["label"]):
-                label_matches += 1
-
-    label_accuracy = label_matches / label_total if label_total > 0 else 0.0
-
     return {
         "boundary_precision": boundary_precision,
         "boundary_recall": boundary_recall,
         "boundary_f1": boundary_f1,
-        "label_accuracy": label_accuracy,
         "event_precision": event_precision,
         "event_recall": event_recall,
         "event_f1": event_f1,
@@ -383,34 +359,16 @@ def _calculate_structure_metrics(
 
 
 def _labels_match(ref_label: str, det_label: str) -> bool:
-    """Check if reference and detected labels match.
-
-    Treats 'segment' loosely:
-    - Reference 'segment' matches any 'segment*' variant
-    - Reference with specific label (intro, buildup, etc.) matches detected 'segment*'
-      (detector found a section but didn't label it specifically)
+    """Check if reference and detected event labels match.
 
     Args:
-        ref_label: Reference label.
-        det_label: Detected label.
+        ref_label: Reference event label.
+        det_label: Detected event label.
 
     Returns:
-        True if labels match.
+        True if labels match exactly.
     """
-    # Exact match
-    if ref_label == det_label:
-        return True
-
-    # Reference is generic 'segment' - matches any segment variant
-    if ref_label == "segment" and det_label.startswith("segment"):
-        return True
-
-    # Reference is specific label but detector only found generic segment
-    # (detector found the boundary but didn't apply specific label)
-    if det_label.startswith("segment"):
-        return True
-
-    return False
+    return ref_label == det_label
 
 
 def _calculate_overlap(section1: dict, section2: dict) -> float:
@@ -525,7 +483,6 @@ def evaluate_structure(
                 "evaluation success",
                 file=filepath.name,
                 boundary_f1=result["boundary_f1"],
-                label_accuracy=result["label_accuracy"],
             )
         else:
             logger.error(
@@ -551,13 +508,10 @@ def evaluate_structure(
         successful_results
     )
     avg_boundary_f1 = sum(r["boundary_f1"] for r in successful_results) / len(successful_results)
-    avg_label_accuracy = sum(r["label_accuracy"] for r in successful_results) / len(
+    avg_event_precision = sum(r["event_precision"] for r in successful_results) / len(
         successful_results
     )
-    avg_drop_precision = sum(r["drop_precision"] for r in successful_results) / len(
-        successful_results
-    )
-    avg_drop_recall = sum(r["drop_recall"] for r in successful_results) / len(successful_results)
+    avg_event_recall = sum(r["event_recall"] for r in successful_results) / len(successful_results)
 
     # Prepare results dictionary
     timestamp = datetime.now().isoformat()
@@ -584,9 +538,8 @@ def evaluate_structure(
             "avg_boundary_precision": avg_boundary_precision,
             "avg_boundary_recall": avg_boundary_recall,
             "avg_boundary_f1": avg_boundary_f1,
-            "avg_label_accuracy": avg_label_accuracy,
-            "avg_drop_precision": avg_drop_precision,
-            "avg_drop_recall": avg_drop_recall,
+            "avg_event_precision": avg_event_precision,
+            "avg_event_recall": avg_event_recall,
         },
         "results": results,
     }
@@ -608,9 +561,8 @@ def evaluate_structure(
     logger.info(
         "evaluation complete",
         boundary_f1=avg_boundary_f1,
-        label_accuracy=avg_label_accuracy,
-        drop_precision=avg_drop_precision,
-        drop_recall=avg_drop_recall,
+        event_precision=avg_event_precision,
+        event_recall=avg_event_recall,
         output=str(output_dir),
     )
 
@@ -627,12 +579,9 @@ def evaluate_structure(
     print(f"  Recall: {avg_boundary_recall:.1%}")
     print(f"  F1: {avg_boundary_f1:.1%}")
     print()
-    print("Section Labeling:")
-    print(f"  Label Accuracy: {avg_label_accuracy:.1%}")
-    print()
-    print("Drop Detection:")
-    print(f"  Precision: {avg_drop_precision:.1%}")
-    print(f"  Recall: {avg_drop_recall:.1%}")
+    print("Event Detection:")
+    print(f"  Precision: {avg_event_precision:.1%}")
+    print(f"  Recall: {avg_event_recall:.1%}")
     print()
     print("Results saved to:")
     print(f"  - {output_base.with_suffix('.json')}")
@@ -669,12 +618,9 @@ def _save_structure_markdown(results: dict, output_path: Path) -> None:
         f"- Recall: {summary['avg_boundary_recall']:.1%}",
         f"- F1: {summary['avg_boundary_f1']:.1%}",
         "",
-        "### Section Labeling",
-        f"- Label Accuracy: {summary['avg_label_accuracy']:.1%}",
-        "",
-        "### Drop Detection",
-        f"- Precision: {summary['avg_drop_precision']:.1%}",
-        f"- Recall: {summary['avg_drop_recall']:.1%}",
+        "### Event Detection",
+        f"- Precision: {summary['avg_event_precision']:.1%}",
+        f"- Recall: {summary['avg_event_recall']:.1%}",
         "",
         "## Evaluation Summary",
         f"- Successful: {summary['successful']} / {summary['total_files']}",

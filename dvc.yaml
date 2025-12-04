@@ -1,0 +1,13 @@
+# DVC Pipeline Configuration
+# Data version control for annotations, models, and generated outputs
+# See: https://dvc.org/doc/user-guide/project-structure/dvcyaml-files
+
+# Pipelines will be defined here as ML workflows develop
+# Example stages:
+# - feature_extraction: Extract audio features for ML training
+# - model_training: Train structure detection models
+# - evaluation: Run accuracy evaluation on test sets
+# - annotation_generation: Generate annotations for new tracks
+
+# For now, data/ directory is tracked with data.dvc
+# Future stages will be added as MLPIVOT implementation progresses

@@ -1,5 +1,7 @@
 # [XVAL] Add Cross-Validation Framework
 
+status: draft
+
 ## Why
 
 When structure boundaries don't align with whole-bar positions (e.g., a drop at bar 8.34), it signals an error in either BPM detection or structure detection. Currently these analyses run independently with no cross-validation. By detecting misalignment patterns, we can:

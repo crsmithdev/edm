@@ -30,6 +30,13 @@ dependencies = [
     "structlog>=24.1.0",
     "msaf>=0.1.80",
     "pyyaml>=6.0.0",
+    "dvc>=3.0.0",
+]
+
+[project.optional-dependencies]
+annotation-ui = [
+    "label-studio>=1.10.0",
+    "label-studio-sdk>=0.0.32",
 ]
 
 [dependency-groups]
@@ -71,9 +78,13 @@ disallow_incomplete_defs = false
 [[tool.mypy.overrides]]
 module = [
     "beat_this.*",
+    "dvc.*",
     "matplotlib.*",
     "msaf.*",
+    "pydantic.*",
+    "rich.*",
     "scipy.*",
+    "typer.*",
 ]
 ignore_missing_imports = true
 

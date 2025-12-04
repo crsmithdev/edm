@@ -296,7 +296,7 @@ def _post_process_sections(sections: list[Section], duration: float | None) -> l
     if not sections:
         # Return minimal structure if no sections detected
         if duration:
-            return [Section(label="intro", start_time=0.0, end_time=duration, confidence=0.5)]
+            return [Section(label="segment1", start_time=0.0, end_time=duration, confidence=0.5)]
         return []
 
     # Sort by start time
@@ -307,7 +307,7 @@ def _post_process_sections(sections: list[Section], duration: float | None) -> l
         sections.insert(
             0,
             Section(
-                label="intro",
+                label="segment0",
                 start_time=0.0,
                 end_time=sections[0].start_time,
                 confidence=0.7,
