@@ -1,8 +1,8 @@
 ---
-name: Clean Build Artifacts
 description: Clean build artifacts, caches, and temporary files
-category: Project
-tags: [cleanup, maintenance]
+allowed-tools: Bash
 ---
 
-Run `just clean`
+```bash
+just clean
+```

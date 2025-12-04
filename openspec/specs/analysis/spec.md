@@ -355,3 +355,18 @@ Ground truth annotation files SHALL support specifying the first downbeat positi
 - **WHEN** multiple tracks in annotation file have different first downbeat values
 - **THEN** each track uses its own first_downbeat for bar calculations
 
+### Requirement: Raw Detector Data in Output
+
+Analysis output SHALL include raw detected sections for debugging and comparison workflows.
+
+#### Scenario: Raw data in annotation output
+- **WHEN** analysis generates annotations with `--annotations` flag
+- **THEN** output includes `raw` field with detected sections
+- **AND** each raw section contains start, end, start_bar, end_bar, label, confidence
+- **AND** raw sections are formatted as commented YAML after `---` separator
+
+#### Scenario: Raw data preservation during annotation merge
+- **WHEN** user edits annotation file and re-analyzes
+- **THEN** merge workflow preserves user edits to annotations section
+- **AND** updates raw section with new detector output
+- **AND** old raw data is replaced, not accumulated

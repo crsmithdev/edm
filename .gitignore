@@ -1,62 +1,53 @@
+
+# Annotations (generated and working are disposable, reference is tracked)
+# Cache
+# Environment variables (IMPORTANT: Keep credentials secure)
+# IDE
+# Logs
+# OS
 # Python
-__pycache__/
-*.py[cod]
+# Testing
+# Virtual environments
 *$py.class
+*.cache
+*.egg
+*.egg-info/
+*.log
+*.py[cod]
 *.so
+*.swo
+*.swp
+*~
+.DS_Store
 .Python
+.cache/
+.coverage
+.eggs/
+.env
+.idea/
+.installed.cfg
+.mypy_cache/
+.pytest_cache/
+.python-version
+.tox/
+.venv/
+.vscode/
+ENV/
+Thumbs.db
+__pycache__/
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
+env/
+htmlcov/
 lib/
 lib64/
+logs/
 parts/
 sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-.python-version
 uv.lock
-
-# Virtual environments
-.venv/
+var/
 venv/
-ENV/
-env/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-
-# Environment variables (IMPORTANT: Keep credentials secure)
-.env
-
-# Logs
-*.log
-logs/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Cache
-.cache/
-*.cache
-.mypy_cache/
-
-# Annotations (generated and working are disposable, reference is tracked)
-data/annotations/generated/
-data/annotations/working/
+wheels/

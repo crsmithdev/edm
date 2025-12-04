@@ -85,11 +85,6 @@ def analyze(
         "-r",
         help="Recursively analyze directories",
     ),
-    offline: bool = typer.Option(
-        False,
-        "--offline",
-        help="Skip network lookups (Spotify API, etc.)",
-    ),
     no_metadata: bool = typer.Option(
         False,
         "--no-metadata",
@@ -129,11 +124,6 @@ def analyze(
         "-w",
         help="Number of parallel workers for analysis (default: CPU count - 1)",
     ),
-    annotations: bool = typer.Option(
-        False,
-        "--annotations",
-        help="Also output a simplified .annotations.yaml template for manual editing",
-    ),
 ):
     """Analyze EDM tracks for BPM, structure, and other features.
 
@@ -141,16 +131,11 @@ def analyze(
 
     By default, EDM uses a cascading strategy for BPM detection:
     1. File metadata (ID3, MP4, FLAC tags) - fastest
-    2. Spotify API - professional accuracy
-    3. Computed analysis - most accurate fallback
+    2. Computed analysis - most accurate fallback
 
     Use flags to control the strategy:
 
-    --offline: Skip Spotify API lookups (metadata → computed)
-
-    --no-metadata: Skip file metadata (Spotify → computed)
-
-    --offline --no-metadata: Force computation only
+    --no-metadata: Force computation only
 
     Examples:
 
@@ -164,11 +149,7 @@ def analyze(
 
         edm analyze /path/to/tracks/ --recursive
 
-        edm analyze track.mp3 --offline  # Skip Spotify API
-
-        edm analyze track.mp3 --no-metadata  # Force Spotify or compute
-
-        edm analyze track.mp3 --offline --no-metadata  # Compute only
+        edm analyze track.mp3 --no-metadata  # Force computation
     """
     # Map verbosity count to log level
     verbosity_map = {
@@ -218,13 +199,13 @@ def analyze(
             format=format,
             config_path=config,
             recursive=recursive,
-            offline=offline,
+            offline=False,  # Legacy parameter, no longer used
             ignore_metadata=no_metadata,
             quiet=quiet,
             console=console,
             workers=workers,
             structure_detector="auto",
-            annotations=annotations,
+            annotations=False,  # Legacy parameter, use --format yaml instead
         )
     except Exception as e:
         logger = structlog.get_logger(__name__)

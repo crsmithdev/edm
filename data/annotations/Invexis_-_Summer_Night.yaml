@@ -1,0 +1,22 @@
+file: /home/crsmi/music/Invexis - Summer Night.flac
+duration: '5:18.10'
+bpm: 136.0
+downbeat: 0.0
+time_signature: 4/4
+annotations:
+- [1, segment, '0:00.000']
+- [128, breakdown, '3:45.698']
+- [136, segment, '3:59.804']
+- [176, kick out, '5:10.335']
+
+---
+# --- Raw detected events (original analysis, do not edit) ---
+# - segment5: 0:00.00 - 0:13.84 bars=1.00-8.00 (conf=0.80)
+# - segment2: 0:13.84 - 1:12.68 bars=9.00-42.00 (conf=0.80)
+# - segment1: 1:12.68 - 1:34.83 bars=43.00-54.00 (conf=0.80)
+# - segment4: 1:34.83 - 3:17.00 bars=55.00-112.00 (conf=0.80)
+# - segment2: 3:17.00 - 3:45.74 bars=113.00-128.00 (conf=0.80)
+# - segment1: 3:45.74 - 4:02.83 bars=129.00-138.00 (conf=0.80)
+# - segment2: 4:02.83 - 4:56.94 bars=139.00-169.00 (conf=0.80)
+# - segment3: 4:56.94 - 5:18.07 bars=170.00-181.00 (conf=0.80)
+# --- End raw events ---

@@ -9,26 +9,17 @@ import yaml
 
 from edm.evaluation.common import get_git_branch, get_git_commit
 from edm.evaluation.evaluators.structure import _evaluate_file_worker
+from edm.processing import ParallelProcessor, get_default_workers
 
 
 def evaluate_command(
     reference: Path = typer.Option(
-        Path("data/annotations/reference"),
+        Path("data/annotations"),
         "--reference",
         "-r",
         help="Directory containing reference annotation YAML files",
         file_okay=False,
         dir_okay=True,
-    ),
-    tolerance: float = typer.Option(
-        2.0,
-        "--tolerance",
-        help="Boundary tolerance in seconds for section matching",
-    ),
-    detector: str = typer.Option(
-        "auto",
-        "--detector",
-        help="Structure detector to use: auto (default), msaf, or energy",
     ),
     output: Path | None = typer.Option(
         None,
@@ -44,11 +35,19 @@ def evaluate_command(
         "-q",
         help="Suppress detailed output",
     ),
+    workers: int | None = typer.Option(
+        None,
+        "--workers",
+        "-w",
+        help="Number of parallel workers (default: CPU count - 1)",
+    ),
 ):
     """Evaluate analysis accuracy against reference annotations.
 
-    Loads annotation files from data/annotations/reference/ (or specified dir),
+    Loads annotation files from data/annotations/ (or specified dir),
     runs analysis on each audio file, and compares results.
+
+    Uses fixed defaults: tolerance=2.0s, detector=auto (msaf).
 
     Skips files without corresponding annotations or missing audio files.
 
@@ -56,10 +55,11 @@ def evaluate_command(
 
         edm evaluate
 
-        edm evaluate --tolerance 3.0
-
-        edm evaluate --reference data/annotations/reference --detector msaf
+        edm evaluate --reference data/annotations
     """
+    # Fixed defaults
+    tolerance = 2.0
+    detector = "auto"
     if not reference.exists():
         typer.echo(f"Error: Reference directory not found: {reference}", err=True)
         raise typer.Exit(code=1)
@@ -71,36 +71,47 @@ def evaluate_command(
         typer.echo(f"Error: No valid annotation files found in {reference}", err=True)
         raise typer.Exit(code=1)
 
-    if not quiet:
-        typer.echo(f"Loaded {len(annotations)} annotation file(s) from {reference}")
-
-    # Evaluate each file
-    results = []
-    successful = 0
-    failed = 0
-
+    # Filter to existing files and build args list
+    args_list = []
     for audio_path, ref_sections in annotations.items():
         if not audio_path.exists():
             if not quiet:
                 typer.echo(f"  Skipping (file not found): {audio_path.name}")
             continue
+        args_list.append((str(audio_path), ref_sections, tolerance, detector))
 
-        if not quiet:
-            typer.echo(f"  Evaluating: {audio_path.name}")
+    if not args_list:
+        typer.echo("Error: No valid files to evaluate", err=True)
+        raise typer.Exit(code=1)
 
-        result = _evaluate_file_worker((str(audio_path), ref_sections, tolerance, detector))
-        results.append(result)
+    # Auto-determine workers if not specified
+    if workers is None:
+        workers = min(get_default_workers(), len(args_list))
 
-        if result["success"]:
-            successful += 1
-            if not quiet:
+    if not quiet:
+        typer.echo(f"Loaded {len(annotations)} annotation file(s) from {reference}")
+        if workers > 1:
+            typer.echo(f"Using {workers} parallel workers")
+
+    # Evaluate files in parallel
+    processor = ParallelProcessor(worker_fn=_evaluate_file_worker, workers=workers)
+    results = processor.process(args_list)
+
+    # Count successes and failures
+    successful = sum(1 for r in results if r["success"])
+    failed = sum(1 for r in results if not r["success"])
+
+    # Print individual results if not quiet
+    if not quiet:
+        for result in results:
+            audio_path = Path(result["file"])
+            typer.echo(f"  Evaluated: {audio_path.name}")
+            if result["success"]:
                 typer.echo(
                     f"    boundary_f1={result['boundary_f1']:.1%} "
                     f"label_acc={result['label_accuracy']:.1%}"
                 )
-        else:
-            failed += 1
-            if not quiet:
+            else:
                 typer.echo(f"    ERROR: {result['error_message']}")
 
     if not results:

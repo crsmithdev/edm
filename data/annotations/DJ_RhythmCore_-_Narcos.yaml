@@ -1,0 +1,25 @@
+file: /home/crsmi/music/DJ RhythmCore - Narcos.flac
+duration: '4:02.20'
+bpm: 128.0
+downbeat: 0.02
+time_signature: 4/4
+annotations:
+- [1, intro, '0:00.004']
+- [25, segment, '0:45.003']
+- [81, segment, '2:30.004']
+- [93, segment, '2:52.504']
+- [105, segment, '3:15.004']
+- [127, kick out, '3:56.255']
+
+---
+# --- Raw detected events (original analysis, do not edit) ---
+# - segment5: 0:00.00 - 0:00.42 bars=1.00-1.00 (conf=0.80)
+# - segment3: 0:00.42 - 0:58.89 bars=2.00-32.00 (conf=0.80)
+# - segment3: 0:58.89 - 1:37.34 bars=33.00-52.00 (conf=0.80)
+# - segment4: 1:37.34 - 2:04.97 bars=53.00-67.00 (conf=0.80)
+# - segment2: 2:04.97 - 2:32.65 bars=68.00-82.00 (conf=0.80)
+# - segment1: 2:32.65 - 3:09.66 bars=83.00-102.00 (conf=0.80)
+# - segment4: 3:09.66 - 3:27.49 bars=103.00-111.00 (conf=0.80)
+# - segment2: 3:27.49 - 3:43.42 bars=112.00-120.00 (conf=0.80)
+# - segment2: 3:43.42 - 4:02.24 bars=121.00-130.00 (conf=0.80)
+# --- End raw events ---

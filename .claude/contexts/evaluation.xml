@@ -1,0 +1,59 @@
+<evaluation-context>
+  <purpose>Audio analysis workflow: analyze → annotate → evaluate</purpose>
+
+  <commands>
+    <cmd name="/analyze" args="files...">Analyze audio → data/generated/</cmd>
+    <cmd name="/annotate">Merge generated → data/annotations/</cmd>
+    <cmd name="/evaluate" args="[files?]">Compare analysis accuracy</cmd>
+  </commands>
+
+  <directories>
+    <dir path="data/generated/" tracked="no" role="analysis output (disposable)"/>
+    <dir path="data/annotations/" tracked="git" role="ground truth (authoritative)"/>
+    <dir path="~/music" role="test audio files"/>
+  </directories>
+
+  <workflow>
+    <step cmd="/analyze ~/music/*.flac">Analyze audio files</step>
+    <step cmd="/annotate">Merge into annotations/</step>
+    <step>Edit YAML in data/annotations/</step>
+    <step cmd="/evaluate">Measure accuracy</step>
+  </workflow>
+
+  <cli>
+    <analyze cmd="uv run edm analyze --annotations FILE -o OUTPUT.yaml" flags="--offline --format yaml"/>
+    <evaluate cmd="uv run edm evaluate [--reference FILES]" flags="--json"/>
+  </cli>
+
+  <output-format path="data/generated/*.yaml, data/annotations/*.yaml">
+    <fields>file, duration, bpm, downbeat, time_signature, annotations</fields>
+    <annotations format="[[bar, label, timestamp], ...]"/>
+    <raw-section>Commented YAML after --- separator, original detected events</raw-section>
+    <bar-to-time formula="downbeat + (bar-1) * 60/bpm * 4" index="1-based"/>
+  </output-format>
+
+  <evaluation>
+    <metrics>
+      <boundary-f1 tolerance="±2s"/>
+      <label-accuracy when="boundary matched"/>
+      <precision formula="detected∩reference / detected"/>
+      <recall formula="reference∩detected / reference"/>
+    </metrics>
+  </evaluation>
+
+  <analysis-workflow>
+    <bpm cascade="metadata → beat_this → librosa"/>
+    <structure cascade="msaf → energy fallback"/>
+    <detectors>
+      <msaf>Spectral flux boundaries + EDM energy-based labeling</msaf>
+      <energy>RMS + spectral contrast, gradient peaks, min 8s sections</energy>
+    </detectors>
+  </analysis-workflow>
+
+  <safety>
+    <rule>Never delete from data/annotations/</rule>
+    <rule>Merge preserves user edits to structure field</rule>
+    <rule>Raw data in comments, never user-edited</rule>
+    <rule>data/generated/ is disposable, can be regenerated</rule>
+  </safety>
+</evaluation-context>

@@ -43,8 +43,7 @@ def test_analyze_parallel_workers_1(test_audio_files, tmp_path):
     assert len(results) == 3
     for res in results:
         assert "file" in res
-        assert "tempo" in res
-        assert "bpm" in res["tempo"]
+        assert "bpm" in res
 
 
 def test_analyze_parallel_workers_4(test_audio_files, tmp_path):
@@ -66,8 +65,7 @@ def test_analyze_parallel_workers_4(test_audio_files, tmp_path):
     assert len(results) == 5
     for res in results:
         assert "file" in res
-        assert "tempo" in res
-        assert "bpm" in res["tempo"]
+        assert "bpm" in res
 
 
 def test_analyze_parallel_deterministic(test_audio_files, tmp_path):
@@ -101,7 +99,7 @@ def test_analyze_parallel_deterministic(test_audio_files, tmp_path):
     # BPM values should be identical
     for r1, r2 in zip(results_1, results_2):
         assert r1["file"] == r2["file"]
-        assert r1["tempo"]["bpm"] == r2["tempo"]["bpm"]
+        assert r1["bpm"] == r2["bpm"]
 
 
 def test_analyze_parallel_error_handling(tmp_path):
@@ -140,9 +138,9 @@ def test_analyze_parallel_different_worker_counts(test_audio_files, tmp_path):
 
     # All worker counts should produce identical BPM values
     for i in range(len(files)):
-        bpm_1 = outputs[1][i]["tempo"]["bpm"]
-        bpm_2 = outputs[2][i]["tempo"]["bpm"]
-        bpm_4 = outputs[4][i]["tempo"]["bpm"]
+        bpm_1 = outputs[1][i]["bpm"]
+        bpm_2 = outputs[2][i]["bpm"]
+        bpm_4 = outputs[4][i]["bpm"]
         assert bpm_1 == bpm_2 == bpm_4
 
 

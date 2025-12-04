@@ -17,15 +17,17 @@ class TestTrackAnalysis:
         analysis = TrackAnalysis(
             file="track.flac",
             duration=342.5,
-            tempo={"bpm": 130.4, "time_signature": "4/4", "downbeat": 0.231},
+            bpm=130.4,
+            time_signature="4/4",
+            downbeat=0.231,
             structure=[[1, 4, "intro"], [5, 36, "drop"]],
         )
         result = analysis.to_dict()
 
         assert result["file"] == "track.flac"
         assert result["duration"] == 342.5
-        assert result["tempo"]["bpm"] == 130.4
-        assert result["tempo"]["time_signature"] == "4/4"
+        assert result["bpm"] == 130.4
+        assert result["time_signature"] == "4/4"
         assert result["structure"] == [[1, 4, "intro"], [5, 36, "drop"]]
 
     def test_to_dict_with_error(self):
@@ -41,18 +43,18 @@ class TestTrackAnalysis:
         assert result["error"] == "Failed to load audio"
         assert result["time"] == 0.5
         assert "duration" not in result
-        assert "tempo" not in result
+        assert "bpm" not in result
 
     def test_to_dict_optional_fields(self):
         """Test that None fields are excluded."""
         analysis = TrackAnalysis(
             file="track.flac",
-            tempo={"bpm": 128.0},
+            bpm=128.0,
         )
         result = analysis.to_dict()
 
         assert result["file"] == "track.flac"
-        assert result["tempo"]["bpm"] == 128.0
+        assert result["bpm"] == 128.0
         assert "duration" not in result
         assert "structure" not in result
         assert "key" not in result
@@ -67,7 +69,9 @@ class TestOutputYaml:
             {
                 "file": "track.flac",
                 "duration": 342.5,
-                "tempo": {"bpm": 130.4, "time_signature": "4/4", "downbeat": 0.231},
+                "bpm": 130.4,
+                "time_signature": "4/4",
+                "downbeat": 0.231,
                 "structure": [[1, 4, "intro"], [5, 36, "drop"]],
             }
         ]
@@ -82,7 +86,7 @@ class TestOutputYaml:
 
         assert len(parsed) == 1
         assert parsed[0]["file"] == "track.flac"
-        assert parsed[0]["tempo"]["bpm"] == 130.4
+        assert parsed[0]["bpm"] == 130.4
 
     def test_multi_document_yaml(self, tmp_path):
         """Test multi-document YAML output for batch."""
@@ -90,12 +94,12 @@ class TestOutputYaml:
             {
                 "file": "track1.flac",
                 "duration": 342.5,
-                "tempo": {"bpm": 130.4},
+                "bpm": 130.4,
             },
             {
                 "file": "track2.flac",
                 "duration": 289.1,
-                "tempo": {"bpm": 128.0},
+                "bpm": 128.0,
             },
         ]
 
@@ -114,7 +118,7 @@ class TestOutputYaml:
 
     def test_yaml_to_stdout(self):
         """Test YAML output to stdout."""
-        results = [{"file": "track.flac", "tempo": {"bpm": 128.0}}]
+        results = [{"file": "track.flac", "bpm": 128.0}]
 
         output = StringIO()
         console = Console(file=output, force_terminal=False)
@@ -130,12 +134,13 @@ class TestOutputJson:
     """Tests for JSON output formatting."""
 
     def test_json_new_schema(self, tmp_path):
-        """Test JSON output uses new hierarchical schema."""
+        """Test JSON output uses flat schema."""
         results = [
             {
                 "file": "track.flac",
                 "duration": 342.5,
-                "tempo": {"bpm": 130.4, "time_signature": "4/4"},
+                "bpm": 130.4,
+                "time_signature": "4/4",
                 "structure": [[1, 4, "intro"], [5, 36, "drop"]],
             }
         ]
@@ -150,12 +155,12 @@ class TestOutputJson:
 
         assert len(parsed) == 1
         assert parsed[0]["file"] == "track.flac"
-        assert parsed[0]["tempo"]["bpm"] == 130.4
+        assert parsed[0]["bpm"] == 130.4
         assert parsed[0]["structure"] == [[1, 4, "intro"], [5, 36, "drop"]]
 
     def test_json_to_stdout(self):
         """Test JSON output to stdout."""
-        results = [{"file": "track.flac", "tempo": {"bpm": 128.0}}]
+        results = [{"file": "track.flac", "bpm": 128.0}]
 
         output = StringIO()
         console = Console(file=output, force_terminal=False)
@@ -164,4 +169,4 @@ class TestOutputJson:
 
         content = output.getvalue()
         parsed = json.loads(content)
-        assert parsed[0]["tempo"]["bpm"] == 128.0
+        assert parsed[0]["bpm"] == 128.0

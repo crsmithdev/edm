@@ -1,16 +1,29 @@
 ---
-name: Evaluate Reference
-description: Evaluate analysis accuracy against reference annotations
-category: Analysis
-tags: [evaluation, accuracy, testing]
+description: Compare analysis accuracy vs annotations
+model: haiku
+allowed-tools: Bash, Glob
+arguments:
+  - name: description
+    description: File description or glob pattern (optional)
 ---
 
-Run evaluation against reference annotations in `data/annotations/reference/`:
+Convert the verbal description "$ARGUMENTS.description" to a glob pattern and evaluate the matching annotation files.
 
+Examples:
+- "3lau tracks" → data/annotations/*3lau*.yaml
+- "falling" → data/annotations/*falling*.yaml
+- "dnmo tracks" → data/annotations/*dnmo*.yaml
+- Already a path/glob → use as-is
+- Empty → evaluate all in data/annotations/
+
+After converting to a glob pattern, expand it and pass all matching files to:
 ```bash
-uv run edm evaluate
+.claude/scripts/evaluate.sh <expanded files or empty for all>
 ```
 
-This compares detected structure against your manually-annotated YAML files and outputs accuracy metrics (boundary F1, label accuracy, event precision/recall).
-
-To add reference annotations, copy your verified annotation YAML files to `data/annotations/reference/`.
+<!--
+TEST CASES:
+- `/evaluate` → evaluates all tracks in data/annotations/
+- `/evaluate 3lau tracks` → finds data/annotations/*3lau*.yaml
+- `/evaluate falling` → finds data/annotations/*falling*.yaml
+-->

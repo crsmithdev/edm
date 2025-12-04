@@ -192,12 +192,18 @@ def _analyze_file_impl(
                 f"{structure_result.time_signature[0]}/{structure_result.time_signature[1]}"
             )
 
-        # Format structure spans with 1-indexed bars
+        # Format structure spans with integer bars (already 1-indexed from time_to_bars)
         structure = []
         for s in structure_result.sections:
             if s.start_bar is not None and s.end_bar is not None:
-                # Convert 0-indexed internal bars to 1-indexed output
-                structure.append([int(s.start_bar) + 1, int(s.end_bar) + 1, s.label])
+                # Round fractional bars to integers
+                # Note: Using ceil for start ensures we don't miss the bar where section begins
+                # Using floor for end gives the last complete bar in the section
+                start_bar_int = (
+                    int(s.start_bar) if s.start_bar % 1.0 < 0.01 else int(s.start_bar) + 1
+                )
+                end_bar_int = int(s.end_bar) if s.end_bar % 1.0 < 0.01 else int(s.end_bar) + 1
+                structure.append([start_bar_int, end_bar_int, s.label])
             else:
                 structure.append([round(s.start_time, 1), round(s.end_time, 1), s.label])
 
@@ -248,7 +254,7 @@ def analyze_command(
     ignore_metadata: bool,
     quiet: bool,
     console: Console,
-    workers: int = 1,
+    workers: int | None = None,
     structure_detector: str = "auto",
     annotations: bool = False,
 ):
@@ -265,7 +271,7 @@ def analyze_command(
         ignore_metadata: Skip reading metadata from files.
         quiet: Suppress non-essential output.
         console: Rich console for output.
-        workers: Number of parallel workers (default: 1 for sequential).
+        workers: Number of parallel workers (None = auto-determine based on file count).
         structure_detector: Structure detection method (auto, msaf, energy).
         annotations: Also output simplified .annotations.yaml templates.
     """
@@ -284,6 +290,13 @@ def analyze_command(
 
     # Collect all audio files
     audio_files = discover_audio_files(files, recursive=recursive)
+
+    # Determine worker count based on file count
+    from edm.processing.parallel import get_default_workers
+
+    if workers is None:
+        default_workers = get_default_workers()
+        workers = min(default_workers, len(audio_files)) if audio_files else 1
 
     if not audio_files:
         logger.warning("no audio files found", paths=[str(f) for f in files])

@@ -204,7 +204,9 @@ def analyze_structure(
 
     # Add bar calculations if requested and BPM available
     if include_bars and result_bpm is not None:
-        sections = _add_bar_calculations(sections, result_bpm, time_signature)
+        sections = _add_bar_calculations(
+            sections, result_bpm, time_signature, result_downbeat or 0.0
+        )
 
     # Format events with bar numbers
     events: list[tuple[int, str]] = []
@@ -218,32 +220,20 @@ def analyze_structure(
     # Musical convention: if section ends at bar B, next starts at B+1
     raw_sections: list[RawSection] = []
     for i, s in enumerate(detected_sections):
-        start_bar: int | None = None
-        end_bar: int | None = None
+        start_bar: float | None = None
+        end_bar: float | None = None
         if result_bpm is not None and result_downbeat is not None:
-            start_result = time_to_bars(s.start_time, result_bpm, time_signature)
+            start_result = time_to_bars(s.start_time, result_bpm, time_signature, result_downbeat)
             if start_result:
-                start_bar = start_result[0]
-                # For first section or if there's a gap, use calculated start
-                # Otherwise, use previous section's end_bar + 1
-                if i > 0 and raw_sections and raw_sections[-1].end_bar is not None:
-                    expected_start = raw_sections[-1].end_bar + 1
-                    # Use expected start if it's close to calculated (within 1 bar)
-                    if abs(expected_start - start_bar) <= 1:
-                        start_bar = int(expected_start)
+                start_bar_num, start_frac_beat = start_result
+                # Calculate full fractional bar value
+                start_bar = start_bar_num + (start_frac_beat / time_signature[0])
 
-            end_result = time_to_bars(s.end_time, result_bpm, time_signature)
+            end_result = time_to_bars(s.end_time, result_bpm, time_signature, result_downbeat)
             if end_result:
-                end_bar_num, frac_beat = end_result
-                # End bar is the last complete bar the section occupies
-                # If we're exactly on a bar boundary (frac_beat ≈ 0), use previous bar
-                if frac_beat < 0.01:
-                    end_bar = end_bar_num - 1
-                else:
-                    end_bar = end_bar_num
-                # Ensure end_bar >= start_bar
-                if start_bar is not None and end_bar < start_bar:
-                    end_bar = start_bar
+                end_bar_num, end_frac_beat = end_result
+                # Calculate full fractional bar value
+                end_bar = end_bar_num + (end_frac_beat / time_signature[0])
 
         raw_sections.append(
             RawSection(
@@ -448,7 +438,7 @@ def _merge_consecutive_same_label(sections: list[Section]) -> list[Section]:
 
 
 def _add_bar_calculations(
-    sections: list[Section], bpm: float, time_signature: TimeSignature
+    sections: list[Section], bpm: float, time_signature: TimeSignature, downbeat: float = 0.0
 ) -> list[Section]:
     """Add bar position calculations to sections.
 
@@ -456,6 +446,7 @@ def _add_bar_calculations(
         sections: List of sections with time positions.
         bpm: BPM for bar calculations.
         time_signature: Time signature for bar calculations.
+        downbeat: Time in seconds where bar 1 begins. Default 0.0.
 
     Returns:
         Sections with bar fields populated.
@@ -463,8 +454,8 @@ def _add_bar_calculations(
     result = []
     for section in sections:
         # Calculate bar positions
-        start_bars = time_to_bars(section.start_time, bpm, time_signature)
-        end_bars = time_to_bars(section.end_time, bpm, time_signature)
+        start_bars = time_to_bars(section.start_time, bpm, time_signature, downbeat)
+        end_bars = time_to_bars(section.end_time, bpm, time_signature, downbeat)
 
         if start_bars is not None and end_bars is not None:
             start_bar = start_bars[0] + (start_bars[1] / time_signature[0])

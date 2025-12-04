@@ -19,28 +19,23 @@ INJECT_FILES=()
 # Category detection (case-insensitive)
 PROMPT_LOWER=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]')
 
-# OpenSpec keywords: proposal, spec, workflow, apply, archive, validate
-if echo "$PROMPT_LOWER" | grep -qE '(proposal|openspec|spec|workflow|apply|archive|validate|design\.md|tasks\.md)'; then
-    INJECT_FILES+=("$CONTEXTS_DIR/openspec.xml")
-fi
-
 # Audio analysis keywords: bpm, beat, structure, drop, breakdown, msaf, librosa, beat_this
 if echo "$PROMPT_LOWER" | grep -qE '(bpm|beat|tempo|structure|drop|breakdown|buildup|intro|outro|msaf|librosa|beat_this|essentia|detector|section|bar)'; then
     INJECT_FILES+=("$CONTEXTS_DIR/audio.xml")
 fi
 
-# Evaluation keywords: evaluate, accuracy, reference, metrics
-if echo "$PROMPT_LOWER" | grep -qE '(evaluat|accuracy|reference|metrics|ground.?truth|f1|precision|recall)'; then
-    INJECT_FILES+=("$CONTEXTS_DIR/evaluate.xml")
+# EDM terminology keywords: edm, track structure, song structure, terminology
+if echo "$PROMPT_LOWER" | grep -qE '(edm|track.*(structure|terminology|concept)|song.*(structure|terminology)|drop|buildup|breakdown|phrase|downbeat|bar|energy.*(level|dynamic))'; then
+    INJECT_FILES+=("$CONTEXTS_DIR/edm-terminology.xml")
 fi
 
-# Annotation keywords: annotate, annotation, generate, yaml
-if echo "$PROMPT_LOWER" | grep -qE '(/annotate|annotation|generat.*yaml|label.*track)'; then
-    INJECT_FILES+=("$CONTEXTS_DIR/annotate.xml")
+# Evaluation keywords: evaluate, accuracy, reference, metrics
+if echo "$PROMPT_LOWER" | grep -qE '(evaluat|accuracy|reference|metrics|ground.?truth|f1|precision|recall)'; then
+    INJECT_FILES+=("$CONTEXTS_DIR/evaluation.xml")
 fi
 
 # Python/CLI keywords: typer, cli, pydantic, pytest, ruff (always inject for code changes)
-if echo "$PROMPT_LOWER" | grep -qE '(typer|cli|command|pydantic|pytest|test|ruff|mypy|import|class|function|def |async|exception)'; then
+if echo "$PROMPT_LOWER" | grep -qE '(typer|edm cli|cli command|pydantic|pytest|unit.?test|ruff|mypy|import |class [A-Z]|function|def [a-z]|async def|exception|structlog)'; then
     INJECT_FILES+=("$CONTEXTS_DIR/python.xml")
 fi
 
@@ -55,7 +50,7 @@ if [ ${#INJECT_FILES[@]} -gt 0 ]; then
     for file in "${INJECT_FILES[@]}"; do
         NAMES+=("$(basename "$file" .xml)")
     done
-    echo "<!-- contexts: ${NAMES[*]} -->"
+    echo "<!-- project-contexts: ${NAMES[*]} -->"
     echo
 fi
 

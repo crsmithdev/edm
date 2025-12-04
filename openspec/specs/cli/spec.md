@@ -56,8 +56,12 @@ The CLI SHALL display progress feedback for long-running operations.
 - **WHEN** user runs analysis that takes more than 2 seconds
 - **THEN** displays a progress bar showing analysis progress
 
-#### Scenario: Verbose mode
-- **WHEN** user runs `edm analyze track.mp3 --verbose`
+#### Scenario: Verbose mode (info level)
+- **WHEN** user runs `edm analyze track.mp3 -v`
+- **THEN** sets logging level to INFO and shows analysis steps in logs
+
+#### Scenario: Very verbose mode (debug level)
+- **WHEN** user runs `edm analyze track.mp3 -vv`
 - **THEN** sets logging level to DEBUG and shows detailed analysis steps in logs
 
 #### Scenario: Quiet mode
@@ -220,17 +224,63 @@ The CLI SHALL show detailed progress for batch BPM analysis indicating current l
 - **THEN** summary shows count of tracks where each lookup stage failed
 
 ### Requirement: Evaluate Command
-The CLI SHALL provide an `evaluate` subcommand for accuracy evaluation.
+The CLI SHALL provide an `evaluate` subcommand for accuracy evaluation against reference annotations.
 
-#### Scenario: BPM evaluation with default output
-- **WHEN** user runs `edm evaluate bpm <reference.csv>`
-- **THEN** results are written to `data/accuracy/bpm/`
+#### Scenario: Evaluation with default reference directory
+- **WHEN** user runs `edm evaluate`
+- **THEN** loads annotations from `data/annotations/reference/`
+- **AND** analyzes corresponding audio files
+- **AND** outputs boundary F1, label accuracy, precision, recall metrics
 
-#### Scenario: Structure evaluation with default output
-- **WHEN** user runs `edm evaluate structure <reference.csv> <audio_dir>`
-- **THEN** results are written to `data/accuracy/structure/`
+#### Scenario: Custom reference directory
+- **WHEN** user runs `edm evaluate --reference <dir>`
+- **THEN** loads annotations from specified directory
 
-#### Scenario: Custom output directory
-- **WHEN** user provides `--output <path>`
-- **THEN** results are written to specified path instead of default
+#### Scenario: Custom boundary tolerance
+- **WHEN** user provides `--tolerance <seconds>`
+- **THEN** uses specified tolerance for boundary matching (default: 2.0s)
 
+### Requirement: Annotations Output
+The CLI SHALL support structured annotation output for manual editing workflows.
+
+#### Scenario: Generate annotations with analysis
+- **WHEN** user runs `edm analyze --annotations <file> -o <output.yaml>`
+- **THEN** outputs structured YAML with file metadata, BPM, downbeat, structure
+- **AND** includes user-editable annotations section
+- **AND** appends raw detected events as commented YAML after `---` separator
+
+#### Scenario: Annotation format
+- **GIVEN** annotation YAML file
+- **THEN** contains fields: file, duration, bpm, downbeat, time_signature, annotations
+- **AND** annotations are `[[bar, label, timestamp], ...]` format
+- **AND** raw section contains commented original detector output
+
+### Requirement: Simplified CLI Interface
+
+The CLI SHALL use standard conventions and sensible defaults to reduce configuration burden.
+
+#### Scenario: Verbosity counting
+- **WHEN** user runs `edm analyze -v track.flac`
+- **THEN** logging level is set to INFO
+- **WHEN** user runs `edm analyze -vv track.flac`
+- **THEN** logging level is set to DEBUG
+- **WHEN** user runs `edm analyze track.flac` (no -v flags)
+- **THEN** logging level is set to WARNING (default)
+
+#### Scenario: Metadata control
+- **WHEN** user runs `edm analyze --no-metadata track.flac`
+- **THEN** skips reading file metadata and uses computed analysis
+
+#### Scenario: Worker allocation
+- **WHEN** user runs `edm analyze *.flac` with 2 files
+- **THEN** uses 2 workers (caps at file count, not CPU count)
+
+#### Scenario: Evaluate defaults
+- **WHEN** user runs `edm evaluate`
+- **THEN** uses tolerance=2.0s and detector=auto (msaf)
+- **AND** loads annotations from `data/annotations/reference/`
+
+#### Scenario: Workflow compatibility
+- **WHEN** user runs `edm analyze --annotations --offline track.flac -o out.yaml`
+- **THEN** generates annotation YAML without network lookups
+- **AND** saves to specified output file (used by `/analyze` workflow)

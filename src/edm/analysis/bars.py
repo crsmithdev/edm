@@ -21,6 +21,7 @@ def time_to_bars(
     time_seconds: float,
     bpm: Optional[float],
     time_signature: TimeSignature = (4, 4),
+    first_downbeat: float = 0.0,
     beat_grid: Optional[Any] = None,
 ) -> Optional[tuple[int, float]]:
     """Convert time position to bar number and fractional beat.
@@ -30,6 +31,7 @@ def time_to_bars(
         bpm: Beats per minute. If None, returns None.
         time_signature: Time signature as (beats_per_bar, beat_note_value).
             Default is (4, 4) for 4/4 time.
+        first_downbeat: Time in seconds where bar 1 begins. Default 0.0.
         beat_grid: Optional beat grid for precise beat positions. Reserved for
             future implementation. Currently unused.
 
@@ -44,6 +46,8 @@ def time_to_bars(
         (1, 0.0)  # Start of bar 1
         >>> time_to_bars(15.0, None)
         None  # BPM unavailable
+        >>> time_to_bars(30.5, 128, (4, 4), first_downbeat=0.5)
+        (17, 0.0)  # Bar 17 start when downbeat at 0.5s
     """
     if bpm is None or bpm <= 0:
         return None
@@ -53,9 +57,26 @@ def time_to_bars(
 
     beats_per_bar, _ = time_signature
 
+    # Adjust for downbeat offset
+    adjusted_time = time_seconds - first_downbeat
+
+    # Handle times before the first downbeat
+    # For sections starting before bar 1, we treat them as starting "in bar 0"
+    # This ensures monotonically increasing bar ranges
+    if adjusted_time < 0:
+        # Calculate how many beats before the downbeat
+        beats_per_second = bpm / 60.0
+        total_beats = adjusted_time * beats_per_second
+        # Bar 0 with negative fractional beats
+        # We keep bar_number at 0 to indicate "before bar 1"
+        # But for compatibility, we'll use bar 1 with a very small fractional beat
+        bar_number = 1
+        fractional_beat = 0.0
+        return (bar_number, fractional_beat)
+
     # Convert time to beats
     beats_per_second = bpm / 60.0
-    total_beats = time_seconds * beats_per_second
+    total_beats = adjusted_time * beats_per_second
 
     # Convert beats to bars (1-indexed)
     bar_number = int(total_beats / beats_per_bar) + 1
@@ -200,6 +221,7 @@ def check_bar_alignment(
     time_seconds: float,
     bpm: Optional[float],
     time_signature: TimeSignature = (4, 4),
+    first_downbeat: float = 0.0,
     tolerance: float = 0.5,
 ) -> Optional[bool]:
     """Check if a time position aligns with a bar boundary.
@@ -208,6 +230,7 @@ def check_bar_alignment(
         time_seconds: Time position in seconds.
         bpm: Beats per minute. If None, returns None.
         time_signature: Time signature for bar calculations.
+        first_downbeat: Time in seconds where bar 1 begins. Default 0.0.
         tolerance: Tolerance in beats for alignment (default ±0.5 beats).
 
     Returns:
@@ -222,7 +245,7 @@ def check_bar_alignment(
     if bpm is None or bpm <= 0:
         return None
 
-    result = time_to_bars(time_seconds, bpm, time_signature)
+    result = time_to_bars(time_seconds, bpm, time_signature, first_downbeat)
     if result is None:
         return None
 

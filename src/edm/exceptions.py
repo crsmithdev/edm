@@ -17,9 +17,3 @@ class AnalysisError(EDMError):
     """Error during analysis operations."""
 
     pass
-
-
-class ModelNotFoundError(EDMError):
-    """Requested model not found."""
-
-    pass
