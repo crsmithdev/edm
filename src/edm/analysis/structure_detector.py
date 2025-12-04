@@ -9,14 +9,48 @@ import numpy as np
 import scipy
 import structlog
 
-# Patch scipy.inf for compatibility with msaf (scipy 1.12+ removed scipy.inf)
-# Must be done before importing msaf
+# Patch scipy for compatibility with msaf
+# scipy 1.12+ removed scipy.inf, scipy 1.13+ moved signal.gaussian to signal.windows
 if not hasattr(scipy, "inf"):
     scipy.inf = np.inf
+
+import scipy.signal
+import scipy.signal.windows
+
+if not hasattr(scipy.signal, "gaussian"):
+    scipy.signal.gaussian = scipy.signal.windows.gaussian
 
 import msaf  # noqa: E402
 
 logger = structlog.get_logger(__name__)
+
+
+def _calculate_rms_energy(
+    y: np.ndarray, sr: int, hop_length: int = 512, frame_length: int = 2048
+) -> np.ndarray:
+    """Calculate normalized RMS energy for audio signal.
+
+    Args:
+        y: Audio time series.
+        sr: Sample rate.
+        hop_length: Hop length in samples for RMS calculation.
+        frame_length: Frame length in samples for RMS calculation.
+
+    Returns:
+        Normalized RMS energy array (smoothed with median filter).
+    """
+    from scipy.ndimage import median_filter
+
+    # Calculate frame-level RMS energy
+    rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
+
+    # Smooth RMS with median filter
+    rms_smooth = median_filter(rms, size=21)
+
+    # Normalize
+    rms_norm: np.ndarray = rms_smooth / (np.max(rms_smooth) + 1e-8)
+
+    return rms_norm
 
 
 @dataclass
@@ -97,6 +131,13 @@ class MSAFDetector:
         )
 
         try:
+            # Apply optimal parameters for spectral flux algorithm
+            if self._boundary_algorithm == "sf":
+                from msaf.algorithms import sf
+
+                sf.config["offset_thres"] = 0.05
+                sf.config["M_gaussian"] = 27
+
             # Run MSAF segmentation
             boundaries, labels = msaf.process(
                 str(filepath),
@@ -110,6 +151,9 @@ class MSAFDetector:
 
             # Convert to sections with MSAF cluster labels
             sections = self._boundaries_to_sections(boundaries, labels, duration)
+
+            # Apply energy-based EDM labeling
+            sections = self._apply_energy_labels(sections, y, sr)
 
             logger.debug(
                 "msaf detection complete",
@@ -163,6 +207,73 @@ class MSAFDetector:
             )
 
         return sections
+
+    def _apply_energy_labels(
+        self, sections: list[DetectedSection], y: np.ndarray, sr: int
+    ) -> list[DetectedSection]:
+        """Apply energy-based EDM labels to MSAF sections.
+
+        Args:
+            sections: Sections with MSAF cluster labels.
+            y: Audio time series.
+            sr: Sample rate.
+
+        Returns:
+            Sections with EDM labels based on energy analysis.
+        """
+        if not sections:
+            return sections
+
+        # Calculate RMS energy
+        hop_length = 512
+        frame_length = 2048
+        rms_norm = _calculate_rms_energy(y, sr, hop_length, frame_length)
+
+        # Apply labels based on energy and position
+        labeled_sections = []
+        for i, section in enumerate(sections):
+            # Calculate average energy for this section
+            start_frame = int(section.start_time * sr / hop_length)
+            end_frame = int(section.end_time * sr / hop_length)
+            end_frame = min(end_frame, len(rms_norm))
+
+            if start_frame < end_frame:
+                avg_energy = float(np.mean(rms_norm[start_frame:end_frame]))
+            else:
+                avg_energy = 0.5
+
+            # Determine label and confidence
+            is_first = i == 0
+            is_last = i == len(sections) - 1
+
+            if is_first:
+                label = "intro"
+                confidence = 0.9
+            elif is_last:
+                label = "outro"
+                confidence = 0.9
+            elif avg_energy > 0.7:
+                # High energy sections are typically main/chorus in EDM
+                label = "main"
+                confidence = min(0.8 + (avg_energy - 0.7) * 0.5, 0.99)
+            elif avg_energy < 0.4:
+                label = "breakdown"
+                confidence = 0.75
+            else:
+                label = "buildup"
+                confidence = 0.6
+
+            labeled_sections.append(
+                DetectedSection(
+                    start_time=section.start_time,
+                    end_time=section.end_time,
+                    label=label,
+                    confidence=confidence,
+                    is_event=False,
+                )
+            )
+
+        return labeled_sections
 
 
 def merge_short_sections(
@@ -271,18 +382,10 @@ class EnergyDetector:
         actual_sr: int = int(loaded_sr)
         duration = len(y) / actual_sr
 
-        # Calculate frame-level RMS energy
+        # Calculate RMS energy using shared helper
         hop_length: int = 512
         frame_length: int = 2048
-        rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
-
-        # Smooth RMS with median filter
-        from scipy.ndimage import median_filter
-
-        rms_smooth = median_filter(rms, size=21)
-
-        # Normalize
-        rms_norm = rms_smooth / (np.max(rms_smooth) + 1e-8)
+        rms_norm = _calculate_rms_energy(y, actual_sr, hop_length, frame_length)
 
         # Detect boundaries using energy changes
         boundaries = self._detect_boundaries(rms_norm, hop_length, actual_sr, duration)
@@ -392,16 +495,15 @@ class EnergyDetector:
                 label = "outro"
                 confidence = 0.9
             elif avg_energy > self._energy_threshold_high:
-                label = "drop"
+                # High energy sections are main sections, not drops
+                label = "main"
                 confidence = 0.8 + float(avg_energy - self._energy_threshold_high) * 0.5
-                is_event = True  # Drops are events
             elif avg_energy < self._energy_threshold_low:
                 label = "breakdown"
                 confidence = 0.75
             else:
-                # Mid-energy section - doesn't fit known EDM categories
-                label = "other"
-                confidence = 0.5
+                label = "buildup"
+                confidence = 0.6
 
             confidence = float(min(confidence, 0.99))
 

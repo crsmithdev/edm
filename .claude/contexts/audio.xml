@@ -1,6 +1,17 @@
 <audio-context>
   <purpose>EDM audio analysis: BPM, beats, structure, bars</purpose>
 
+  <edm-terms>
+    <intro energy="low" desc="Opening, sparse drums, atmospheric, 8-32 bars"/>
+    <buildup energy="ascending" desc="Tension, layering, risers, filters, 8-16 bars"/>
+    <drop energy="peak" desc="Main hook, full instrumentation, heavy bass, 16-32 bars" note="EDM equivalent of chorus"/>
+    <breakdown energy="moderate" desc="Contrast, reduced elements, removed bass/drums, 8-16 bars" note="EDM equivalent of verse"/>
+    <outro energy="descending" desc="Closing, gradual removal, DJ transition, 16-32 bars"/>
+    <bar desc="Measure, 4 beats in 4/4 time, 1-based indexing"/>
+    <downbeat desc="First beat of measure (beat 1), strongest anchor"/>
+    <phrase desc="Complete musical idea, typically 8-16 bars"/>
+  </edm-terms>
+
   <bpm>
     <cascade>1. metadata (ID3/FLAC/MP4) → 2. beat_this → 3. librosa</cascade>
     <detector name="beat_this" file="src/edm/analysis/bpm_detector.py:224">
@@ -17,7 +28,8 @@
     <detector name="energy" file="src/edm/analysis/structure_detector.py:260">
       RMS + spectral contrast, gradient peaks, min 8s sections
     </detector>
-    <labels>intro|buildup|drop|breakdown|outro</labels>
+    <labels>intro|buildup|main|breakdown|outro</labels>
+    <note>drops are momentary events, not sections; high-energy sections labeled "main"</note>
   </structure>
 
   <bars file="src/edm/analysis/bars.py">
