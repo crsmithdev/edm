@@ -70,22 +70,22 @@
   - [x] 5.2.2 Label smoothing
   - [ ] 5.2.3 Co-teaching (optional)
 
-## Phase 6: Inference Integration
+## Phase 6: Inference Integration ✓
 
-- [ ] 6.1 Create ML detector class
-  - [ ] 6.1.1 Implement StructureDetector protocol
-  - [ ] 6.1.2 Model loading with fallback
-  - [ ] 6.1.3 Chunked inference for long files
+- [x] 6.1 Create ML detector class
+  - [x] 6.1.1 Implement StructureDetector protocol
+  - [x] 6.1.2 Model loading with fallback
+  - [x] 6.1.3 Chunked inference for long files
 
-- [ ] 6.2 Post-processing
-  - [ ] 6.2.1 Peak picking for boundaries
-  - [ ] 6.2.2 Beat grid snapping
-  - [ ] 6.2.3 Minimum section filtering
+- [x] 6.2 Post-processing
+  - [x] 6.2.1 Peak picking for boundaries
+  - [x] 6.2.2 Beat grid snapping
+  - [x] 6.2.3 Minimum section filtering
 
-- [ ] 6.3 Wire into analysis pipeline
-  - [ ] 6.3.1 Add to get_detector() factory
-  - [ ] 6.3.2 CLI flag for detector selection
-  - [ ] 6.3.3 Default detector configuration
+- [x] 6.3 Wire into analysis pipeline
+  - [x] 6.3.1 Add to get_detector() factory
+  - [x] 6.3.2 CLI flag for detector selection
+  - [x] 6.3.3 Default detector configuration
 
 ## Phase 7: Evaluation
 

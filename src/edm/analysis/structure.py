@@ -17,6 +17,20 @@ from edm.analysis.structure_detector import (
     merge_short_sections,
 )
 
+# Lazy import to avoid circular dependency
+_MLStructureDetector = None
+
+
+def _get_ml_detector():
+    """Lazy import of MLStructureDetector."""
+    global _MLStructureDetector
+    if _MLStructureDetector is None:
+        from edm.analysis.ml_detector import MLStructureDetector
+
+        _MLStructureDetector = MLStructureDetector
+    return _MLStructureDetector
+
+
 logger = structlog.get_logger(__name__)
 
 
@@ -95,22 +109,25 @@ def analyze_structure(
     bpm: float | None = None,
     include_bars: bool = True,
     time_signature: TimeSignature = (4, 4),
+    model_path: Path | None = None,
 ) -> StructureResult:
     """Analyze the structure of an EDM track.
 
     Detects sections like intro, buildup, drop, breakdown, and outro using
-    MSAF (Music Structure Analysis Framework) or energy-based detection.
+    MSAF, energy-based, or ML-based detection.
 
     Args:
         filepath: Path to the audio file.
-        detector: Detection method ('auto', 'msaf', 'energy').
+        detector: Detection method ('auto', 'msaf', 'energy', 'ml').
             - 'auto': Use MSAF if available, otherwise energy-based.
             - 'msaf': Use MSAF boundary detection with energy-based labeling.
             - 'energy': Use pure energy-based detection.
+            - 'ml': Use trained ML model for boundary and label detection.
         bpm: Optional BPM for bar calculations. If None and include_bars=True,
             will analyze BPM automatically.
         include_bars: If True, calculate bar positions for sections. Default True.
         time_signature: Time signature for bar calculations. Default (4, 4).
+        model_path: Path to ML model checkpoint (only for detector='ml').
 
     Returns:
         Detected structure with sections and timing.
@@ -145,7 +162,7 @@ def analyze_structure(
         duration = None
 
     # Get detector
-    structure_detector = get_detector(detector)
+    structure_detector = get_detector(detector, model_path=model_path)
 
     # Determine detector name for reporting
     if isinstance(structure_detector, MSAFDetector):
@@ -153,7 +170,12 @@ def analyze_structure(
     elif isinstance(structure_detector, EnergyDetector):
         detector_name = "energy"
     else:
-        detector_name = "unknown"
+        # Check if it's ML detector (lazy import)
+        ml_structure_detector_class = _get_ml_detector()
+        if isinstance(structure_detector, ml_structure_detector_class):
+            detector_name = "ml"
+        else:
+            detector_name = "unknown"
 
     # Run detection - errors propagate
     detected_sections = structure_detector.detect(filepath)

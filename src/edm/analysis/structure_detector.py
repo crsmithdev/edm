@@ -426,11 +426,12 @@ class EnergyDetector:
         return merged
 
 
-def get_detector(detector_type: str) -> StructureDetector:
+def get_detector(detector_type: str, model_path: Path | None = None) -> StructureDetector:
     """Get a structure detector by type.
 
     Args:
-        detector_type: Detector type ('msaf', 'energy').
+        detector_type: Detector type ('msaf', 'energy', 'ml').
+        model_path: Path to ML model (only for detector_type='ml').
 
     Returns:
         Detector instance.
@@ -440,6 +441,11 @@ def get_detector(detector_type: str) -> StructureDetector:
     """
     if detector_type == "energy":
         return EnergyDetector()
+
+    if detector_type == "ml":
+        from edm.analysis.ml_detector import MLStructureDetector
+
+        return MLStructureDetector(model_path=model_path)
 
     if detector_type in ("msaf", "auto"):
         # 'auto' is now an alias for 'msaf' (msaf is required)
