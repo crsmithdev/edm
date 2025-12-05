@@ -39,8 +39,8 @@ class MERTBackbone(nn.Module):
         self.model_name = model_name
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
 
-        # Load pretrained model
-        self.model = AutoModel.from_pretrained(model_name)
+        # Load pretrained model (MERT requires trust_remote_code=True)
+        self.model = AutoModel.from_pretrained(model_name, trust_remote_code=True)
         self.model.to(self.device)
 
         # Get embedding dimension
