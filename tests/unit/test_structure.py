@@ -341,7 +341,7 @@ class TestAnalyzeStructure:
 
         result = analyze_structure(Path("test.mp3"), detector="energy")
 
-        mock_get_detector.assert_called_once_with("energy")
+        mock_get_detector.assert_called_once_with("energy", model_path=None)
         assert isinstance(result, StructureResult)
 
     @patch("edm.analysis.structure.get_detector")
