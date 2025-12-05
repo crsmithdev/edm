@@ -169,6 +169,9 @@ class ModelRegistry:
         )
 
         for version in versions:
+            if version.run_id is None:
+                continue
+
             run = self.client.get_run(version.run_id)
 
             models.append(
@@ -200,6 +203,9 @@ class ModelRegistry:
                 name="edm-structure-detector",
                 version=str(version),
             )
+
+            if version_info.run_id is None:
+                return None
 
             run = self.client.get_run(version_info.run_id)
 
