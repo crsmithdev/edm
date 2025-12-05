@@ -156,7 +156,7 @@ class StructureResult:
 
 ### BPM Detection
 
-See `docs/analysis-algorithms.md` for technical details.
+See [docs/analysis-algorithms.md](../../../docs/analysis-algorithms.md) for technical details.
 
 **beat_this** (neural network):
 - Pros: Highest accuracy, handles complex rhythms
@@ -400,7 +400,7 @@ Potential additions:
 
 ## See Also
 
-- `docs/analysis-algorithms.md`: Technical algorithm details
+- [docs/analysis-algorithms.md](../../../docs/analysis-algorithms.md): Technical algorithm details
 - `docs/architecture.md`: System architecture and design patterns
 - `src/edm/io/audio.py`: Audio loading and caching
 - `src/edm/evaluation/`: Accuracy evaluation framework

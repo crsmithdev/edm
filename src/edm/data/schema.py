@@ -1,4 +1,10 @@
-"""Annotation schema definitions using Pydantic."""
+"""Annotation schema definitions using Pydantic.
+
+Important Conventions:
+    - Bar numbers are 1-indexed (bar 1 is the first bar, not bar 0)
+    - Times are in seconds (not M:SS.mm format)
+    - Confidence scores are in range [0.0, 1.0]
+"""
 
 from pathlib import Path
 from typing import Any, Optional

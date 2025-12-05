@@ -9,7 +9,8 @@ Navigation index for AI agents working in this codebase.
 Read together:
 - `src/edm/analysis/bpm.py` - Cascading strategy (metadata → computed)
 - `src/edm/analysis/bpm_detector.py` - Computation (beat_this, librosa)
-- `tests/unit/test_analysis.py` - BPM tests
+- `tests/unit/test_analysis.py` - BPM analysis tests
+- `tests/unit/test_bpm_detector.py` - BPM detector tests
 
 Key functions:
 - `analyze_bpm()` at `src/edm/analysis/bpm.py:40`
@@ -38,7 +39,8 @@ Read:
 ### Run Tests or Add Test Coverage
 
 Read:
-- `tests/conftest.py` - Shared fixtures
+- `tests/unit/` - Unit tests organized by module
+- `tests/fixtures/` - Test audio files
 - [testing.md](testing.md) - Test conventions
 - [development.md](development.md) - Test commands
 
@@ -61,7 +63,7 @@ Read:
 |---------|------|-------------|
 | BPM detection | `src/edm/analysis/bpm.py` | `analyze_bpm()` |
 | BPM computation | `src/edm/analysis/bpm_detector.py` | `compute_bpm()` |
-| Structure detection | `src/edm/analysis/structure.py` | `analyze_structure()` (placeholder) |
+| Structure detection | `src/edm/analysis/structure.py` | `analyze_structure()` |
 
 ### Evaluation
 
@@ -105,7 +107,6 @@ uv run edm evaluate bpm --source ~/music --reference metadata
 ## Task Management
 
 - **OpenSpec**: Features, breaking changes, architecture → `openspec/`
-- **TODO.md**: Small tasks and quick fixes (< 1 hour)
-- **IDEAS.md**: Improvement ideas from reviews
+- **GitHub Issues**: Bug reports and feature requests
 
 See `CLAUDE.md` for detailed guidance.

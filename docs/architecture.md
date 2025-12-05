@@ -94,13 +94,21 @@ src/
     │   └── evaluators/    # Evaluation implementations
     │       ├── bpm.py     # BPM accuracy evaluation
     │       └── structure.py # Structure accuracy evaluation
-    ├── features/          # Feature extraction
-    │   ├── temporal.py    # Time-domain features
-    │   └── spectral.py    # Frequency-domain features
+    ├── data/              # Data management
+    │   ├── converters.py  # Format converters
+    │   ├── export.py      # Export utilities
+    │   ├── metadata.py    # Metadata models
+    │   ├── rekordbox.py   # Rekordbox integration
+    │   ├── schema.py      # Data schemas
+    │   └── validation.py  # Validation utilities
     ├── io/                # File I/O
     │   └── metadata.py    # Audio file metadata (ID3, FLAC, etc.)
-    ├── models/            # Data models
-    │   └── base.py        # Pydantic models
+    ├── models/            # ML models
+    │   ├── backbone.py    # Model backbones (CNN, etc.)
+    │   ├── heads.py       # Task-specific heads
+    │   └── multitask.py   # Multitask training
+    ├── processing/        # Processing utilities
+    │   └── parallel.py    # Parallel processing
     ├── config.py          # Configuration (Pydantic, env vars)
     ├── exceptions.py      # Custom exceptions
     └── logging.py         # Structlog configuration

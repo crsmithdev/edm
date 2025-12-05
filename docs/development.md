@@ -33,10 +33,10 @@ uv run pytest
 uv run pytest -v
 
 # Run specific test file
-uv run pytest tests/test_analysis/test_bpm.py
+uv run pytest tests/unit/test_bpm_detector.py
 
 # Run specific test
-uv run pytest tests/test_analysis/test_bpm.py::test_analyze_bpm_from_metadata
+uv run pytest tests/unit/test_bpm_detector.py::test_compute_bpm_returns_result
 
 # Coverage report
 uv run pytest --cov=src --cov-report=term-missing
@@ -44,27 +44,37 @@ uv run pytest --cov=src --cov-report=term-missing
 
 ### Test Structure
 
-Tests mirror `src/` structure:
+Tests organized by type (unit, integration, performance):
 
 ```
 tests/
 ├── conftest.py              # Shared fixtures
-├── fixtures/                # Test data
-│   └── reference/           # Reference data files
-├── test_analysis/           # Tests for src/edm/analysis/
-│   ├── test_bpm.py
-│   └── test_bpm_detector.py
-├── test_evaluation/         # Tests for src/edm/evaluation/
-└── ...
+├── fixtures/                # Test audio files
+├── estimations/             # Reference JAMS annotations
+├── unit/                    # Unit tests
+│   ├── test_analysis.py     # BPM analysis tests
+│   ├── test_bpm_detector.py # BPM detector tests
+│   ├── test_structure.py    # Structure analysis tests
+│   ├── test_bars.py         # Bar calculation tests
+│   ├── test_config.py       # Configuration tests
+│   ├── processing/          # Processing module tests
+│   └── test_evaluation/     # Evaluation framework tests
+├── integration/             # Integration tests
+└── performance/             # Performance benchmarks
 ```
 
 ### Test Fixtures
 
-Audio files for testing: `~/music`
+Audio fixtures in `tests/fixtures/`:
+- WAV/FLAC files with various BPM patterns
+- Generated via `tests/fixtures/generate_test_audio.py`
 
-Fixtures defined in `tests/conftest.py`:
-- `tmp_audio_file` - Temporary audio file
-- `sample_metadata` - Sample track metadata
+Reference annotations in `tests/estimations/`:
+- JAMS format beat annotations
+
+Common fixture paths defined in test files:
+- `FIXTURES_DIR` - Path to test fixtures directory
+- `ESTIMATIONS_DIR` - Path to reference annotations
 
 ### Writing Tests
 
@@ -72,10 +82,14 @@ Fixtures defined in `tests/conftest.py`:
 import pytest
 from pathlib import Path
 from edm.analysis.bpm import analyze_bpm
+from edm.exceptions import AnalysisError
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 def test_analyze_bpm_returns_result():
     """Test that analyze_bpm returns a BPMResult."""
-    result = analyze_bpm(Path("tests/fixtures/track.mp3"))
+    audio_file = FIXTURES_DIR / "120bpm_4beat.wav"
+    result = analyze_bpm(audio_file)
     assert result.bpm > 0
     assert 0 <= result.confidence <= 1
 
@@ -84,16 +98,14 @@ def test_analyze_bpm_raises_on_invalid_file():
     with pytest.raises(AnalysisError, match="cannot be loaded"):
         analyze_bpm(Path("nonexistent.mp3"))
 
-class TestBPMStrategy:
-    """Tests for BPM lookup strategy."""
+class TestBPMDetector:
+    """Tests for BPM computation."""
 
-    def test_metadata_first(self, track_with_metadata):
-        result = analyze_bpm(track_with_metadata)
-        assert result.source == "metadata"
-
-    def test_offline_skips_spotify(self, track_without_metadata):
-        result = analyze_bpm(track_without_metadata, offline=True)
-        assert result.source in ["metadata", "computed"]
+    def test_compute_bpm_accuracy(self):
+        """Test BPM detection accuracy against known fixture."""
+        audio_file = FIXTURES_DIR / "128bpm_4beat.wav"
+        result = analyze_bpm(audio_file, ignore_metadata=True)
+        assert 126 <= result.bpm <= 130  # Within tolerance
 ```
 
 ## Code Quality

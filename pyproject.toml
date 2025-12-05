@@ -35,6 +35,8 @@ dependencies = [
     "msaf>=0.1.80",
     "pyyaml>=6.0.0",
     "dvc>=3.0.0",
+    "jams>=0.3.5",
+    "mir_eval>=0.7",
 ]
 
 [project.optional-dependencies]

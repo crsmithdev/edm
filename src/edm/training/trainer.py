@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
+from torch.amp import GradScaler, autocast
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR, OneCycleLR
 from torch.utils.data import DataLoader
@@ -111,6 +112,10 @@ class Trainer:
         # Setup scheduler
         self.scheduler = self._create_scheduler()
 
+        # Setup AMP (Automatic Mixed Precision)
+        self.use_amp = self.device == "cuda"
+        self.scaler = GradScaler("cuda") if self.use_amp else None
+
         # Setup logging - create organized output structure
         self.checkpoints_dir = self.config.output_dir / "checkpoints"
         self.checkpoints_dir.mkdir(parents=True, exist_ok=True)
@@ -212,10 +217,15 @@ class Trainer:
                 k: v.to(self.device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
             }
 
-            # Forward pass
-            predictions = self.model(batch["audio"])
+            # Forward pass with AMP
+            with autocast("cuda", enabled=self.use_amp):
+                predictions = self.model(batch["audio"])
 
-            # Compute loss
+            # Convert predictions to fp32 for loss computation
+            if self.use_amp:
+                predictions = {k: v.float() for k, v in predictions.items()}
+
+            # Compute loss (outside autocast due to BCE restrictions)
             targets = {
                 "boundary": batch["boundary"],
                 "energy": batch["energy"],
@@ -226,16 +236,34 @@ class Trainer:
 
             # Backward pass
             self.optimizer.zero_grad()
-            losses["total"].backward()
 
-            # Gradient clipping
-            if self.config.gradient_clip:
-                torch.nn.utils.clip_grad_norm_(
-                    self.model.parameters(),
-                    self.config.gradient_clip,
-                )
+            if self.scaler:
+                # Scaled backward pass for AMP
+                self.scaler.scale(losses["total"]).backward()
 
-            self.optimizer.step()
+                # Gradient clipping with unscaling
+                if self.config.gradient_clip:
+                    self.scaler.unscale_(self.optimizer)
+                    torch.nn.utils.clip_grad_norm_(
+                        self.model.parameters(),
+                        self.config.gradient_clip,
+                    )
+
+                # Optimizer step with scaler
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+            else:
+                # Standard backward pass
+                losses["total"].backward()
+
+                # Gradient clipping
+                if self.config.gradient_clip:
+                    torch.nn.utils.clip_grad_norm_(
+                        self.model.parameters(),
+                        self.config.gradient_clip,
+                    )
+
+                self.optimizer.step()
 
             # Step scheduler (for onecycle)
             if self.scheduler and self.config.scheduler == "onecycle":

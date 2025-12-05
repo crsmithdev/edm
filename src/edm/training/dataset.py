@@ -110,12 +110,18 @@ class EDMDataset(Dataset):
         # Create frame-level targets
         targets = self._create_targets(annotation, num_frames, actual_duration)
 
+        # Extract confidence from annotation metadata
+        confidence_score = (
+            annotation.metadata.confidence if hasattr(annotation, "metadata") else 1.0
+        )
+
         return {
             "audio": torch.from_numpy(audio).float(),
             "boundary": torch.from_numpy(targets["boundary"]).float(),
             "energy": torch.from_numpy(targets["energy"]).float(),
             "beat": torch.from_numpy(targets["beat"]).float(),
             "label": torch.from_numpy(targets["label"]).long(),
+            "confidence": torch.tensor(confidence_score, dtype=torch.float32),
             "bpm": annotation.audio.bpm,
             "duration": actual_duration,
         }
@@ -316,6 +322,7 @@ def collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
 
     bpm_batch = []
     duration_batch = []
+    confidence_batch = []
 
     # Fill batches
     for i, item in enumerate(batch):
@@ -330,6 +337,7 @@ def collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
 
         bpm_batch.append(item["bpm"])
         duration_batch.append(item["duration"])
+        confidence_batch.append(item["confidence"])
 
     return {
         "audio": audio_batch,
@@ -337,6 +345,7 @@ def collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
         "energy": energy_batch,
         "beat": beat_batch,
         "label": label_batch,
+        "confidence": torch.stack(confidence_batch),
         "bpm": torch.tensor(bpm_batch),
         "duration": torch.tensor(duration_batch),
     }

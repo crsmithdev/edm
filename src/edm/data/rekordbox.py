@@ -250,5 +250,6 @@ def _infer_section_label(cue_name: str) -> str:
     elif "outro" in name_lower or "end" in name_lower:
         return "outro"
     else:
-        # Default to generic segment name
-        return "segment"
+        # Default to breakdown for unrecognized cue names
+        # (most neutral section type in EDM)
+        return "breakdown"

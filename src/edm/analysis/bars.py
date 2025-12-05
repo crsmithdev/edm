@@ -3,6 +3,12 @@
 This module provides utilities to convert between time-based and bar-based
 positions in audio tracks. It is designed to work with both constant tempo
 (BPM-based) calculations and future beat grid implementations.
+
+Important Conventions:
+    - Bar numbers are 1-indexed (bar 1 is the first bar, not bar 0)
+    - Fractional bars are supported (e.g., bar 16.5 = middle of bar 16)
+    - Fractional beats within a bar are 0-indexed (0.0 to beats_per_bar)
+    - Formula: timestamp = first_downbeat + (bar - 1) * (60/bpm) * beats_per_bar
 """
 
 from __future__ import annotations
