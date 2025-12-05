@@ -234,3 +234,27 @@ The system SHALL maintain documentation of CLI conventions and patterns.
 
 - **WHEN** developer needs to format CLI output
 - **THEN** docs/cli-patterns.md describes Rich Console patterns for tables, JSON, YAML
+
+### Requirement: Dataset Versioning with DVC
+
+The project SHALL use DVC for versioning datasets, annotations, and model checkpoints.
+
+#### Scenario: Adding changes to DVC
+
+- **WHEN** annotations or models are updated
+- **THEN** run `dvc add data/annotations` or `dvc add data/models`, commit .dvc files to git, and push with `dvc push`
+
+#### Scenario: Running DVC pipelines
+
+- **WHEN** training models or processing data
+- **THEN** use `dvc repro <stage>` to run pipelines defined in dvc.yaml, automatically rerunning when dependencies change
+
+#### Scenario: Linking data versions to model versions
+
+- **WHEN** a model is trained
+- **THEN** DVC automatically links the data version (via .dvc files) to the model checkpoint, enabling reproducibility
+
+#### Scenario: Best practices for DVC workflow
+
+- **WHEN** working with versioned data
+- **THEN** always run `dvc add` after changes, commit .dvc files with descriptive messages, and `dvc push` to remote storage before git push

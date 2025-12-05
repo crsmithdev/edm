@@ -116,20 +116,26 @@ def _time_to_bar(time: float, bpm: float, beat_grid: list[float]) -> int:
         bar_index = int(time / bar_duration)
         return max(1, bar_index + 1)  # 1-indexed, minimum bar 1
 
-    # Find nearest beat in grid
-    if time <= beat_grid[0]:
+    # Find the beat index at or just before the given time
+    # Use the downbeat (first beat) as bar 1, beat 1
+    downbeat = beat_grid[0]
+
+    if time < downbeat:
+        # Before first beat - return bar 1
         return 1
 
-    # Find beat index
-    beat_index = 0
-    for i, beat_time in enumerate(beat_grid):
-        if beat_time <= time:
-            beat_index = i
-        else:
-            break
+    # Calculate elapsed time from downbeat
+    elapsed = time - downbeat
 
-    # Convert beat index to bar (4 beats per bar, 1-indexed)
-    bar = (beat_index // 4) + 1
+    # Calculate beat number from elapsed time
+    # Each beat is (60 / bpm) seconds
+    beat_duration = 60.0 / bpm
+    elapsed_beats = elapsed / beat_duration
+
+    # Convert to bar number (4 beats per bar, 1-indexed)
+    # Bar 1 starts at beat 0, bar 2 starts at beat 4, etc.
+    bar = int(elapsed_beats / 4) + 1
+
     return max(1, bar)
 
 

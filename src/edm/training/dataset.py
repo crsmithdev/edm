@@ -38,6 +38,8 @@ class EDMDataset(Dataset):
         duration: float | None = 30.0,
         augment: bool = False,
         frame_rate: float = 68.87,  # Match MERT output frame rate (~320 samples per frame)
+        tier_filter: int | None = None,
+        min_confidence: float | None = None,
     ):
         """Initialize dataset.
 
@@ -48,6 +50,8 @@ class EDMDataset(Dataset):
             duration: Segment duration in seconds (None = full track)
             augment: Enable data augmentation
             frame_rate: Target frame rate for labels (frames per second)
+            tier_filter: Only include annotations of this tier (1, 2, or 3). None = all tiers
+            min_confidence: Only include annotations with confidence >= this value. None = all
         """
         self.annotation_dir = Path(annotation_dir)
         self.audio_dir = Path(audio_dir) if audio_dir else None
@@ -55,6 +59,8 @@ class EDMDataset(Dataset):
         self.duration = duration
         self.augment = augment
         self.frame_rate = frame_rate
+        self.tier_filter = tier_filter
+        self.min_confidence = min_confidence
 
         # Load all annotation files
         self.annotations: list[tuple[Path, Annotation]] = []
@@ -65,6 +71,13 @@ class EDMDataset(Dataset):
                     docs = list(yaml.safe_load_all(f))
                     data = docs[0] if docs else {}
                 annotation = Annotation(**data)
+
+                # Apply filters
+                if tier_filter is not None and annotation.metadata.tier != tier_filter:
+                    continue
+                if min_confidence is not None and annotation.metadata.confidence < min_confidence:
+                    continue
+
                 self.annotations.append((yaml_path, annotation))
             except Exception as e:
                 print(f"Warning: Failed to load {yaml_path}: {e}")

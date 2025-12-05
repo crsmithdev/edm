@@ -1,0 +1,30 @@
+# DVC Parameters
+# Used by dvc.yaml pipelines
+
+training:
+  epochs: 50
+  batch_size: 4
+  learning_rate: 0.0001
+  train_split: 0.8
+  duration: 30.0
+  num_workers: 4
+
+  # Loss weights
+  boundary_weight: 1.0
+  energy_weight: 0.5
+  beat_weight: 0.5
+  label_weight: 0.3
+
+  # Data filtering
+  tier_filter: null  # Set to 1, 2, or 3 to filter by tier
+  min_confidence: null  # Set to 0.0-1.0 to filter by confidence
+
+model:
+  backbone: "mert-95m"  # Options: mert-95m, mert-330m, cnn
+  freeze_backbone: false
+
+data:
+  annotation_dir: "data/annotations"
+  audio_dir: "~/music"
+  sample_rate: 22050
+  frame_rate: 68.87

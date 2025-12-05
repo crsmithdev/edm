@@ -88,6 +88,7 @@ module = [
     "beat_this.*",
     "cleanlab.*",
     "dvc.*",
+    "jams.*",
     "matplotlib.*",
     "mlflow.*",
     "msaf.*",
