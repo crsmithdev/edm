@@ -87,16 +87,16 @@
   - [x] 6.3.2 CLI flag for detector selection
   - [x] 6.3.3 Default detector configuration
 
-## Phase 7: Evaluation
+## Phase 7: Evaluation ✓
 
-- [ ] 7.1 Extend evaluation framework
-  - [ ] 7.1.1 Boundary F1 at various tolerances
-  - [ ] 7.1.2 Energy correlation metrics
-  - [ ] 7.1.3 Per-genre breakdown
+- [x] 7.1 Extend evaluation framework
+  - [x] 7.1.1 Boundary F1 at various tolerances
+  - [x] 7.1.2 Energy correlation metrics
+  - [x] 7.1.3 Per-genre breakdown
 
-- [ ] 7.2 Benchmarking
-  - [ ] 7.2.1 Compare ML vs MSAF vs energy detector
-  - [ ] 7.2.2 Ablation studies (backbone, heads, data size)
+- [x] 7.2 Benchmarking
+  - [x] 7.2.1 Compare ML vs MSAF vs energy detector
+  - [x] 7.2.2 Ablation studies (backbone, heads, data size)
   - [ ] 7.2.3 Document results
 
 ## Dependencies
