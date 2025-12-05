@@ -10,6 +10,7 @@ from rich.console import Console
 from cli.commands.analyze import analyze_command
 from cli.commands.data import app as data_app
 from cli.commands.evaluate import evaluate_command
+from cli.commands.models import app as models_app
 from cli.commands.train import train_command
 from edm import __version__ as lib_version
 from edm.io.audio import clear_audio_cache, set_cache_size
@@ -25,6 +26,7 @@ app = typer.Typer(
 app.command(name="evaluate")(evaluate_command)
 app.command(name="train")(train_command)
 app.add_typer(data_app, name="data")
+app.add_typer(models_app, name="models")
 
 console = Console()
 

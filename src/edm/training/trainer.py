@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from edm.models.multitask import MultiTaskModel
+from edm.registry.mlflow_registry import ModelRegistry
 from edm.training.losses import MultiTaskLoss
 
 
@@ -79,6 +80,7 @@ class Trainer:
         val_loader: DataLoader,
         config: TrainingConfig,
         loss_fn: MultiTaskLoss | None = None,
+        registry: ModelRegistry | None = None,
     ):
         """Initialize trainer.
 
@@ -88,11 +90,13 @@ class Trainer:
             val_loader: Validation dataloader
             config: Training configuration
             loss_fn: Loss function (default: MultiTaskLoss with default weights)
+            registry: Optional MLflow model registry for tracking
         """
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.config = config
+        self.registry = registry
 
         # Setup device
         self.device = config.device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -193,6 +197,10 @@ class Trainer:
 
         # Save metadata at end
         self.save_run_metadata(start_time)
+
+        # Log to MLflow if registry provided
+        if self.registry:
+            self._log_to_mlflow()
 
         self.writer.close()
 
@@ -497,6 +505,47 @@ class Trainer:
         metadata_path = self.config.output_dir / "metadata.yaml"
         with open(metadata_path, "w") as f:
             yaml.dump(metadata, f, default_flow_style=False, sort_keys=False)
+
+    def _log_to_mlflow(self) -> None:
+        """Log best model to MLflow registry."""
+        best_checkpoint = self.checkpoints_dir / "best.pt"
+
+        if not best_checkpoint.exists():
+            print("No best model checkpoint found, skipping MLflow logging")
+            return
+
+        # Load config and metadata
+        import yaml
+
+        config_path = self.config.output_dir / "config.yaml"
+        metadata_path = self.config.output_dir / "metadata.yaml"
+
+        params = {}
+        if config_path.exists():
+            with open(config_path) as f:
+                params = yaml.safe_load(f)
+
+        metrics = {"best_val_loss": float(self.best_val_loss)}
+        if metadata_path.exists():
+            with open(metadata_path) as f:
+                metadata = yaml.safe_load(f)
+                metrics.update(metadata.get("final_metrics", {}))
+
+        # Get run name
+        run_name = self.config.run_name or self.config.output_dir.name
+
+        # Log to registry
+        if self.registry is not None:
+            try:
+                self.registry.log_model(
+                    model_path=best_checkpoint,
+                    run_name=run_name,
+                    params=params,
+                    metrics=metrics,
+                )
+                print(f"Model logged to MLflow: {run_name}")
+            except Exception as e:
+                print(f"Failed to log model to MLflow: {e}")
 
 
 def create_trainer(

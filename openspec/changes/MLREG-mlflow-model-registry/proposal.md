@@ -1,6 +1,7 @@
 ---
-status: ready
+status: deployed
 created: 2025-12-05
+deployed: 2025-12-05
 ---
 
 # [MLREG] Implement MLflow Model Registry

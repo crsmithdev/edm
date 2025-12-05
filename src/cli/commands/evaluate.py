@@ -108,8 +108,7 @@ def evaluate_command(
             typer.echo(f"  Evaluated: {audio_path.name}")
             if result["success"]:
                 typer.echo(
-                    f"    boundary_f1={result['boundary_f1']:.1%} "
-                    f"event_f1={result['event_f1']:.1%}"
+                    f"    boundary_f1={result['boundary_f1']:.1%} event_f1={result['event_f1']:.1%}"
                 )
             else:
                 typer.echo(f"    ERROR: {result['error_message']}")
