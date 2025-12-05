@@ -183,7 +183,7 @@ class Trainer:
 
             # Save periodic checkpoint
             if (epoch + 1) % self.config.save_every == 0:
-                self.save_checkpoint(f"epoch_{epoch+1}.pt")
+                self.save_checkpoint(f"epoch_{epoch + 1}.pt")
 
             # Step scheduler
             if self.scheduler and self.config.scheduler != "onecycle":
@@ -350,7 +350,7 @@ class Trainer:
         """
         loss_str = ", ".join([f"{k}: {v.item():.4f}" for k, v in losses.items()])
         print(
-            f"Epoch {self.current_epoch+1} [{batch_idx+1}/{len(self.train_loader)}] " f"{loss_str}"
+            f"Epoch {self.current_epoch + 1} [{batch_idx + 1}/{len(self.train_loader)}] {loss_str}"
         )
 
     def _log_epoch(self, metrics: dict[str, float], prefix: str = "train") -> None:
@@ -371,7 +371,7 @@ class Trainer:
 
         # Print summary
         loss_str = ", ".join([f"{k}: {v:.4f}" for k, v in metrics.items()])
-        print(f"Epoch {self.current_epoch+1} {prefix}: {loss_str}")
+        print(f"Epoch {self.current_epoch + 1} {prefix}: {loss_str}")
 
     def save_checkpoint(self, filename: str) -> None:
         """Save training checkpoint atomically.

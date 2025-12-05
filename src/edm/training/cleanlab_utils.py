@@ -240,7 +240,7 @@ def generate_error_report(
             yaml_path, annotation = dataset.annotations[sample_idx]
             track_name = yaml_path.stem
 
-            lines.append(f"{rank+1}. {track_name}")
+            lines.append(f"{rank + 1}. {track_name}")
             lines.append(f"   Error rate: {error_rate:.2%}")
             lines.append(f"   File: {yaml_path}")
             lines.append("")
@@ -272,7 +272,7 @@ def generate_error_report(
             yaml_path, annotation = dataset.annotations[sample_idx]
             track_name = yaml_path.stem
 
-            lines.append(f"{rank+1}. {track_name}")
+            lines.append(f"{rank + 1}. {track_name}")
             lines.append(f"   Boundary errors: {int(num_errors)}")
             lines.append(f"   File: {yaml_path}")
             lines.append("")
