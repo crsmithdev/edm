@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote
 
 import librosa
 import numpy as np
@@ -36,7 +37,7 @@ class EDMDataset(Dataset):
         sample_rate: int = 22050,
         duration: float | None = 30.0,
         augment: bool = False,
-        frame_rate: int = 50,
+        frame_rate: float = 68.87,  # Match MERT output frame rate (~320 samples per frame)
     ):
         """Initialize dataset.
 
@@ -129,14 +130,17 @@ class EDMDataset(Dataset):
             Resolved absolute path
         """
         if self.audio_dir:
-            # Use audio_dir + filename
-            return self.audio_dir / annotation_path.name
+            # Use audio_dir + filename (URL-decode the filename)
+            filename = unquote(annotation_path.name)
+            return self.audio_dir / filename
         else:
             # Use path from annotation (might need fixing for cross-platform)
             path_str = str(annotation_path)
             # Handle Windows paths like /C:/Music/...
             if path_str.startswith("/") and ":" in path_str:
                 path_str = path_str[1:]  # Remove leading /
+            # URL-decode the path
+            path_str = unquote(path_str)
             return Path(path_str)
 
     def _create_targets(

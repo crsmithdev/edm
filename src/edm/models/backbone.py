@@ -66,9 +66,10 @@ class MERTBackbone(nn.Module):
         total_layers = len(self.model.encoder.layers)
         num_layers = min(num_layers, total_layers)
 
-        # Freeze embeddings
-        for param in self.model.embeddings.parameters():
-            param.requires_grad = False
+        # Freeze feature extractor (MERT uses feature_extractor instead of embeddings)
+        if hasattr(self.model, "feature_extractor"):
+            for param in self.model.feature_extractor.parameters():
+                param.requires_grad = False
 
         # Freeze encoder layers
         for i in range(num_layers):
@@ -79,7 +80,7 @@ class MERTBackbone(nn.Module):
         """Extract frame-level embeddings from audio.
 
         Args:
-            audio: Audio tensor [batch, samples] or [batch, 1, samples]
+            audio: Audio tensor [batch, samples]
 
         Returns:
             Frame-level embeddings [batch, time, embedding_dim]
@@ -87,11 +88,7 @@ class MERTBackbone(nn.Module):
         # Ensure audio is on correct device
         audio = audio.to(self.device)
 
-        # Handle different input shapes
-        if audio.ndim == 2:
-            # [batch, samples] -> [batch, 1, samples]
-            audio = audio.unsqueeze(1)
-
+        # MERT expects [batch, samples] directly (no channel dimension)
         # Forward through model
         outputs = self.model(audio, output_hidden_states=True)
 
