@@ -109,7 +109,7 @@ def evaluate_command(
             if result["success"]:
                 typer.echo(
                     f"    boundary_f1={result['boundary_f1']:.1%} "
-                    f"label_acc={result['label_accuracy']:.1%}"
+                    f"event_f1={result['event_f1']:.1%}"
                 )
             else:
                 typer.echo(f"    ERROR: {result['error_message']}")
@@ -132,9 +132,6 @@ def evaluate_command(
         successful_results
     )
     avg_boundary_f1 = sum(r["boundary_f1"] for r in successful_results) / len(successful_results)
-    avg_label_accuracy = sum(r["label_accuracy"] for r in successful_results) / len(
-        successful_results
-    )
     avg_event_precision = sum(r["event_precision"] for r in successful_results) / len(
         successful_results
     )
@@ -154,9 +151,6 @@ def evaluate_command(
     typer.echo(f"  Precision: {avg_boundary_precision:.1%}")
     typer.echo(f"  Recall: {avg_boundary_recall:.1%}")
     typer.echo(f"  F1: {avg_boundary_f1:.1%}")
-    typer.echo("")
-    typer.echo("Section Labeling:")
-    typer.echo(f"  Label Accuracy: {avg_label_accuracy:.1%}")
     typer.echo("")
     typer.echo("Event Detection:")
     typer.echo(f"  Precision: {avg_event_precision:.1%}")
@@ -187,7 +181,6 @@ def evaluate_command(
                 "avg_boundary_precision": avg_boundary_precision,
                 "avg_boundary_recall": avg_boundary_recall,
                 "avg_boundary_f1": avg_boundary_f1,
-                "avg_label_accuracy": avg_label_accuracy,
                 "avg_event_precision": avg_event_precision,
                 "avg_event_recall": avg_event_recall,
                 "avg_event_f1": avg_event_f1,
@@ -204,6 +197,9 @@ def evaluate_command(
 
 def load_yaml_annotations(annotations_dir: Path) -> dict[Path, list[dict]]:
     """Load reference annotations from YAML files in a directory.
+
+    Supports both old schema (file/bpm/annotations at root) and new schema
+    (audio/structure sections with metadata).
 
     Args:
         annotations_dir: Directory containing .yaml annotation files.
@@ -223,13 +219,24 @@ def load_yaml_annotations(annotations_dir: Path) -> dict[Path, list[dict]]:
                 docs = list(yaml.safe_load_all(f))
                 doc = docs[0] if docs else None
 
-            if not doc or "file" not in doc:
+            if not doc:
                 continue
 
-            audio_path = Path(doc["file"]).resolve()
-            bpm = doc.get("bpm")
-            downbeat = doc.get("downbeat", 0.0)
-            annotations = doc.get("annotations", [])
+            # Detect schema: new schema has 'audio' and 'structure', old has 'file'
+            if "audio" in doc and "structure" in doc:
+                # New schema
+                audio_path = Path(doc["audio"]["file"]).resolve()
+                bpm = doc["audio"].get("bpm")
+                downbeat = doc["audio"].get("downbeat", 0.0)
+                annotations = doc["structure"]
+            elif "file" in doc:
+                # Old schema (backward compatibility)
+                audio_path = Path(doc["file"]).resolve()
+                bpm = doc.get("bpm")
+                downbeat = doc.get("downbeat", 0.0)
+                annotations = doc.get("annotations", [])
+            else:
+                continue
 
             if not annotations or not bpm:
                 continue
@@ -237,11 +244,20 @@ def load_yaml_annotations(annotations_dir: Path) -> dict[Path, list[dict]]:
             sections = []
             prev_label = None
             for i, ann in enumerate(annotations):
-                if len(ann) < 2:
+                # Handle both old schema (list/tuple) and new schema (dict)
+                if isinstance(ann, dict):
+                    # New schema: {"bar": 1, "label": "intro", "time": 0.907}
+                    bar = ann.get("bar")
+                    label = ann.get("label", "").strip().lower()
+                elif isinstance(ann, (list, tuple)) and len(ann) >= 2:
+                    # Old schema: [1, "intro"] or (1, "intro")
+                    bar, label = ann[0], ann[1]
+                    label = label.strip().lower()
+                else:
                     continue
 
-                bar, label = ann[0], ann[1]
-                label = label.strip().lower()
+                if not bar or not label:
+                    continue
 
                 # Skip kick in/kick out events - they mark kick drum presence, not structure
                 if label in {"kick in", "kick out"}:
@@ -255,9 +271,17 @@ def load_yaml_annotations(annotations_dir: Path) -> dict[Path, list[dict]]:
                 # Determine end time (next non-kick annotation's start, or track end)
                 end_time = None
                 for j in range(i + 1, len(annotations)):
-                    next_label = annotations[j][1].strip().lower()
-                    if next_label not in {"kick in", "kick out"}:
+                    # Handle both schemas when looking ahead
+                    if isinstance(annotations[j], dict):
+                        next_label = annotations[j].get("label", "").strip().lower()
+                        next_bar = annotations[j].get("bar")
+                    elif isinstance(annotations[j], (list, tuple)) and len(annotations[j]) >= 2:
+                        next_label = annotations[j][1].strip().lower()
                         next_bar = annotations[j][0]
+                    else:
+                        continue
+
+                    if next_label not in {"kick in", "kick out"} and next_bar:
                         end_time = bars_to_time(next_bar, bpm, first_downbeat=downbeat)
                         break
 

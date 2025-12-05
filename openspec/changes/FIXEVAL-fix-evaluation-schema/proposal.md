@@ -1,5 +1,5 @@
 ---
-status: ready
+status: deployed
 created: 2025-12-05
 ---
 
