@@ -52,3 +52,9 @@ var/
 venv/
 wheels/
 /data
+
+# Training outputs (track with DVC, not git)
+outputs/
+*.pt
+*.pth
+*.ckpt
