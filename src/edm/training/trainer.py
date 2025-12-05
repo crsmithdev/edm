@@ -374,12 +374,13 @@ class Trainer:
         print(f"Epoch {self.current_epoch+1} {prefix}: {loss_str}")
 
     def save_checkpoint(self, filename: str) -> None:
-        """Save training checkpoint.
+        """Save training checkpoint atomically.
 
         Args:
             filename: Checkpoint filename
         """
         checkpoint_path = self.checkpoints_dir / filename
+        temp_path = checkpoint_path.with_suffix(checkpoint_path.suffix + ".tmp")
 
         checkpoint = {
             "epoch": self.current_epoch,
@@ -393,7 +394,14 @@ class Trainer:
         if self.scheduler:
             checkpoint["scheduler_state_dict"] = self.scheduler.state_dict()
 
-        torch.save(checkpoint, checkpoint_path)
+        # Write to temp file first
+        torch.save(checkpoint, temp_path)
+
+        # Atomic rename to final location
+        import os
+
+        os.replace(temp_path, checkpoint_path)
+
         print(f"Saved checkpoint: {checkpoint_path}")
 
     def load_checkpoint(self, checkpoint_path: Path) -> None:

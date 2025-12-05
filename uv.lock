@@ -1422,6 +1422,7 @@ source = { editable = "." }
 dependencies = [
     { name = "beat-this" },
     { name = "cleanlab" },
+    { name = "defusedxml" },
     { name = "dvc" },
     { name = "jams" },
     { name = "librosa" },
@@ -1461,6 +1462,7 @@ dev = [
 requires-dist = [
     { name = "beat-this", git = "https://github.com/CPJKU/beat_this.git" },
     { name = "cleanlab", specifier = ">=2.0.0" },
+    { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "dvc", specifier = ">=3.0.0" },
     { name = "jams", specifier = ">=0.3.5" },
     { name = "label-studio", marker = "extra == 'annotation-ui'", specifier = ">=1.10.0" },

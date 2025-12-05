@@ -1,9 +1,10 @@
 """Rekordbox XML parser for extracting cue points and beat grids."""
 
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
+from xml.etree.ElementTree import Element
 
+import defusedxml.ElementTree as DefusedET  # type: ignore[import-untyped]
 from pydantic import BaseModel
 
 
@@ -66,9 +67,9 @@ def parse_rekordbox_xml(xml_path: Path) -> list[RekordboxTrack]:
         raise FileNotFoundError(f"Rekordbox XML not found: {xml_path}")
 
     try:
-        tree = ET.parse(xml_path)
+        tree = DefusedET.parse(xml_path)
         root = tree.getroot()
-    except ET.ParseError as e:
+    except DefusedET.ParseError as e:
         raise ValueError(f"Invalid XML: {e}")
 
     tracks = []
@@ -89,7 +90,7 @@ def parse_rekordbox_xml(xml_path: Path) -> list[RekordboxTrack]:
     return tracks
 
 
-def _parse_track_element(track_elem: ET.Element) -> RekordboxTrack:
+def _parse_track_element(track_elem: Element) -> RekordboxTrack:
     """Parse a single TRACK element.
 
     Args:

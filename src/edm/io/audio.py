@@ -1,5 +1,6 @@
 """Audio file loading with LRU caching."""
 
+import threading
 from collections import OrderedDict
 from pathlib import Path
 
@@ -19,6 +20,8 @@ class AudioCache:
     Caches decoded audio to avoid redundant file I/O and decoding operations
     during analysis. Uses an ordered dict for LRU eviction.
 
+    Thread-safe for concurrent access from multiple workers.
+
     Attributes:
         max_size: Maximum number of audio files to cache.
     """
@@ -33,6 +36,7 @@ class AudioCache:
         self._cache: OrderedDict[str, AudioData] = OrderedDict()
         self._hits = 0
         self._misses = 0
+        self._lock = threading.Lock()
 
     def get(self, filepath: Path, sr: int | None = None) -> AudioData | None:
         """Get audio data from cache.
@@ -47,16 +51,17 @@ class AudioCache:
         if self.max_size == 0:
             return None
 
-        key = self._make_key(filepath, sr)
-        if key in self._cache:
-            # Move to end (most recently used)
-            self._cache.move_to_end(key)
-            self._hits += 1
-            logger.debug("audio cache hit", filepath=str(filepath), sr=sr)
-            return self._cache[key]
+        with self._lock:
+            key = self._make_key(filepath, sr)
+            if key in self._cache:
+                # Move to end (most recently used)
+                self._cache.move_to_end(key)
+                self._hits += 1
+                logger.debug("audio cache hit", filepath=str(filepath), sr=sr)
+                return self._cache[key]
 
-        self._misses += 1
-        return None
+            self._misses += 1
+            return None
 
     def put(self, filepath: Path, sr: int | None, audio_data: AudioData) -> None:
         """Store audio data in cache.
@@ -69,22 +74,24 @@ class AudioCache:
         if self.max_size == 0:
             return
 
-        key = self._make_key(filepath, sr)
+        with self._lock:
+            key = self._make_key(filepath, sr)
 
-        # Evict LRU entry if at capacity
-        if len(self._cache) >= self.max_size and key not in self._cache:
-            evicted_key, _ = self._cache.popitem(last=False)
-            logger.debug("audio cache eviction", evicted_key=evicted_key)
+            # Evict LRU entry if at capacity
+            if len(self._cache) >= self.max_size and key not in self._cache:
+                evicted_key, _ = self._cache.popitem(last=False)
+                logger.debug("audio cache eviction", evicted_key=evicted_key)
 
-        self._cache[key] = audio_data
-        self._cache.move_to_end(key)
-        logger.debug("audio cached", filepath=str(filepath), sr=sr)
+            self._cache[key] = audio_data
+            self._cache.move_to_end(key)
+            logger.debug("audio cached", filepath=str(filepath), sr=sr)
 
     def clear(self) -> None:
         """Clear all cached audio data."""
-        count = len(self._cache)
-        self._cache.clear()
-        logger.debug("audio cache cleared", entries_cleared=count)
+        with self._lock:
+            count = len(self._cache)
+            self._cache.clear()
+            logger.debug("audio cache cleared", entries_cleared=count)
 
     def stats(self) -> dict:
         """Get cache statistics.
@@ -92,15 +99,16 @@ class AudioCache:
         Returns:
             Dict with hits, misses, size, and hit rate.
         """
-        total = self._hits + self._misses
-        hit_rate = self._hits / total if total > 0 else 0.0
-        return {
-            "hits": self._hits,
-            "misses": self._misses,
-            "size": len(self._cache),
-            "max_size": self.max_size,
-            "hit_rate": round(hit_rate, 2),
-        }
+        with self._lock:
+            total = self._hits + self._misses
+            hit_rate = self._hits / total if total > 0 else 0.0
+            return {
+                "hits": self._hits,
+                "misses": self._misses,
+                "size": len(self._cache),
+                "max_size": self.max_size,
+                "hit_rate": round(hit_rate, 2),
+            }
 
     def _make_key(self, filepath: Path, sr: int | None) -> str:
         """Create cache key from filepath and sample rate."""
