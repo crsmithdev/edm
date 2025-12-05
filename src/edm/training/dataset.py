@@ -60,7 +60,9 @@ class EDMDataset(Dataset):
         for yaml_path in sorted(self.annotation_dir.glob("*.yaml")):
             try:
                 with open(yaml_path) as f:
-                    data = yaml.safe_load(f)
+                    # Load first document (handles files with multiple YAML docs)
+                    docs = list(yaml.safe_load_all(f))
+                    data = docs[0] if docs else {}
                 annotation = Annotation(**data)
                 self.annotations.append((yaml_path, annotation))
             except Exception as e:
