@@ -2,62 +2,62 @@
 
 ## Phase 1: DVC Integration (Week 1)
 
-- [ ] 1.1 Install and configure DVC
-  - [ ] 1.1.1 Add `dvc>=3.0.0` to pyproject.toml
-  - [ ] 1.1.2 Run `dvc init` in project root
-  - [ ] 1.1.3 Configure local remote storage (or S3/GCS)
-  - [ ] 1.1.4 Add DVC entries to .gitignore
+- [x] 1.1 Install and configure DVC
+  - [x] 1.1.1 Add `dvc>=3.0.0` to pyproject.toml
+  - [x] 1.1.2 Run `dvc init` in project root
+  - [x] 1.1.3 Configure local remote storage (or S3/GCS)
+  - [x] 1.1.4 Add DVC entries to .gitignore
 
-- [ ] 1.2 Track data directories
-  - [ ] 1.2.1 `dvc add data/annotations/`
-  - [ ] 1.2.2 `dvc add data/generated/` (if keeping)
-  - [ ] 1.2.3 Commit .dvc files to git
+- [x] 1.2 Track data directories
+  - [x] 1.2.1 `dvc add data/annotations/`
+  - [x] 1.2.2 `dvc add data/generated/` (if keeping)
+  - [x] 1.2.3 Commit .dvc files to git
 
-- [ ] 1.3 Define new YAML schema
-  - [ ] 1.3.1 Create `src/edm/data/schema.py` with Pydantic models
-  - [ ] 1.3.2 Define sections: metadata, audio, structure, energy (optional)
-  - [ ] 1.3.3 Metadata fields: tier, confidence, source, created, modified, verified_by, notes, flags, validation
-  - [ ] 1.3.4 Audio fields: file, duration (float seconds), bpm, downbeat, time_signature (array), key
-  - [ ] 1.3.5 Structure: list of {bar, label, time, confidence}
-  - [ ] 1.3.6 Energy: overall, by_section (bass/mid/high), at_boundaries
-  - [ ] 1.3.7 Validator explicitly rejects old format (no annotations: [[bar, label, time]] arrays)
+- [x] 1.3 Define new YAML schema
+  - [x] 1.3.1 Create `src/edm/data/schema.py` with Pydantic models
+  - [x] 1.3.2 Define sections: metadata, audio, structure, energy (optional)
+  - [x] 1.3.3 Metadata fields: tier, confidence, source, created, modified, verified_by, notes, flags, validation
+  - [x] 1.3.4 Audio fields: file, duration (float seconds), bpm, downbeat, time_signature (array), key
+  - [x] 1.3.5 Structure: list of {bar, label, time, confidence}
+  - [x] 1.3.6 Energy: overall, by_section (bass/mid/high), at_boundaries
+  - [x] 1.3.7 Validator explicitly rejects old format (no annotations: [[bar, label, time]] arrays)
 
-- [ ] 1.4 Create schema validator
-  - [ ] 1.4.1 Implement `validate_annotation(yaml_path)` function
-  - [ ] 1.4.2 Check all required fields present
-  - [ ] 1.4.3 Validate confidence scores in [0, 1]
-  - [ ] 1.4.4 Validate tier in {1, 2, 3}
+- [x] 1.4 Create schema validator
+  - [x] 1.4.1 Implement `validate_annotation(yaml_path)` function
+  - [x] 1.4.2 Check all required fields present
+  - [x] 1.4.3 Validate confidence scores in [0, 1]
+  - [x] 1.4.4 Validate tier in {1, 2, 3}
 
 ## Phase 2: Data Management CLI (Week 2)
 
-- [ ] 2.1 Create base CLI command
-  - [ ] 2.1.1 Create `src/cli/commands/data.py`
-  - [ ] 2.1.2 Add `edm data` command group with Typer
-  - [ ] 2.1.3 Wire into main CLI
+- [x] 2.1 Create base CLI command
+  - [x] 2.1.1 Create `src/cli/commands/data.py`
+  - [x] 2.1.2 Add `edm data` command group with Typer
+  - [x] 2.1.3 Wire into main CLI
 
-- [ ] 2.2 Implement `edm data stats`
-  - [ ] 2.2.1 Count tracks by tier
-  - [ ] 2.2.2 Calculate average confidence
-  - [ ] 2.2.3 Count tracks needing review (flagged)
-  - [ ] 2.2.4 Display rich table with statistics
+- [x] 2.2 Implement `edm data stats`
+  - [x] 2.2.1 Count tracks by tier
+  - [x] 2.2.2 Calculate average confidence
+  - [x] 2.2.3 Count tracks needing review (flagged)
+  - [x] 2.2.4 Display rich table with statistics
 
-- [ ] 2.3 Implement `edm data validate`
-  - [ ] 2.3.1 Load all YAML files in data/annotations/
-  - [ ] 2.3.2 Validate each against schema (strict, no old format support)
-  - [ ] 2.3.3 Check heuristics: beat snapping, section length, BPM consistency
-  - [ ] 2.3.4 Report validation errors with file:line references
+- [x] 2.3 Implement `edm data validate`
+  - [x] 2.3.1 Load all YAML files in data/annotations/
+  - [x] 2.3.2 Validate each against schema (strict, no old format support)
+  - [x] 2.3.3 Check heuristics: beat snapping, section length, BPM consistency
+  - [x] 2.3.4 Report validation errors with file:line references
 
-- [ ] 2.4 Implement `edm data export`
-  - [ ] 2.4.1 Export to JSON format
-  - [ ] 2.4.2 Export to PyTorch dataset format
-  - [ ] 2.4.3 Export confidence weights for training
+- [x] 2.4 Implement `edm data export`
+  - [x] 2.4.1 Export to JSON format
+  - [x] 2.4.2 Export to PyTorch dataset format
+  - [x] 2.4.3 Export confidence weights for training
 
-- [ ] 2.5 Implement `edm data tier`
-  - [ ] 2.5.1 Update tier field in YAML
-  - [ ] 2.5.2 Support batch updates: `--set 1 track1.yaml track2.yaml`
+- [x] 2.5 Implement `edm data tier`
+  - [x] 2.5.1 Update tier field in YAML
+  - [x] 2.5.2 Support batch updates: `--set 1 track1.yaml track2.yaml`
 
-- [ ] 2.6 Implement `edm data flag`
-  - [ ] 2.6.1 Add/remove flags: needs_review, high_confidence, etc.
+- [x] 2.6 Implement `edm data flag`
+  - [x] 2.6.1 Add/remove flags: needs_review, high_confidence, etc.
 
 - [ ] 2.7 Clean break: delete old annotations
   - [ ] 2.7.1 Git commit current annotations: "archive: old format before DATAMGMT"
@@ -91,9 +91,9 @@
 
 ## Phase 4: Integration with MLPIVOT
 
-- [ ] 4.1 Update Rekordbox importer
-  - [ ] 4.1.1 Generate metadata section when importing
-  - [ ] 4.1.2 Set source=rekordbox, tier=2, confidence from validation
+- [x] 4.1 Update Rekordbox importer
+  - [x] 4.1.1 Generate metadata section when importing
+  - [x] 4.1.2 Set source=rekordbox, tier=2, confidence from validation
 
 - [ ] 4.2 Update training dataset class
   - [ ] 4.2.1 Read metadata from YAML
