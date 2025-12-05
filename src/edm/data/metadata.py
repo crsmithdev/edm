@@ -76,8 +76,7 @@ class AnnotationMetadata(BaseModel):
         # Also allow ML model versions like ml_model_v1, ml_model_v2
         if v not in valid_sources and not v.startswith("ml_model_"):
             raise ValueError(
-                f"Invalid source '{v}'. Must be one of {valid_sources} "
-                f"or start with 'ml_model_'"
+                f"Invalid source '{v}'. Must be one of {valid_sources} or start with 'ml_model_'"
             )
         return v
 

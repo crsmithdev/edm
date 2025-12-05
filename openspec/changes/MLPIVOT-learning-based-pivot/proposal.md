@@ -1,6 +1,7 @@
 ---
-status: draft
+status: in-progress
 created: 2025-12-04
+started: 2025-12-04
 ---
 
 # [MLPIVOT] Pivot to Learning-Based Audio Analysis
@@ -42,33 +43,55 @@ created: 2025-12-04
 **Modify:**
 - `src/edm/analysis/structure_detector.py` - Add `MLDetector` implementing `StructureDetector` protocol
 - `src/edm/analysis/structure.py` - Wire in ML detector as primary
-- `data/annotations/` - Extend schema for energy metrics and feature vectors
 
 **New files:**
 - `src/edm/models/backbone.py` - MERT/wav2vec embedding extraction
 - `src/edm/models/heads.py` - Task-specific prediction heads
-- `src/edm/training/dataset.py` - Dataset class for DJ software labels
+- `src/edm/training/dataset.py` - Dataset class for DJ software labels (uses `Annotation` schema from `src/edm/data/schema.py`)
 - `src/edm/training/losses.py` - Boundary-tolerant loss functions
 - `scripts/train.py` - Training entry point
 - `scripts/validate_labels.py` - Cleanlab integration for error detection
 
+**Leverage existing DATAMGMT infrastructure:**
+- `src/edm/data/schema.py` - Already has `Annotation`, `EnergyData`, metadata fields
+- `src/cli/commands/data.py` - Use `edm data stats`, `edm data validate`, `edm data export` for dataset management
+- DVC already configured (`.dvc/`, `dvc.yaml`, `data.dvc`) for versioning training data
+
 ### Specs Affected
 - `openspec/specs/analysis/spec.md` - New ML-based detection modes
-- `openspec/specs/development-workflow/spec.md` - Training workflow
+- `openspec/specs/development-workflow/spec.md` - Training workflow, DVC integration
 
 ## Impact
+
+### Dependencies
+
+**Already added by DATAMGMT:**
+- `pydantic>=2.0.0` - Schema validation for annotations
+- `dvc>=3.0.0` - Dataset versioning
+
+**Need to add for ML training:**
+- `torch>=2.0.0` - Deep learning framework
+- `transformers>=4.30.0` - MERT/wav2vec pretrained models
+- `cleanlab>=2.0.0` - Noisy label detection
+- `tensorboard` - Training visualization
+- `torchaudio>=2.0.0` - Audio preprocessing
+
+**Optional for advanced features:**
+- `wandb` - Experiment tracking (alternative to tensorboard)
+- `torch-audiomentations` - Data augmentation
+- `onnx` - Model export for production inference
 
 ### Breaking Changes
 Breaking changes are acceptable and expected:
 - ML detector as primary, algorithmic detectors may be removed if not needed
-- Training data format and annotation schema will be redesigned
+- Annotation schema already redesigned by DATAMGMT (no further changes needed)
 - Existing code/workflows optimized for rule-based approaches can be replaced
 
 ### Migrations
 No migrations - clean break approach:
 - Existing algorithms can be completely replaced by ML equivalents
-- No requirement to maintain backward compatibility with old annotation formats
-- Fresh start on data pipeline and model architecture
+- DATAMGMT already handled annotation format migration (clean slate)
+- Fresh start on model architecture and training pipeline
 
 ### Risks
 - Training data quality: DJ software labels have errors
@@ -89,6 +112,7 @@ No migrations - clean break approach:
 4. **Feature relationships**: Network learns how signals combine
 5. **Quantitative focus**: Energy regression instead of categorical labels
 6. **Transfer learning**: Pretrained music models reduce data requirements to 300-500 tracks for fine-tuning
+7. **Data infrastructure ready**: DATAMGMT provides schema, DVC versioning, CLI tools, validation
 
 ### Drawbacks
 1. **Black box**: Harder to debug than rule-based
@@ -134,17 +158,42 @@ Based on research (see `docs/learning-based-pivot-research.md`):
 
 ## Questions for User
 
-1. **Cue point format**: What format are cue points in? (Rekordbox XML, Serato, Traktor NML, other?)
-2. **Beat grid source**: Are beat grids from metadata or computed? Any systematic errors (double/half time)?
-3. **Clean subset**: Can you provide ~200 tracks with manually verified structure annotations?
-4. **Energy quantification**: What energy representation do you want?
-   - Continuous 0-1 per-frame
-   - Per-section average
-   - Discrete levels (low/medium/high)
-   - Multiple dimensions (bass energy, mid energy, high energy)
-5. **Hardware**: GPU available for training? CUDA/MPS/CPU-only?
-6. **Feature priorities**: Rank these by importance:
-   - Segment boundary detection
-   - Energy quantification
-   - Beat/downbeat tracking improvement
-   - Key detection
+**Data-related questions answered by DATAMGMT:**
+- ✅ Energy format: Multi-band (bass/mid/high) per-section + overall, implemented in `EnergyData` schema
+- ✅ Annotation format: Structured YAML with metadata (tier, confidence, source) via `Annotation` schema
+- ✅ Versioning: DVC configured for tracking training datasets
+
+**ML-specific decisions:**
+
+1. ✅ **Cue point format**: Rekordbox XML
+2. ✅ **Beat grid source**: DJ software metadata (from Rekordbox analysis)
+3. ✅ **Training data**: 10-20 manually verified (Tier 1) + 500 slightly noisy (Tier 2)
+4. ✅ **Hardware**: CUDA GPU available
+5. ✅ **Model priorities** (ranked):
+   1. Segment boundary detection (core structural analysis)
+   2. Beat/downbeat tracking improvement
+   3. Energy quantification per section (secondary)
+   4. Section label classification (optional)
+6. ✅ **Training approach**: Fine-tune pretrained MERT backbone on 500 tracks (lowest risk, sufficient data)
+
+**Implementation implications:**
+- Phase 1.1.1: Implement Rekordbox XML parser for cue points and beat grids
+- Phase 2.1.3: CUDA device handling and GPU optimization
+- Phase 3.1: Focus on boundary head and beat head first, energy head secondary
+- Phase 4.1: Dataset handles 10-20 verified for validation, 500 noisy for training
+- Phase 4.2: Boundary-tolerant loss with cleanlab filtering for noisy labels
+- Fine-tuning strategy: Freeze MERT base, train last 2-3 layers + prediction heads
+
+## Related Proposals
+
+**Dependencies:**
+- **[DATAMGMT] Data Management Overhaul** (implemented) - Provides annotation schema, DVC versioning, metadata tracking (tier/confidence/source), `edm data` CLI commands. MLPIVOT leverages this infrastructure for training data management.
+
+**Supersedes:**
+- 8 algorithmic proposals archived by [CLEANUP] (2025-12-04): BEATSYNC, ECLUSTER, ENERGY, MULTIENG, REFINE, TEMPORAL, SEGACC, HYBRID. ML models learn these patterns instead of hand-coding rules.
+
+**Workflow:**
+1. DATAMGMT set up data infrastructure (complete)
+2. MLPIVOT implements ML training pipeline (this proposal)
+3. Use `edm data` commands to manage training datasets
+4. Use DVC to version datasets and track which data trained which model

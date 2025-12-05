@@ -52,6 +52,13 @@ if [ ${#INJECT_FILES[@]} -gt 0 ]; then
     done
     echo "<!-- project-contexts: ${NAMES[*]} -->"
     echo
+
+    # Track contexts for status line display
+    if [ -x "$HOME/.claude/scripts/session-tracker.sh" ]; then
+        for name in "${NAMES[@]}"; do
+            "$HOME/.claude/scripts/session-tracker.sh" add_context "$name" 2>/dev/null || true
+        done
+    fi
 fi
 
 # Inject contexts in order, then user prompt

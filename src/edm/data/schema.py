@@ -179,7 +179,7 @@ class Annotation(BaseModel):
                 warnings.append(
                     f"Bars not in ascending order: "
                     f"section {i} bar {self.structure[i].bar} >= "
-                    f"section {i+1} bar {self.structure[i + 1].bar}"
+                    f"section {i + 1} bar {self.structure[i + 1].bar}"
                 )
 
         # Check for time ordering
@@ -188,7 +188,7 @@ class Annotation(BaseModel):
                 warnings.append(
                     f"Times not in ascending order: "
                     f"section {i} time {self.structure[i].time} >= "
-                    f"section {i+1} time {self.structure[i + 1].time}"
+                    f"section {i + 1} time {self.structure[i + 1].time}"
                 )
 
         # Check for section length (minimum 4 bars for EDM)

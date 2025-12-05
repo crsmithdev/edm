@@ -90,17 +90,17 @@ def stats(
     table.add_row(
         "Tier 1 (verified)",
         f"{tier_counts[AnnotationTier.VERIFIED]} "
-        f"({tier_counts[AnnotationTier.VERIFIED]/total*100:.1f}%)",
+        f"({tier_counts[AnnotationTier.VERIFIED] / total * 100:.1f}%)",
     )
     table.add_row(
         "Tier 2 (auto-cleaned)",
         f"{tier_counts[AnnotationTier.AUTO_CLEANED]} "
-        f"({tier_counts[AnnotationTier.AUTO_CLEANED]/total*100:.1f}%)",
+        f"({tier_counts[AnnotationTier.AUTO_CLEANED] / total * 100:.1f}%)",
     )
     table.add_row(
         "Tier 3 (auto-generated)",
         f"{tier_counts[AnnotationTier.AUTO_GENERATED]} "
-        f"({tier_counts[AnnotationTier.AUTO_GENERATED]/total*100:.1f}%)",
+        f"({tier_counts[AnnotationTier.AUTO_GENERATED] / total * 100:.1f}%)",
     )
     table.add_row("Average confidence", f"{avg_confidence:.2f}")
     table.add_row("Needs review", str(needs_review))
