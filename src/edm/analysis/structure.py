@@ -8,7 +8,6 @@ import structlog
 from mutagen import File as MutagenFile
 
 from edm.analysis.bars import TimeSignature, bar_count_for_range, time_to_bars
-from edm.analysis.bpm import analyze_bpm
 from edm.analysis.structure_detector import (
     DetectedSection,
     EnergyDetector,
@@ -180,26 +179,10 @@ def analyze_structure(
     # Run detection - errors propagate
     detected_sections = structure_detector.detect(filepath)
 
-    # Get BPM and beat information for bar calculations if requested
+    # Use provided BPM for bar calculations
+    # Note: Callers should use AnalysisOrchestrator to coordinate BPM→structure
     result_bpm = bpm
     result_downbeat = None
-    if include_bars and bpm is None:
-        try:
-            logger.debug("analyzing BPM and beat grid for bar calculations", filepath=str(filepath))
-            bpm_result = analyze_bpm(filepath)
-            result_bpm = bpm_result.bpm
-            logger.debug("bpm detected for bar calculations", bpm=result_bpm)
-
-            # Also get beat grid for downbeat
-            from edm.analysis.beat_detector import detect_beats
-
-            beat_grid = detect_beats(filepath)
-            result_downbeat = beat_grid.first_beat_time
-            logger.debug("downbeat detected", downbeat=result_downbeat)
-        except Exception as e:
-            logger.debug("bpm/beat analysis failed, bar calculations will be skipped", error=str(e))
-            result_bpm = None
-            result_downbeat = None
 
     # Merge short sections (minimum 8 bars)
     detected_sections = merge_short_sections(

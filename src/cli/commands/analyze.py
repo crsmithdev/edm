@@ -181,7 +181,11 @@ def _analyze_file_impl(
         time_signature = f"{beat_grid.time_signature[0]}/{beat_grid.time_signature[1]}"
 
     if run_structure:
-        structure_result = analyze_structure(filepath, detector=structure_detector)  # type: ignore[arg-type]
+        structure_result = analyze_structure(
+            filepath,
+            detector=structure_detector,  # type: ignore[arg-type]
+            bpm=bpm,  # Pass BPM from earlier stages if available
+        )
         duration = round(structure_result.duration, 1)
         if structure_result.bpm:
             bpm = round(structure_result.bpm, 1)
