@@ -2,24 +2,34 @@
 
 ## Context
 
-BPM detection and structure detection currently run independently. When structure boundaries don't align with bar positions, it indicates an error, but we don't know which analysis is wrong. This design introduces a pluggable cross-validation framework that:
+**Problem**: The rekordbox importer bug produced 351/356 annotations with incorrect bar indexing (all bars at 1). This would have poisoned ML training if not caught. We need automated validation to:
 
-1. Detects misalignment patterns
-2. Diagnoses likely error sources
-3. Reports issues (phase 1) and later auto-corrects (phase 2)
+1. **Validate training data** - Catch systematic errors before they enter the pipeline
+2. **Validate ML predictions** - Cross-check model outputs against beat grid
+3. **Diagnose error sources** - Determine if errors are in BPM, structure, downbeat, or phase
+
+**Current Architecture:**
+- **BPM**: Neural beat_this model (fallback to librosa) - highly accurate ML
+- **Structure**: MSAF (spectral) + energy-based labeling - ML-informed
+- **Both run independently** - no cross-validation between signals
+
+When ML-predicted structure boundaries don't align with the beat grid, it indicates error, but we don't know which source is wrong.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Pluggable validator architecture for future signal types
-- Detect common error patterns (BPM offset, phase error, single boundary error, drift)
-- Report alignment metrics in CLI output
+- Validate annotation quality before ML training (prevent garbage in)
+- Cross-validate ML predictions against beat grid alignment (detect model errors)
+- Pluggable validator architecture for future signal types (energy, onset strength)
+- Detect common error patterns (BPM offset, phase error, converter bugs, drift)
+- Report alignment metrics with confidence-weighted arbitration
 - Start with flag-only mode, enable corrections after validation
 
 **Non-Goals:**
-- Auto-correct in initial release (flagging only)
+- Auto-correct in initial release (flagging only - manual review required)
 - Variable tempo support (EDM has constant tempo)
-- Real-time validation during analysis
+- Real-time validation during analysis (post-analysis only)
+- Replace existing BPM or structure detectors (validation layer, not replacement)
 
 ## Decisions
 
@@ -51,13 +61,14 @@ class Validator(Protocol):
 
 | Pattern | Detection Criteria | Meaning |
 |---------|-------------------|---------|
-| `BPM_SYSTEMATIC_OFFSET` | Low std dev, consistent offset | BPM slightly wrong |
-| `DOWNBEAT_PHASE_ERROR` | Offset ~0.5 bars consistently | Wrong downbeat |
-| `TIME_SIGNATURE_MISMATCH` | Offset ~0.25 bars consistently | Wrong time signature |
-| `SINGLE_BOUNDARY_ERROR` | One boundary off, others aligned | Structure error |
-| `PROGRESSIVE_DRIFT` | Error increases over time | BPM accumulation (flag only) |
+| `BPM_SYSTEMATIC_OFFSET` | Low std dev, consistent offset | BPM slightly wrong (rare with beat_this) |
+| `DOWNBEAT_PHASE_ERROR` | Offset ~0.5 bars consistently | Wrong downbeat phase |
+| `TIME_SIGNATURE_MISMATCH` | Offset ~0.25 bars consistently | Wrong time signature assumption |
+| `SINGLE_BOUNDARY_ERROR` | One boundary off, others aligned | ML structure prediction error |
+| `PROGRESSIVE_DRIFT` | Error increases over time | BPM accumulation or tempo variation |
+| `CONVERTER_BUG` | All bars at 1 or constant offset | Data import/conversion error |
 
-**Rationale:** Based on research and practical DJ software patterns (Mixxx uses similar classification).
+**Rationale:** Based on research, DJ software patterns (Mixxx), and real bugs found in this project (rekordbox converter). Patterns help diagnose whether errors are in ML models, algorithmic components, or data pipelines.
 
 ### Post-Analysis Integration
 
@@ -87,6 +98,63 @@ src/edm/analysis/validation/
 ├── orchestrator.py      # ValidationOrchestrator
 └── results.py           # Dataclasses: ErrorPattern, AlignmentError, etc.
 ```
+
+## ML-Specific Use Cases
+
+### Training Data Validation
+
+**Problem**: Annotations from various sources (manual, rekordbox, algorithmic) may contain systematic errors.
+
+**Solution**: Validate all annotations before adding to training set:
+
+```bash
+# Validate before training
+edm data validate data/annotations/ --strict
+
+# Filter by validation results in dataset
+dataset = EDMDataset(
+    annotation_dir="data/annotations",
+    tier_filter=1,  # Only tier-1
+    min_confidence=0.9,  # High confidence
+    require_valid=True  # Only validation-passed samples
+)
+```
+
+**Impact**: Prevents garbage data from poisoning model training, improves generalization.
+
+### ML Prediction Confidence
+
+**Problem**: ML models output confidence scores, but don't account for physical constraints (bar alignment).
+
+**Solution**: Cross-validate predictions, adjust confidence based on alignment:
+
+```python
+# After structure prediction
+structure_result = analyze_structure(audio_path, detector="msaf")
+validation_result = validate_analysis(bpm_result, structure_result)
+
+# Adjust confidence based on alignment
+if validation_result.alignment_quality < 0.7:
+    # Penalize confidence for misaligned predictions
+    adjusted_confidence = structure_result.confidence * 0.5
+else:
+    adjusted_confidence = structure_result.confidence
+```
+
+**Impact**: More calibrated confidence scores, better sample weighting during training.
+
+### Error Attribution
+
+**Problem**: When predictions are wrong, need to know if it's BPM error, structure error, or both.
+
+**Solution**: Validation patterns indicate error source:
+
+- `CONVERTER_BUG` → Data pipeline issue, retrain not needed
+- `SINGLE_BOUNDARY_ERROR` → ML structure model error, needs more training data
+- `DOWNBEAT_PHASE_ERROR` → BPM detection phase error, not structure issue
+- `BPM_SYSTEMATIC_OFFSET` → BPM model error (rare with beat_this)
+
+**Impact**: Targeted improvements - don't retrain structure model for BPM errors.
 
 ## Cross-Domain Best Practices
 
