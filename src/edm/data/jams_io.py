@@ -11,7 +11,7 @@ References:
 from pathlib import Path
 from typing import Optional
 
-import jams  # type: ignore[import-not-found, import-untyped]
+import jams  # type: ignore[import-not-found,import-untyped]
 
 from edm.data.metadata import AnnotationTier
 from edm.data.rekordbox import RekordboxTrack, extract_structure_boundaries

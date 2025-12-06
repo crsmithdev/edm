@@ -2,33 +2,33 @@
 
 ## 1. Foundation
 
-- [ ] 1.1 Create `src/edm/analysis/validation/` module directory
-- [ ] 1.2 Implement result dataclasses (`results.py`): `ErrorPattern`, `AlignmentError`, `CorrectionProposal`, `ValidationResult`, `CrossValidationResult`
-- [ ] 1.3 Add `uncertainty` field to results (separate from `confidence`)
-- [ ] 1.4 Implement validator protocol and base class (`base.py`)
-- [ ] 1.5 Add unit tests for result dataclasses
+- [x] 1.1 Create `src/edm/analysis/validation/` module directory
+- [x] 1.2 Implement result dataclasses (`results.py`): `ErrorPattern`, `AlignmentError`, `CorrectionProposal`, `ValidationResult`, `CrossValidationResult`
+- [x] 1.3 Add `uncertainty` field to results (separate from `confidence`)
+- [x] 1.4 Implement validator protocol and base class (`base.py`)
+- [x] 1.5 Add unit tests for result dataclasses
 
 ## 2. Fault Detection (FDE)
 
-- [ ] 2.1 Implement `_validate_bpm_source()` - check BPM in range, confidence > 0.3
-- [ ] 2.2 Implement `_validate_structure_source()` - check >= 2 sections, confidence > 0.3
-- [ ] 2.3 Add tests for source validation edge cases
+- [x] 2.1 Implement `_validate_bpm_source()` - check BPM in range, confidence > 0.3
+- [x] 2.2 Implement `_validate_structure_source()` - check >= 2 sections, confidence > 0.3
+- [x] 2.3 Add tests for source validation edge cases (covered in base.py)
 
 ## 3. Beat/Structure Validator
 
-- [ ] 3.1 Implement `BeatStructureValidator` class (`beat_structure.py`)
-- [ ] 3.2 Implement `_calculate_alignment_errors()` - compute bar offset for each boundary
-- [ ] 3.3 Implement `_detect_error_pattern()` - classify error type from offset distribution
-- [ ] 3.4 Implement `_calculate_uncertainty()` - measure signal disagreement
-- [ ] 3.5 Add unit tests with synthetic alignment data
+- [x] 3.1 Implement `BeatStructureValidator` class (`beat_structure.py`)
+- [x] 3.2 Implement `_calculate_alignment_errors()` - compute bar offset for each boundary
+- [x] 3.3 Implement `_detect_error_pattern()` - classify error type from offset distribution
+- [x] 3.4 Implement `_calculate_uncertainty()` - measure signal disagreement
+- [x] 3.5 Add unit tests with synthetic alignment data
 
 ## 4. Downbeat/Structure Validator
 
-- [ ] 4.1 Implement `DownbeatStructureValidator` class (`downbeat_structure.py`)
-- [ ] 4.2 Implement `_find_nearest_downbeat()` - find closest downbeat to boundary
-- [ ] 4.3 Implement `_calculate_downbeat_alignment()` - measure boundary-downbeat offset
-- [ ] 4.4 Implement `_validate_first_downbeat()` - check first downbeat vs structure start
-- [ ] 4.5 Add unit tests for downbeat alignment validation
+- [x] 4.1 Implement `DownbeatStructureValidator` class (`downbeat_structure.py`)
+- [x] 4.2 Implement `_find_nearest_downbeat()` - find closest downbeat to boundary
+- [x] 4.3 Implement `_calculate_downbeat_alignment()` - measure boundary-downbeat offset
+- [x] 4.4 Implement `_validate_first_downbeat()` - check first downbeat vs structure start
+- [x] 4.5 Add unit tests for downbeat alignment validation
 
 ## 5. Beat Grid Validator
 
