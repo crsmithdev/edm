@@ -1,0 +1,137 @@
+{
+  "entities": [
+    {
+      "name": "training_infrastructure",
+      "type": "system_component",
+      "properties": {
+        "entry_point": "src/cli/commands/train.py",
+        "trainer_class": "src/edm/training/trainer.py (571 lines)",
+        "dataset_class": "src/edm/training/dataset.py (420 lines)",
+        "loss_module": "src/edm/training/losses.py (529 lines)",
+        "model_module": "src/edm/models (505 lines)",
+        "total_lines": "~2790"
+      }
+    },
+    {
+      "name": "training_workflow",
+      "type": "process",
+      "properties": {
+        "default_epochs": 50,
+        "batch_size": 4,
+        "learning_rate": "1e-4",
+        "optimizer": "AdamW",
+        "weight_decay": 0.01,
+        "scheduler": "cosine_annealing",
+        "warmup_epochs": 5,
+        "gradient_clip": 1.0,
+        "mixed_precision": "AMP (fp16/fp32)",
+        "save_interval": "every 5 epochs",
+        "eval_interval": "every epoch"
+      }
+    },
+    {
+      "name": "model_architectures",
+      "type": "component",
+      "properties": {
+        "backbones": ["MERT-95M (768 dim)", "MERT-330M", "SimpleCNN"],
+        "heads": ["BoundaryHead", "EnergyHead", "BeatHead", "LabelHead"],
+        "audio_sample_rate": "22050 Hz",
+        "target_frame_rate": "68.87 fps",
+        "multitask_model": "src/edm/models/multitask.py"
+      }
+    },
+    {
+      "name": "data_pipeline",
+      "type": "component",
+      "properties": {
+        "input_format": "YAML annotations + WAV audio",
+        "audio_duration": "30.0 seconds",
+        "frame_rate": "68.87 fps",
+        "tasks": ["boundary_detection", "energy_prediction (3-band)", "beat_detection", "label_classification (5 classes)"],
+        "target_generation": "Gaussian kernels for soft targets",
+        "data_split": "70% train, 15% val, 15% test (stratified)",
+        "num_workers": 4,
+        "pin_memory": true
+      }
+    },
+    {
+      "name": "loss_functions",
+      "type": "component",
+      "properties": {
+        "boundary": "BCELoss with Focal variant (weight: 1.0)",
+        "energy": "MSELoss (weight: 0.5)",
+        "beat": "BCELoss with Focal variant (weight: 0.5)",
+        "label": "CrossEntropyLoss with LabelSmoothing (weight: 0.3)",
+        "advanced_variants": ["BoundaryF1Loss", "WeightedMSELoss", "ConfidenceWeightedLoss", "NoiseRobustMultiTaskLoss"],
+        "class_imbalance_handling": "Focal loss + confidence weighting"
+      }
+    },
+    {
+      "name": "checkpointing_strategy",
+      "type": "component",
+      "properties": {
+        "best_model": "saved on val loss improvement",
+        "periodic_saves": "every 5 epochs",
+        "checkpoint_dir": "outputs/training/{run_name}/checkpoints/",
+        "checkpoint_contents": ["epoch", "global_step", "model_state_dict", "optimizer_state_dict", "scheduler_state_dict", "best_val_loss", "config"],
+        "atomic_writes": true,
+        "logging_backend": "TensorBoard",
+        "metadata_format": "YAML"
+      }
+    },
+    {
+      "name": "training_configuration",
+      "type": "config",
+      "properties": {
+        "source": "params.yaml (DVC parameters)",
+        "dataset_config": "configs/dataset_config.yaml",
+        "pipeline_config": "dvc.yaml",
+        "tier_filtering": "quality tiers 1-3",
+        "confidence_thresholds": "configurable per source",
+        "source_types": ["rekordbox", "manual"]
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "training_infrastructure",
+      "target": "EDM Project",
+      "relation_type": "implements"
+    },
+    {
+      "source": "training_workflow",
+      "target": "training_infrastructure",
+      "relation_type": "defines_process"
+    },
+    {
+      "source": "model_architectures",
+      "target": "training_workflow",
+      "relation_type": "component_of"
+    },
+    {
+      "source": "data_pipeline",
+      "target": "training_workflow",
+      "relation_type": "component_of"
+    },
+    {
+      "source": "loss_functions",
+      "target": "training_workflow",
+      "relation_type": "component_of"
+    },
+    {
+      "source": "checkpointing_strategy",
+      "target": "training_workflow",
+      "relation_type": "component_of"
+    },
+    {
+      "source": "training_configuration",
+      "target": "training_infrastructure",
+      "relation_type": "configures"
+    },
+    {
+      "source": "model_architectures",
+      "target": "data_pipeline",
+      "relation_type": "requires"
+    }
+  ]
+}
