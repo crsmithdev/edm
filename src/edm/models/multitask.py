@@ -24,6 +24,7 @@ class MultiTaskModel(nn.Module):
         enable_energy: bool = True,
         enable_beat: bool = True,
         enable_label: bool = False,
+        num_classes: int = 6,
     ) -> None:
         """Initialize multi-task model.
 
@@ -33,6 +34,7 @@ class MultiTaskModel(nn.Module):
             enable_energy: Enable energy prediction head
             enable_beat: Enable beat detection head
             enable_label: Enable section label classification head
+            num_classes: Number of label classes (auto-detected from dataset)
         """
         super().__init__()
 
@@ -53,7 +55,7 @@ class MultiTaskModel(nn.Module):
         if enable_beat:
             self.beat_head = BeatHead(input_dim=embedding_dim)
         if enable_label:
-            self.label_head = LabelHead(input_dim=embedding_dim, num_classes=5)
+            self.label_head = LabelHead(input_dim=embedding_dim, num_classes=num_classes)
 
     def forward(
         self,
@@ -71,7 +73,7 @@ class MultiTaskModel(nn.Module):
                 - boundary: [batch, time, 1] if enabled
                 - energy: [batch, time, 3] if enabled
                 - beat: [batch, time, 1] if enabled
-                - label: [batch, time, 5] if enabled
+                - label: [batch, time, 6] if enabled
         """
         # Extract embeddings
         embeddings = self.backbone(audio)  # [batch, time, embedding_dim]
@@ -209,6 +211,7 @@ def create_model(
     enable_energy: bool = True,
     enable_beat: bool = True,
     enable_label: bool = False,
+    num_classes: int = 6,
     device: str | None = None,
 ) -> MultiTaskModel:
     """Factory function to create a multi-task model.
@@ -219,6 +222,7 @@ def create_model(
         enable_energy: Enable energy prediction
         enable_beat: Enable beat detection
         enable_label: Enable label classification
+        num_classes: Number of label classes (auto-detected from dataset)
         device: Torch device
 
     Returns:
@@ -252,6 +256,7 @@ def create_model(
         enable_energy=enable_energy,
         enable_beat=enable_beat,
         enable_label=enable_label,
+        num_classes=num_classes,
     )
 
     return model

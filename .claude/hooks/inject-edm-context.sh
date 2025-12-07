@@ -19,6 +19,11 @@ INJECT_FILES=()
 # Category detection (case-insensitive)
 PROMPT_LOWER=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]')
 
+# Project setup keywords: command, run, test, structure, setup, install, cli
+if echo "$PROMPT_LOWER" | grep -qE '(command|run|test|lint|structure|setup|install|cli|train|analyze|evaluate|uv|pytest|ruff|mypy|typer)'; then
+    INJECT_FILES+=("$CONTEXTS_DIR/project-setup.xml")
+fi
+
 # Audio analysis keywords: bpm, beat, structure, drop, breakdown, msaf, librosa, beat_this
 if echo "$PROMPT_LOWER" | grep -qE '(bpm|beat|tempo|structure|drop|breakdown|buildup|intro|outro|msaf|librosa|beat_this|essentia|detector|section|bar)'; then
     INJECT_FILES+=("$CONTEXTS_DIR/audio.xml")
@@ -29,19 +34,9 @@ if echo "$PROMPT_LOWER" | grep -qE '(edm|track.*(structure|terminology|concept)|
     INJECT_FILES+=("$CONTEXTS_DIR/edm-terminology.xml")
 fi
 
-# Evaluation keywords: evaluate, accuracy, reference, metrics
-if echo "$PROMPT_LOWER" | grep -qE '(evaluat|accuracy|reference|metrics|ground.?truth|f1|precision|recall)'; then
-    INJECT_FILES+=("$CONTEXTS_DIR/evaluation.xml")
-fi
-
-# Python/CLI keywords: typer, cli, pydantic, pytest, ruff (always inject for code changes)
-if echo "$PROMPT_LOWER" | grep -qE '(typer|edm cli|cli command|pydantic|pytest|unit.?test|ruff|mypy|import |class [A-Z]|function|def [a-z]|async def|exception|structlog)'; then
+# Python/CLI keywords: pydantic, pytest, ruff (code-specific, not duplicating project-setup)
+if echo "$PROMPT_LOWER" | grep -qE '(pydantic|pytest|unit.?test|ruff|mypy|import |class [A-Z]|function|def [a-z]|async def|exception|structlog|docstring|type.?hint)'; then
     INJECT_FILES+=("$CONTEXTS_DIR/python.xml")
-fi
-
-# Default: inject audio context for general queries (most common task)
-if [ ${#INJECT_FILES[@]} -eq 0 ]; then
-    INJECT_FILES+=("$CONTEXTS_DIR/audio.xml")
 fi
 
 # Report which contexts were injected

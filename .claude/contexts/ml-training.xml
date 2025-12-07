@@ -1,0 +1,85 @@
+<ml-training>
+  <purpose>ML training, MLflow, experiment tracking, checkpoints</purpose>
+
+  <config file="configs/*.yaml">
+    <model backbone="mert-95m|mert-330m|cnn" freeze="bool" unfreeze_after="epoch"/>
+    <heads boundary="bool" beat="bool" energy="bool" label="bool"/>
+    <data dir="data/annotations" audio="~/music" sample_rate="24000" duration="30.0" batch_size="4-16"/>
+    <splits train="0.75" val="0.15" test="0.10" seed="42"/>
+    <training epochs="50" lr="1e-4|3e-4" scheduler="cosine|onecycle" patience="10"/>
+    <loss boundary="1.0" beat="1.0" label="0.5" focal="bool" tolerance="3 frames"/>
+    <mlflow experiment="str" run="str" uri="mlruns"/>
+    <output dir="experiments/*" save_best="bool"/>
+  </config>
+
+  <commands>
+    <train cmd="uv run python -m cli.commands.train --config configs/foo.yaml"/>
+    <resume cmd="uv run python -m cli.commands.train --config foo.yaml --resume experiments/*/checkpoint_*.pt"/>
+    <tensorboard cmd="tensorboard --logdir experiments/*/tensorboard"/>
+    <mlflow-ui cmd="mlflow ui --backend-store-uri mlruns"/>
+  </commands>
+
+  <mlflow file="src/edm/registry/mlflow_registry.py">
+    <tracking uri="./mlruns" experiment="edm-training"/>
+    <logging params="hyperparameters" metrics="val_loss,f1" tags="git_commit,model_type"/>
+    <artifacts model="checkpoint.pt" config="training_config.yaml" plots="confusion_matrix.png"/>
+  </mlflow>
+
+  <checkpoints dir="experiments/{run_name}/">
+    <structure checkpoint_epoch_{N}.pt="model weights" best_model.pt="lowest val_loss" config.yaml="training config" tensorboard/="events"/>
+    <resume load="checkpoint.pt" restore="optimizer,scheduler,epoch,metrics"/>
+  </checkpoints>
+
+  <trainer file="src/edm/training/trainer.py">
+    <loop>epoch → batch → forward → loss → backward → step → log</loop>
+    <optimization optimizer="AdamW" clip="gradient_norm" amp="mixed_precision"/>
+    <schedulers cosine="CosineAnnealingLR" onecycle="OneCycleLR" warmup="N epochs"/>
+    <logging tensorboard="SummaryWriter" mlflow="ModelRegistry" interval="log_every batches"/>
+  </trainer>
+
+  <losses file="src/edm/training/losses.py">
+    <multitask weighted_sum="boundary + beat + energy + label"/>
+    <boundary type="BCEWithLogitsLoss" focal="optional" tolerance="±N frames"/>
+    <beat type="BCEWithLogitsLoss"/>
+    <energy type="MSELoss"/>
+    <label type="CrossEntropyLoss"/>
+  </losses>
+
+  <metrics>
+    <boundary precision="TP/(TP+FP)" recall="TP/(TP+FN)" f1="2PR/(P+R)" tolerance="3 frames"/>
+    <beat similar="boundary metrics"/>
+    <energy mae="mean_absolute_error" rmse="root_mean_squared_error"/>
+    <label accuracy="correct/total" per_class="f1 per section type"/>
+  </metrics>
+
+  <datasets file="src/edm/training/dataset.py">
+    <split train="75%" val="15%" test="10%" stratified="by BPM range"/>
+    <filter tier="1|2|3|all" confidence="0.0-1.0" min_duration="seconds"/>
+    <augmentation time_stretch="±5%" pitch_shift="±2 semitones" noise="gaussian"/>
+  </datasets>
+
+  <workflow>
+    <steps>
+      1. Write/edit config YAML (configs/*.yaml)
+      2. Train: uv run python -m cli.commands.train --config foo.yaml
+      3. Monitor: tensorboard --logdir experiments/{run}/tensorboard
+      4. Evaluate: check val_boundary_f1, val_loss curves
+      5. Tune: adjust lr, batch_size, loss weights based on results
+    </steps>
+    <debug>
+      OOM → reduce batch_size, duration
+      Overfitting → increase weight_decay, add dropout
+      Underfitting → unfreeze backbone, increase epochs
+      Boundary F1=0 → check labels, loss tolerance
+    </debug>
+  </workflow>
+
+  <files>
+    <f path="src/edm/training/trainer.py" role="training loop, optimization"/>
+    <f path="src/edm/training/losses.py" role="multi-task loss functions"/>
+    <f path="src/edm/training/dataset.py" role="data loading, augmentation"/>
+    <f path="src/edm/registry/mlflow_registry.py" role="experiment tracking"/>
+    <f path="src/cli/commands/train.py" role="CLI entry point"/>
+    <f path="configs/training_first_run.yaml" role="example config"/>
+  </files>
+</ml-training>

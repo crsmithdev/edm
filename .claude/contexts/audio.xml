@@ -1,41 +1,22 @@
 <audio-context>
   <purpose>EDM audio analysis: BPM, beats, structure, bars</purpose>
 
-  <edm-terms>
-    <intro energy="low" desc="Opening, sparse drums, atmospheric, 8-32 bars"/>
-    <buildup energy="ascending" desc="Tension, layering, risers, filters, 8-16 bars"/>
-    <drop energy="peak" desc="Main hook, full instrumentation, heavy bass, 16-32 bars" note="EDM equivalent of chorus"/>
-    <breakdown energy="moderate" desc="Contrast, reduced elements, removed bass/drums, 8-16 bars" note="EDM equivalent of verse"/>
-    <outro energy="descending" desc="Closing, gradual removal, DJ transition, 16-32 bars"/>
-    <bar desc="Measure, 4 beats in 4/4 time, 1-based indexing"/>
-    <downbeat desc="First beat of measure (beat 1), strongest anchor"/>
-    <phrase desc="Complete musical idea, typically 8-16 bars"/>
-  </edm-terms>
+  <!-- EDM terminology: see edm-terminology.xml -->
 
-  <bpm>
-    <cascade>1. metadata (ID3/FLAC/MP4) → 2. beat_this → 3. librosa</cascade>
-    <detector name="beat_this" file="src/edm/analysis/bpm_detector.py:224">
-      Neural beat tracker (ISMIR 2024), handles tempo multiplicity
-    </detector>
-    <detector name="librosa">Spectral flux + autocorrelation fallback</detector>
+  <bpm cascade="metadata → beat_this → librosa">
+    <detector name="beat_this" file="src/edm/analysis/bpm_detector.py:224" desc="Neural beat tracker (ISMIR 2024), handles tempo multiplicity"/>
+    <detector name="librosa" desc="Spectral flux + autocorrelation fallback"/>
   </bpm>
 
-  <structure>
-    <cascade>auto: MSAF → energy fallback</cascade>
-    <detector name="msaf" file="src/edm/analysis/structure_detector.py:55">
-      Spectral flux boundaries + energy-based EDM labeling
-    </detector>
-    <detector name="energy" file="src/edm/analysis/structure_detector.py:260">
-      RMS + spectral contrast, gradient peaks, min 8s sections
-    </detector>
+  <structure cascade="msaf → energy">
+    <detector name="msaf" file="src/edm/analysis/structure_detector.py:55" desc="Spectral flux boundaries + energy-based EDM labeling"/>
+    <detector name="energy" file="src/edm/analysis/structure_detector.py:260" desc="RMS + spectral contrast, gradient peaks, min 8s sections"/>
     <labels>intro|buildup|main|breakdown|outro</labels>
     <note>drops are momentary events, not sections; high-energy sections labeled "main"</note>
   </structure>
 
-  <bars file="src/edm/analysis/bars.py">
-    <fn>time_to_bars(), bars_to_time(), bar_count_for_range()</fn>
-    <default time_sig="4/4" index="1-based"/>
-    <graceful>bar fields None when BPM unavailable</graceful>
+  <bars file="src/edm/analysis/bars.py" fns="time_to_bars,bars_to_time,bar_count_for_range" time_sig="4/4" index="1-based" graceful="bar fields None when BPM unavailable">
+    <example>Bar 17 at 128 BPM, downbeat=0.5s: time = 0.5 + (17-1) × 60/128 × 4 = 8.0s</example>
   </bars>
 
   <models>
@@ -56,9 +37,9 @@
   </files>
 
   <patterns>
-    <two-tier>Public API (bpm.py, structure.py) → Detectors (*_detector.py)</two-tier>
+    <two-tier desc="Public API (bpm.py, structure.py) → Detectors (*_detector.py)"/>
     <caching file="src/edm/io/audio.py" size="10 tracks"/>
-    <fallbacks>Graceful degradation, partial results, log warnings</fallbacks>
+    <fallbacks desc="Graceful degradation, partial results, log warnings"/>
   </patterns>
 
   <constraints perf="30s/track, 4GB RAM" accuracy="BPM ±0.5, drop precision >90%"/>

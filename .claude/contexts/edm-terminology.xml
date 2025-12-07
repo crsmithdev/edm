@@ -2,20 +2,20 @@
   <purpose>Core EDM track structure terminology for audio analysis</purpose>
 
   <sections>
-    <intro role="opening" energy="low" length="8-32 bars" desc="Minimalistic, sparse drums, atmospheric"/>
-    <buildup role="tension" energy="ascending" length="8-16 bars" desc="Progressive layering, risers, filters"/>
-    <drop role="peak" energy="highest" length="16-32 bars" desc="Full instrumentation, main hook, heavy bass" equivalent="chorus"/>
-    <breakdown role="contrast" energy="moderate" length="8-16 bars" desc="Reduced elements, removed bass/drums" equivalent="verse"/>
-    <outro role="closing" energy="descending" length="16-32 bars" desc="Gradual element removal, DJ transition"/>
+    <intro role="opening" energy="low" len="8-32 bars" desc="Minimalistic, sparse drums, atmospheric"/>
+    <buildup role="tension" energy="ascending" len="8-16 bars" desc="Progressive layering, risers, filters"/>
+    <drop role="peak" energy="highest" len="16-32 bars" desc="Full instrumentation, main hook, heavy bass" equiv="chorus"/>
+    <breakdown role="contrast" energy="moderate" len="8-16 bars" desc="Reduced elements, removed bass/drums" equiv="verse"/>
+    <outro role="closing" energy="descending" len="16-32 bars" desc="Gradual element removal, DJ transition"/>
   </sections>
 
-  <music-theory>
+  <theory>
     <beat desc="Timing/rhythm unit, consistent pulse"/>
-    <bar desc="Measure, 4 beats in 4/4 time" groupings="4/8/16/32 bars"/>
+    <bar desc="Measure, 4 beats in 4/4 time" groups="4/8/16/32"/>
     <downbeat desc="First beat of measure (beat 1), strongest anchor"/>
     <phrase desc="Complete musical idea, typically 8-16 bars"/>
-    <time-signature default="4/4" desc="4 quarter-note beats per bar"/>
-  </music-theory>
+    <time-sig default="4/4" desc="4 quarter-note beats per bar"/>
+  </theory>
 
   <structures>
     <abab desc="Most common: Intro→Breakdown→Buildup→Drop→Breakdown→Buildup→Drop→Outro"/>
@@ -25,12 +25,7 @@
 
   <energy-pattern desc="Dramatic peaks (drop) and troughs (breakdown), cyclical flow"/>
 
-  <terminology-map>
-    <map traditional="verse" edm="breakdown"/>
-    <map traditional="chorus" edm="drop"/>
-    <map traditional="bridge" edm="breakdown/transition"/>
-    <map traditional="pre-chorus" edm="buildup"/>
-  </terminology-map>
+  <map verse="breakdown" chorus="drop" bridge="breakdown/transition" pre-chorus="buildup"/>
 
   <mirex-labels standard="2025">intro, verse, chorus, bridge, inst, outro, silence</mirex-labels>
 

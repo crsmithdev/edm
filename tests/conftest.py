@@ -37,3 +37,6 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "integration: marks integration tests")
     config.addinivalue_line("markers", "performance: marks performance benchmark tests")
     config.addinivalue_line("markers", "manual: marks tests requiring manual verification")
+    config.addinivalue_line(
+        "markers", "gpu: marks tests requiring GPU (skipped on CPU-only systems)"
+    )

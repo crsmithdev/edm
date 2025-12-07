@@ -196,7 +196,7 @@ class LabelHead(nn.Module):
         self,
         input_dim: int = 768,
         hidden_dim: int = 128,
-        num_classes: int = 5,
+        num_classes: int = 6,
         kernel_size: int = 11,
     ):
         """Initialize label head.
@@ -204,7 +204,7 @@ class LabelHead(nn.Module):
         Args:
             input_dim: Input embedding dimension
             hidden_dim: Hidden layer dimension
-            num_classes: Number of section classes (default: 5 for intro/buildup/drop/breakdown/outro)
+            num_classes: Number of section classes (default: 6 for intro/buildup/drop/breakdown/outro/unlabeled)
             kernel_size: Temporal convolution kernel size (larger for label context)
         """
         super().__init__()

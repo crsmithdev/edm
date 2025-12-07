@@ -1,0 +1,68 @@
+<data-schema>
+  <purpose>Annotation YAML schema, Rekordbox XML parsing, data validation</purpose>
+
+  <annotation-yaml file="data/annotations/*.yaml">
+    <metadata tier="1|2|3" confidence="0.0-1.0" source="rekordbox|manual" created="ISO8601" flags="list[str]">
+      <validation beat_grid_valid="bool" cue_points_snapped="bool" min_section_length="bool"/>
+    </metadata>
+    <audio file="path" duration="seconds" bpm="float" downbeat="seconds" time_sig="[4,4]" key="Camelot|None"/>
+    <structure>
+      <section bar="1-indexed" label="intro|buildup|drop|breakdown|outro|unlabeled" time="seconds" confidence="0.0-1.0"/>
+    </structure>
+    <beats grid="list[float]" confidence="0.0-1.0" optional="true"/>
+    <energy overall="0.0-1.0" by_section="[{section,bass,mid,high}]" at_boundaries="[{boundary,delta}]" optional="true"/>
+  </annotation-yaml>
+
+  <rekordbox-xml file="rekordbox.xml">
+    <track location="path" artist="str" name="str" bpm="float" duration="seconds" key="str|None">
+      <cue-points name="str" time="seconds" type="0=memory|1=hot" num="int"/>
+      <beat-grid times="list[float] in seconds"/>
+    </track>
+    <import cmd="python import_rekordbox.py rekordbox.xml" output="data/annotations/*.yaml"/>
+  </rekordbox-xml>
+
+  <schema-models file="src/edm/data/schema.py">
+    <AudioMetadata file="Path" duration="float" bpm="float" downbeat="float" time_sig="tuple" key="str|None"/>
+    <StructureSection bar="int≥1" label="str" time="float≥0" confidence="float[0,1]"/>
+    <EnergyData overall="float[0,1]" by_section="list" at_boundaries="list"/>
+    <TrackAnnotation metadata="AnnotationMetadata" audio="AudioMetadata" structure="list[StructureSection]" beats="optional" energy="optional"/>
+  </schema-models>
+
+  <validation>
+    <conventions bar="1-indexed (NOT 0)" time="seconds (NOT M:SS)" confidence="0.0-1.0 range"/>
+    <labels valid="intro,buildup,drop,breakdown,outro,unlabeled" warn="unknown → unlabeled in training"/>
+    <structure min_sections="2" bar_order="ascending" time_order="ascending"/>
+  </validation>
+
+  <tiers>
+    <tier-1 desc="High confidence, validated, ready for training (GOLD)" confidence="≥0.9"/>
+    <tier-2 desc="Medium confidence, needs review (SILVER)" confidence="0.6-0.9"/>
+    <tier-3 desc="Low confidence, auto-generated (BRONZE)" confidence="&lt;0.6"/>
+  </tiers>
+
+  <filtering file="src/edm/training/dataset.py">
+    <tier filter="1|2|3|null" usage="tier_filter in config"/>
+    <confidence min="0.0-1.0" usage="min_confidence in config"/>
+    <duration min="seconds" usage="skip tracks shorter than N"/>
+  </filtering>
+
+  <commands>
+    <import cmd="python import_rekordbox.py path/to/rekordbox.xml"/>
+    <validate cmd="uv run edm data validate data/annotations/*.yaml"/>
+    <stats cmd="uv run edm data stats data/annotations/"/>
+  </commands>
+
+  <files>
+    <f path="src/edm/data/schema.py" role="Pydantic models, validation"/>
+    <f path="src/edm/data/rekordbox.py" role="Rekordbox XML parser"/>
+    <f path="src/edm/data/metadata.py" role="Annotation metadata"/>
+    <f path="import_rekordbox.py" role="CLI tool: XML → YAML"/>
+    <f path="data/annotations/*.yaml" role="Annotation files (metadata only)"/>
+  </files>
+
+  <patterns>
+    <separation annotations="YAML metadata only" audio="~/music (not in repo)"/>
+    <validation at="file I/O boundaries" trust="internal code"/>
+    <errors preserve-chains="raise NewError from e" base="EDMError"/>
+  </patterns>
+</data-schema>

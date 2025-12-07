@@ -110,6 +110,10 @@ def train_command(
     console.print(f"Validation batches: {len(val_loader)}")
     console.print()
 
+    # Get number of classes from dataset
+    dataset = train_loader.dataset.dataset  # type: ignore[attr-defined]
+    num_classes = dataset.num_classes if enable_label else 6  # default fallback
+
     # Create model
     console.print(f"[yellow]Creating {backbone} model...[/yellow]")
     model = create_model(
@@ -118,6 +122,7 @@ def train_command(
         enable_energy=enable_energy,
         enable_beat=enable_beat,
         enable_label=enable_label,
+        num_classes=num_classes,
     )
 
     # Print model info

@@ -202,6 +202,7 @@ def _generate_beat_grid_from_bpm(bpm: float, duration: float, downbeat: float = 
 def extract_structure_boundaries(
     track: RekordboxTrack,
     cue_filter: Optional[list[str]] = None,
+    hot_cues_only: bool = True,
 ) -> list[tuple[float, str]]:
     """Extract structure boundaries from cue points.
 
@@ -209,13 +210,27 @@ def extract_structure_boundaries(
         track: Rekordbox track data
         cue_filter: Optional list of cue names to include (case-insensitive).
                    If None, all cues are included.
+        hot_cues_only: If True, only include hot cues (type=1). Default: True.
 
     Returns:
         List of (time, label) tuples for structure boundaries
     """
     boundaries = []
+    seen_times = set()  # Track seen times for deduplication
 
     for cue in track.cue_points:
+        # Filter hot cues only (type=0,1,4 in Rekordbox exports)
+        # Type 0 = memory cue/phrase marker, Type 1 = hot cue, Type 4 = hot cue loop
+        # When hot_cues_only=True, exclude only duplicates/special markers
+        if hot_cues_only and cue.type not in (0, 1, 4):
+            continue
+
+        # Deduplicate by time (round to 3 decimals to catch near-duplicates)
+        time_rounded = round(cue.time, 3)
+        if time_rounded in seen_times:
+            continue
+        seen_times.add(time_rounded)
+
         # Filter by cue name if specified
         if cue_filter:
             if not any(filter_name.lower() in cue.name.lower() for filter_name in cue_filter):
@@ -235,7 +250,7 @@ def _infer_section_label(cue_name: str) -> str:
         cue_name: Cue point name
 
     Returns:
-        Section label (intro, buildup, drop, breakdown, outro)
+        Section label (intro, buildup, drop, breakdown, outro, unlabeled)
     """
     name_lower = cue_name.lower()
 
@@ -251,6 +266,5 @@ def _infer_section_label(cue_name: str) -> str:
     elif "outro" in name_lower or "end" in name_lower:
         return "outro"
     else:
-        # Default to breakdown for unrecognized cue names
-        # (most neutral section type in EDM)
-        return "breakdown"
+        # Default to unlabeled for unrecognized cue names
+        return "unlabeled"

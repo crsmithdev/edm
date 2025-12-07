@@ -8,10 +8,11 @@ from edm.data.metadata import AnnotationTier
 
 # Paths
 xml_path = Path("/mnt/c/Music/music.xml")
-output_dir = Path("data/annotations")
+output_dir = Path("data/annotations/generated")
 
 print(f"Importing Rekordbox XML from: {xml_path}")
 print(f"Output directory: {output_dir}")
+output_dir.mkdir(parents=True, exist_ok=True)
 print("Configuration: Hot cues only, deduplicate=True")
 print()
 
@@ -21,9 +22,7 @@ success, skipped, errors = batch_convert_rekordbox_xml(
     output_dir=output_dir,
     tier=AnnotationTier.AUTO_CLEANED,
     confidence=0.8,
-    skip_existing=True,
-    cue_types=["hot"],  # Only import hot cues (Num >= 0)
-    deduplicate=True,  # Remove any remaining duplicates
+    skip_existing=False,
 )
 
 # Report results

@@ -1,0 +1,362 @@
+{
+  "entities": [
+    {
+      "name": "EDM_Project",
+      "type": "project",
+      "properties": {
+        "full_name": "EDM Track Analysis",
+        "version": "0.1.0",
+        "status": "Alpha",
+        "python_version": "3.12+",
+        "purpose": "Automated analysis of Electronic Dance Music tracks for BPM, structure, beats, and bars",
+        "repository": "https://github.com/crsmithdev/edm",
+        "entry_point": "cli.main:app",
+        "offline_capable": true,
+        "no_external_apis": true
+      }
+    },
+    {
+      "name": "domain_edm_music",
+      "type": "domain",
+      "properties": {
+        "genre": "Electronic Dance Music",
+        "structure_types": ["intro", "buildup", "drop", "breakdown", "outro"],
+        "typical_bpm_range": "120-150 BPM",
+        "time_signature": "4/4 (standard)",
+        "energy_pattern": "cyclical peaks (drop) and troughs (breakdown)",
+        "bar_groupings": "4/8/16/32 bars",
+        "dj_conventions": "1-indexed bars, extended 32-bar sections for mixing",
+        "mirex_labels": "intro, verse, chorus, bridge, inst, outro, silence"
+      }
+    },
+    {
+      "name": "core_capabilities",
+      "type": "feature_set",
+      "properties": {
+        "bpm_detection": "cascading strategy: metadata → beat_this neural → librosa fallback",
+        "structure_analysis": "5 section types with time/bar positions and confidence",
+        "beat_tracking": "beat and downbeat positions aligned to bar grid",
+        "bar_calculations": "time ↔ bar conversion with 1-indexed DJ convention",
+        "parallel_processing": "CPU-bound, scales with cores, default: CPU_count-1 workers",
+        "output_formats": ["table (rich)", "JSON", "YAML"],
+        "audio_caching": "LRU cache (10 tracks, ~200MB each, thread-safe)"
+      }
+    },
+    {
+      "name": "analysis_workflow",
+      "type": "process",
+      "properties": {
+        "cli_command": "edm analyze",
+        "input_formats": ["MP3", "FLAC", "WAV", "M4A", "OGG", "AAC"],
+        "bpm_strategy": "metadata → beat_this → librosa",
+        "structure_strategy": "MSAF (preferred) → energy-based (fallback)",
+        "orchestrator": "src/edm/analysis/orchestrator.py",
+        "two_tier_pattern": "public API (bpm.py, structure.py) → detector implementations",
+        "graceful_degradation": "structure analysis works without BPM"
+      }
+    },
+    {
+      "name": "annotation_system",
+      "type": "data_system",
+      "properties": {
+        "primary_format": "YAML with Pydantic validation",
+        "alternative_formats": ["JAMS", "Rekordbox XML"],
+        "annotation_tiers": "1=verified, 2=auto-cleaned, 3=auto-generated",
+        "confidence_scoring": "0.0-1.0 per annotation",
+        "validation_flags": ["beat_grid_valid", "cue_points_snapped", "min_section_length"],
+        "dataset_size": "500+ manually annotated tracks",
+        "audio_location": "~/music (actual audio files)",
+        "annotation_location": "data/annotations/*.yaml (metadata)",
+        "schema_location": "src/edm/data/schema.py",
+        "validation_orchestrator": "src/edm/analysis/validation/orchestrator.py",
+        "validation_commands": {
+          "check_duplicates": "python -c 'import yaml; from pathlib import Path; from collections import Counter; [check structure times/bars for duplicates in each YAML]'",
+          "count_files": "find data/annotations -name '*.yaml' | wc -l",
+          "count_empty": "find data/annotations -name '*.yaml' -size 0 | wc -l",
+          "check_audio_paths": "python -c 'import yaml; from pathlib import Path; from urllib.parse import unquote; [check audio file exists for each annotation]'",
+          "test_dataset_load": "uv run python -c 'from pathlib import Path; from edm.training.dataset import EDMDataset; dataset = EDMDataset(...); print(len(dataset))'",
+          "check_required_fields": "python -c 'import yaml; [validate metadata, audio, structure fields exist in each YAML]'"
+        }
+      }
+    },
+    {
+      "name": "module_architecture",
+      "type": "structure",
+      "properties": {
+        "pattern": "two-tier abstraction: public API → detector implementations",
+        "cli_layer": "src/cli/ (Typer with analyze/train/evaluate/data/models commands)",
+        "core_library": "src/edm/ (analysis, training, models, evaluation, data, io)",
+        "analysis_modules": ["bpm.py (API)", "bpm_detector.py (impl)", "structure.py (API)", "structure_detector.py (impl)", "beat_detector.py", "beat_grid.py", "bars.py", "ml_detector.py", "orchestrator.py"],
+        "validation_modules": ["base.py", "beat_structure.py", "downbeat_structure.py", "results.py", "orchestrator.py"],
+        "total_lines": "~10,000+ LOC (including training ~2,790 LOC)"
+      }
+    },
+    {
+      "name": "technology_stack",
+      "type": "tech_stack",
+      "properties": {
+        "audio_analysis": ["librosa >= 0.10.0", "beat_this (neural BPM)", "msaf >= 0.1.80"],
+        "deep_learning": ["torch >= 2.0.0", "torchaudio >= 2.0.0", "transformers >= 4.30.0"],
+        "cli_framework": ["typer >= 0.9.0", "rich >= 13.0.0"],
+        "validation": ["pydantic >= 2.0.0"],
+        "logging": ["structlog >= 24.1.0"],
+        "experiment_tracking": ["mlflow >= 2.10.0", "tensorboard >= 2.0.0", "dvc >= 3.0.0"],
+        "data_formats": ["jams >= 0.3.5", "pyyaml >= 6.0.0", "mutagen >= 1.47.0"],
+        "evaluation": ["mir_eval >= 0.7"],
+        "data_cleaning": ["cleanlab >= 2.0.0"],
+        "package_manager": "uv (fast Python package manager)",
+        "testing": ["pytest >= 7.4.0", "pytest-cov >= 4.1.0"],
+        "linting": ["ruff", "black >= 23.7.0"],
+        "type_checking": ["mypy >= 1.5.0"]
+      }
+    },
+    {
+      "name": "data_formats_spec",
+      "type": "specification",
+      "properties": {
+        "yaml_schema": "metadata (tier, confidence, source), audio (file, duration, bpm, downbeat, time_signature, key), structure (bar, label, time, confidence), beats, downbeats",
+        "audio_metadata": "ID3, FLAC, MP4 tags via mutagen",
+        "output_json": "file, duration, bpm, downbeat, time_signature, structure array",
+        "jams_support": "JSON Annotated Music Specification for MIR research",
+        "rekordbox_integration": "XML import for DJ software compatibility"
+      }
+    },
+    {
+      "name": "evaluation_framework",
+      "type": "component",
+      "properties": {
+        "location": "src/edm/evaluation/",
+        "components": ["common.py (metrics, sampling)", "reference.py (data sources)", "evaluators/bpm.py", "evaluators/structure.py"],
+        "bpm_metrics": ["MAE", "RMSE"],
+        "structure_metrics": ["Precision", "Recall", "F1", "boundary tolerance (±2s default)"],
+        "reference_sources": ["metadata", "CSV", "JSON"],
+        "output_formats": ["JSON (machine)", "Markdown (human)"],
+        "cli_command": "edm evaluate"
+      }
+    },
+    {
+      "name": "development_setup",
+      "type": "process",
+      "properties": {
+        "package_manager": "uv",
+        "install_command": "uv sync",
+        "run_command": "uv run edm",
+        "run_training": "uv run python -m cli.commands.train --config <config.yaml>",
+        "test_command": "uv run pytest -v",
+        "lint_command": "uv run ruff check --fix . && ruff format .",
+        "type_check": "uv run mypy src/",
+        "pre_commit_hooks": "ruff, black, mypy on staged files",
+        "system_deps": ["ffmpeg", "python3-dev", "build-essential"]
+      }
+    },
+    {
+      "name": "performance_characteristics",
+      "type": "metrics",
+      "properties": {
+        "processing_model": "CPU-bound, parallel workers",
+        "default_workers": "CPU_count - 1",
+        "memory_per_worker": "~200MB",
+        "benchmark_8core_50files": "~3 min with 8 workers (6-7x speedup)",
+        "bottleneck": "BPM computation (beat_this neural network)",
+        "scalability": "linear with CPU cores",
+        "cache_strategy": "LRU cache for audio loading (10 tracks default)"
+      }
+    },
+    {
+      "name": "cli_interface",
+      "type": "interface",
+      "properties": {
+        "main_commands": ["analyze", "train", "evaluate", "data", "models"],
+        "analyze_flags": ["--types", "--output", "--workers", "--no-metadata", "--structure-detector", "--cache-size", "--recursive"],
+        "train_command": "edm train <annotation_dir> --audio-dir --epochs --batch-size --backbone",
+        "data_commands": ["import-rekordbox", "export-jams"],
+        "models_commands": ["list", "show"],
+        "output_styling": "rich tables with colored terminal output, progress bars",
+        "logging_flags": ["--log-level", "--log-file", "--no-color"]
+      }
+    },
+    {
+      "name": "testing_infrastructure",
+      "type": "quality_assurance",
+      "properties": {
+        "test_organization": "tests/unit/, tests/integration/, tests/performance/, tests/fixtures/",
+        "test_markers": ["@pytest.mark.slow", "@pytest.mark.manual"],
+        "coverage_reporting": "pytest-cov with term-missing",
+        "fixture_audio": "test audio files in tests/fixtures/",
+        "reference_annotations": "tests/estimations/",
+        "default_pytest_flags": "-v --cov=src --cov-report=term-missing -m 'not slow'"
+      }
+    },
+    {
+      "name": "documentation_set",
+      "type": "documentation",
+      "properties": {
+        "readme": "README.md (quickstart, installation, benchmarks)",
+        "architecture": "docs/architecture.md (design patterns, data flow)",
+        "cli_reference": "docs/cli-reference.md (complete command docs)",
+        "development": "docs/development.md (setup, testing, code quality)",
+        "edm_terminology": "docs/edm-terminology.md (domain knowledge)",
+        "project_structure": "docs/project-structure.md (directory layout)",
+        "agent_guide": "docs/agent-guide.md (for AI agents)",
+        "training_guide": "docs/training.md (model training)",
+        "openspec": "openspec/ directory (change proposals: active + archive)"
+      }
+    },
+    {
+      "name": "error_handling",
+      "type": "quality_pattern",
+      "properties": {
+        "custom_exceptions": ["AudioFileError", "AnalysisError", "ValidationError"],
+        "graceful_degradation": "structure analysis without BPM, fallback detectors",
+        "logging_strategy": "structlog with console (colored, human) and JSON (structured) outputs",
+        "detailed_error_messages": "context binding for request tracing"
+      }
+    },
+    {
+      "name": "key_entry_points",
+      "type": "reference",
+      "properties": {
+        "bpm_api": "src/edm/analysis/bpm.py:36 → analyze_bpm()",
+        "structure_api": "src/edm/analysis/structure.py:150 → analyze_structure()",
+        "orchestrator": "src/edm/analysis/orchestrator.py:15 → AnalysisOrchestrator",
+        "cli_main": "src/cli/main.py:57 → analyze() command",
+        "cli_analyze": "src/cli/commands/analyze.py",
+        "cli_train": "src/cli/commands/train.py",
+        "cli_evaluate": "src/cli/commands/evaluate.py",
+        "trainer": "src/edm/training/trainer.py",
+        "dataset": "src/edm/training/dataset.py",
+        "schema": "src/edm/data/schema.py",
+        "tests_unit": "tests/unit/",
+        "annotations": "data/annotations/*.yaml"
+      }
+    },
+    {
+      "name": "project_status",
+      "type": "status",
+      "properties": {
+        "phase": "Alpha v0.1.0",
+        "completed_features": ["BPM detection", "structure detection", "beat detection", "bar calculations", "validation system (beat/downbeat validators)", "training", "evaluation (partial)"],
+        "in_progress": ["cross-validation orchestrator (placeholder)", "TOML config support"],
+        "known_limitations": ["config file loading not implemented (recognized but ignored)", "cross-validation is placeholder"],
+        "architecture_decisions": ["two-tier pattern for API/impl separation", "cascading BPM for speed vs accuracy", "LRU caching for batch processing", "MSAF over Allin1 (lighter deps)", "beat_this for EDM accuracy", "structlog for production logging", "Pydantic for type-safe config"]
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "EDM_Project",
+      "target": "domain_edm_music",
+      "relation_type": "operates_in"
+    },
+    {
+      "source": "core_capabilities",
+      "target": "EDM_Project",
+      "relation_type": "defines_features_of"
+    },
+    {
+      "source": "analysis_workflow",
+      "target": "core_capabilities",
+      "relation_type": "implements"
+    },
+    {
+      "source": "annotation_system",
+      "target": "EDM_Project",
+      "relation_type": "provides_data_for"
+    },
+    {
+      "source": "module_architecture",
+      "target": "EDM_Project",
+      "relation_type": "structures"
+    },
+    {
+      "source": "technology_stack",
+      "target": "EDM_Project",
+      "relation_type": "powers"
+    },
+    {
+      "source": "data_formats_spec",
+      "target": "annotation_system",
+      "relation_type": "defines_schema_for"
+    },
+    {
+      "source": "evaluation_framework",
+      "target": "core_capabilities",
+      "relation_type": "validates"
+    },
+    {
+      "source": "training_infrastructure",
+      "target": "EDM_Project",
+      "relation_type": "trains_models_for"
+    },
+    {
+      "source": "development_setup",
+      "target": "EDM_Project",
+      "relation_type": "builds"
+    },
+    {
+      "source": "performance_characteristics",
+      "target": "analysis_workflow",
+      "relation_type": "characterizes"
+    },
+    {
+      "source": "cli_interface",
+      "target": "EDM_Project",
+      "relation_type": "user_interface_for"
+    },
+    {
+      "source": "testing_infrastructure",
+      "target": "EDM_Project",
+      "relation_type": "verifies"
+    },
+    {
+      "source": "documentation_set",
+      "target": "EDM_Project",
+      "relation_type": "documents"
+    },
+    {
+      "source": "error_handling",
+      "target": "module_architecture",
+      "relation_type": "quality_pattern_in"
+    },
+    {
+      "source": "key_entry_points",
+      "target": "module_architecture",
+      "relation_type": "navigation_for"
+    },
+    {
+      "source": "project_status",
+      "target": "EDM_Project",
+      "relation_type": "describes_state_of"
+    },
+    {
+      "source": "model_architectures",
+      "target": "training_infrastructure",
+      "relation_type": "component_of"
+    },
+    {
+      "source": "data_pipeline",
+      "target": "training_infrastructure",
+      "relation_type": "component_of"
+    },
+    {
+      "source": "loss_functions",
+      "target": "training_infrastructure",
+      "relation_type": "component_of"
+    },
+    {
+      "source": "checkpointing_strategy",
+      "target": "training_infrastructure",
+      "relation_type": "component_of"
+    },
+    {
+      "source": "training_configuration",
+      "target": "training_infrastructure",
+      "relation_type": "configures"
+    },
+    {
+      "source": "training_workflow",
+      "target": "training_infrastructure",
+      "relation_type": "defines_process"
+    }
+  ]
+}

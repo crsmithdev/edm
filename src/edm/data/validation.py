@@ -240,7 +240,7 @@ def batch_validate_annotations(
     """
     results = {}
 
-    for yaml_file in annotation_dir.glob("*.yaml"):
+    for yaml_file in annotation_dir.rglob("*.yaml"):
         try:
             annotation = Annotation.from_yaml(yaml_file)
             result = validate_annotation(annotation)

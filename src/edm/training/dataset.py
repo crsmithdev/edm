@@ -62,9 +62,11 @@ class EDMDataset(Dataset):
         self.tier_filter = tier_filter
         self.min_confidence = min_confidence
 
-        # Load all annotation files
-        self.annotations: list[tuple[Path, Annotation]] = []
-        for yaml_path in sorted(self.annotation_dir.glob("*.yaml")):
+        # Load all annotation files with preference for reference (tier 1) over generated (tier 2)
+        annotation_map: dict[str, tuple[Path, Annotation, int]] = {}
+        skipped_files = 0
+
+        for yaml_path in sorted(self.annotation_dir.rglob("*.yaml")):
             try:
                 with open(yaml_path) as f:
                     # Load first document (handles files with multiple YAML docs)
@@ -72,17 +74,42 @@ class EDMDataset(Dataset):
                     data = docs[0] if docs else {}
                 annotation = Annotation(**data)
 
+                # Track key by audio filename stem
+                audio_stem = Path(annotation.audio.file).stem
+                tier = annotation.metadata.tier
+
                 # Apply filters
-                if tier_filter is not None and annotation.metadata.tier != tier_filter:
+                if tier_filter is not None and tier != tier_filter:
                     continue
                 if min_confidence is not None and annotation.metadata.confidence < min_confidence:
                     continue
 
-                self.annotations.append((yaml_path, annotation))
+                # Validate audio file exists
+                audio_path = self._resolve_audio_path(annotation.audio.file)
+                if not audio_path.exists():
+                    skipped_files += 1
+                    continue
+
+                # Prefer lower tier number (1 = reference, best quality)
+                if audio_stem not in annotation_map or tier < annotation_map[audio_stem][2]:
+                    annotation_map[audio_stem] = (yaml_path, annotation, tier)
+
             except Exception as e:
                 print(f"Warning: Failed to load {yaml_path}: {e}")
 
+        # Use deduplicated annotations
+        self.annotations: list[tuple[Path, Annotation]] = [
+            (path, ann) for path, ann, _ in annotation_map.values()
+        ]
+
         print(f"Loaded {len(self.annotations)} annotations from {annotation_dir}")
+        if skipped_files > 0:
+            print(f"Skipped {skipped_files} annotations with missing audio files")
+
+        # Build label vocabulary from all annotations
+        self.label_vocab = self._build_label_vocabulary()
+        self.num_classes = len(self.label_vocab)
+        print(f"Detected {self.num_classes} unique labels: {sorted(self.label_vocab.keys())}")
 
     def __len__(self) -> int:
         """Number of samples in dataset."""
@@ -139,6 +166,21 @@ class EDMDataset(Dataset):
             "duration": actual_duration,
         }
 
+    def _build_label_vocabulary(self) -> dict[str, int]:
+        """Build label vocabulary from all loaded annotations.
+
+        Returns:
+            Dict mapping label names to integer indices
+        """
+        unique_labels = set()
+        for _, annotation in self.annotations:
+            for section in annotation.structure:
+                unique_labels.add(section.label)
+
+        # Sort labels for consistent ordering
+        sorted_labels = sorted(unique_labels)
+        return {label: idx for idx, label in enumerate(sorted_labels)}
+
     def _resolve_audio_path(self, annotation_path: Path) -> Path:
         """Resolve audio file path from annotation.
 
@@ -181,14 +223,9 @@ class EDMDataset(Dataset):
         beat = np.zeros((num_frames, 1), dtype=np.float32)
         label = np.zeros(num_frames, dtype=np.int64)
 
-        # Label mapping
-        label_map = {
-            "intro": 0,
-            "buildup": 1,
-            "drop": 2,
-            "breakdown": 3,
-            "outro": 4,
-        }
+        # Use learned label vocabulary
+        label_map = self.label_vocab
+        default_label = label_map.get("unlabeled", 0)  # fallback to first label if no 'unlabeled'
 
         # Process structure sections
         for i, section in enumerate(annotation.structure):
@@ -206,8 +243,8 @@ class EDMDataset(Dataset):
             else:
                 section_end = duration
 
-            # Fill section label
-            section_label = label_map.get(section.label, 3)  # Default to breakdown
+            # Fill section label (unknown labels map to 'unlabeled')
+            section_label = label_map.get(section.label, default_label)
             start_frame = frame_idx
             end_frame = min(int(section_end * self.frame_rate), num_frames)
             label[start_frame:end_frame] = section_label
@@ -275,6 +312,7 @@ class EDMDataset(Dataset):
             "buildup": np.array([0.5, 0.6, 0.7], dtype=np.float32),
             "drop": np.array([0.9, 0.8, 0.7], dtype=np.float32),
             "breakdown": np.array([0.4, 0.5, 0.3], dtype=np.float32),
+            "breakbuild": np.array([0.5, 0.6, 0.6], dtype=np.float32),
             "outro": np.array([0.2, 0.3, 0.2], dtype=np.float32),
         }
         return energy_map.get(label, np.array([0.5, 0.5, 0.5], dtype=np.float32))

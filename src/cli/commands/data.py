@@ -38,7 +38,7 @@ def stats(
         raise typer.Exit(1)
 
     # Load all annotations
-    yaml_files = list(data_dir.glob("*.yaml"))
+    yaml_files = list(data_dir.rglob("*.yaml"))
     if not yaml_files:
         rprint(f"[yellow]Warning:[/yellow] No annotation files found in {data_dir}")
         return
@@ -132,7 +132,7 @@ def validate(
         rprint(f"[red]Error:[/red] Data directory not found: {data_dir}")
         raise typer.Exit(1)
 
-    yaml_files = list(data_dir.glob("*.yaml"))
+    yaml_files = list(data_dir.rglob("*.yaml"))
     if not yaml_files:
         rprint(f"[yellow]Warning:[/yellow] No annotation files found in {data_dir}")
         return
@@ -197,7 +197,7 @@ def export(
         raise typer.Exit(1)
 
     # Load all valid annotations
-    yaml_files = list(data_dir.glob("*.yaml"))
+    yaml_files = list(data_dir.rglob("*.yaml"))
     annotations: list[Annotation] = []
 
     for yaml_file in yaml_files:

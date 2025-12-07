@@ -65,10 +65,17 @@ class StructureSection(BaseModel):
     @field_validator("label")
     @classmethod
     def validate_label(cls, v: str) -> str:
-        """Validate section label."""
-        valid_labels = {"intro", "buildup", "drop", "breakdown", "outro"}
+        """Validate section label, warn on unknown values."""
+        import warnings
+
+        valid_labels = {"intro", "buildup", "drop", "breakdown", "breakbuild", "outro", "unlabeled"}
         if v not in valid_labels:
-            raise ValueError(f"Invalid label '{v}'. Must be one of {valid_labels}")
+            warnings.warn(
+                f"Unknown label '{v}' (expected one of {valid_labels}). "
+                f"Will be mapped to 'unlabeled' during training.",
+                UserWarning,
+                stacklevel=2,
+            )
         return v
 
 
