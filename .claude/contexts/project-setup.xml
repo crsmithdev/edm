@@ -1,51 +1,7 @@
 <project-setup>
-  <purpose>Essential project configuration and commands (always loaded)</purpose>
-
-  <commands>
-    <run cmd="uv run edm" desc="Main CLI entry point"/>
-    <run-train cmd="uv run python -m cli.commands.train --config &lt;config.yaml&gt;" desc="Training"/>
-    <test cmd="uv run pytest -v" desc="Run tests"/>
-    <lint cmd="uv run ruff check --fix . &amp;&amp; ruff format ." desc="Lint and format"/>
-    <typecheck cmd="uv run mypy src/" desc="Type checking"/>
-    <install cmd="uv sync" desc="Install dependencies"/>
-  </commands>
-
-  <structure>
-    <src desc="Main codebase">
-      <cli desc="Typer CLI commands: analyze, train, evaluate, data, models"/>
-      <edm desc="Core library: analysis, training, models, evaluation, data, io"/>
-    </src>
-    <data desc="Annotation YAML files (metadata only)"/>
-    <audio desc="~/music (actual audio files, not in repo)"/>
-    <tests desc="Unit, integration, performance tests"/>
-    <configs desc="Training config YAML files"/>
-    <experiments desc="Training runs and checkpoints"/>
-    <docs desc="Architecture, CLI, development, EDM terminology"/>
-  </structure>
-
-  <package-manager>
-    <name>uv</name>
-    <note>Always prefix Python commands with `uv run`</note>
-  </package-manager>
-
-  <project>
-    <name>EDM Track Analysis</name>
-    <version>0.1.0 (Alpha)</version>
-    <python>3.12+</python>
-    <purpose>Automated EDM track analysis: BPM, structure, beats, bars</purpose>
-  </project>
-
-  <key-tech>
-    <audio>librosa, beat_this, msaf, torchaudio</audio>
-    <ml>torch, transformers, mlflow</ml>
-    <cli>typer, rich</cli>
-    <validation>pydantic</validation>
-    <data>YAML annotations with confidence scoring</data>
-  </key-tech>
-
-  <entry-points>
-    <analyze>src/edm/analysis/orchestrator.py</analyze>
-    <train>src/edm/training/trainer.py</train>
-    <cli>src/cli/main.py</cli>
-  </entry-points>
+  <cmd run="uv run edm" train="uv run python -m cli.commands.train --config &lt;cfg&gt;" test="uv run pytest -v" lint="uv run ruff check --fix . &amp;&amp; ruff format ." typecheck="uv run mypy src/"/>
+  <dirs src="cli/,edm/" data="annotations(yaml)" audio="~/music" tests="unit,integration,perf" configs="train yaml" experiments="runs,checkpoints"/>
+  <pkg mgr="uv" note="prefix: uv run"/>
+  <tech audio="librosa,beat_this,msaf" ml="torch,transformers,mlflow" cli="typer,rich" validation="pydantic"/>
+  <entry analyze="src/edm/analysis/orchestrator.py" train="src/edm/training/trainer.py" cli="src/cli/main.py"/>
 </project-setup>

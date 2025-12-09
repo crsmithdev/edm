@@ -1,0 +1,10 @@
+run_name: debug
+backbone: m-a-p/MERT-v1-95M
+num_epochs: 2
+learning_rate: 0.0003
+weight_decay: 0.01
+scheduler: cosine
+gradient_clip: 1.0
+save_every: 5
+eval_every: 1
+device: cuda

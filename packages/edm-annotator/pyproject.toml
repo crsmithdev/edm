@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edm-annotator"
+version = "0.1.0"
+description = "Web-based EDM structure annotation tool"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "EDM Project Contributors"}
+]
+
+dependencies = [
+    "edm",
+    "flask>=3.0.0",
+    "pyyaml>=6.0",
+    "scipy",
+]
+
+[project.scripts]
+edm-annotator = "edm_annotator.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+edm_annotator = ["templates/*", "static/**/*"]

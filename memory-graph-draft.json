@@ -1,0 +1,286 @@
+{
+  "entities": [
+    {
+      "name": "setup",
+      "entityType": "command_template",
+      "tags": ["installation", "dependencies", "initialization"],
+      "aliases": ["install", "initialize project", "setup environment"],
+      "observations": [
+        "curl -LsSf https://astral.sh/uv/install.sh | sh",
+        "uv sync",
+        "uv run edm --version"
+      ]
+    },
+    {
+      "name": "test_default",
+      "entityType": "command_template",
+      "tags": ["testing", "ci", "quality-assurance"],
+      "aliases": ["run tests", "test suite", "verify code", "ci tests"],
+      "observations": [
+        "uv run pytest -v --cov=src --cov-report=term-missing --no-color",
+        "use_when: standard test run, CI, pre-commit",
+        "excludes: @pytest.mark.slow tests (via pyproject.toml default)"
+      ]
+    },
+    {
+      "name": "test_all",
+      "entityType": "command_template",
+      "tags": ["testing", "comprehensive", "release"],
+      "aliases": ["run all tests", "full test suite", "comprehensive tests", "include slow tests"],
+      "observations": [
+        "uv run pytest -v --cov=src --cov-report=term-missing --no-color -m ''",
+        "use_when: comprehensive validation, release checks",
+        "includes: all tests including @pytest.mark.slow"
+      ]
+    },
+    {
+      "name": "test_unit",
+      "entityType": "command_template",
+      "tags": ["testing", "unit", "development"],
+      "aliases": ["unit tests", "test units", "isolated tests"],
+      "observations": [
+        "uv run pytest -v --cov=src --cov-report=term-missing --no-color tests/unit/",
+        "use_when: developing specific functionality, debugging"
+      ]
+    },
+    {
+      "name": "test_integration",
+      "entityType": "command_template",
+      "tags": ["testing", "integration", "e2e"],
+      "aliases": ["integration tests", "end-to-end tests", "workflow tests"],
+      "observations": [
+        "uv run pytest -v --cov=src --cov-report=term-missing --no-color tests/integration/",
+        "use_when: validating end-to-end workflows"
+      ]
+    },
+    {
+      "name": "quality",
+      "entityType": "command_template",
+      "tags": ["code-quality", "linting", "formatting", "type-checking"],
+      "aliases": ["lint", "format code", "type check", "code quality"],
+      "observations": [
+        "uv run ruff check --fix .",
+        "uv run ruff format .",
+        "uv run mypy src/"
+      ]
+    },
+    {
+      "name": "clean",
+      "entityType": "command_template",
+      "tags": ["maintenance", "cleanup", "build-artifacts"],
+      "aliases": ["clean build", "remove cache", "clean artifacts"],
+      "observations": [
+        ".claude/scripts/clean.sh",
+        "removes: __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, *.pyc, build artifacts"
+      ]
+    },
+    {
+      "name": "deps",
+      "entityType": "command_template",
+      "tags": ["maintenance", "dependencies", "reset"],
+      "aliases": ["reinstall dependencies", "reset environment", "wipe and reinstall"],
+      "observations": [
+        ".claude/scripts/deps.sh",
+        "use_when: dependency conflicts, corrupted environment",
+        "removes .venv completely, runs uv sync"
+      ]
+    },
+    {
+      "name": "workflow_release",
+      "entityType": "workflow",
+      "tags": ["release", "comprehensive", "validation"],
+      "aliases": ["release validation", "pre-release checks", "comprehensive validation"],
+      "observations": [
+        "1. quality → full code quality check",
+        "2. test_all → includes slow tests",
+        "3. if all pass → ready for release"
+      ]
+    },
+    {
+      "name": "rules_uv",
+      "entityType": "constraint",
+      "tags": ["commands", "package-management", "critical"],
+      "observations": [
+        "ALWAYS: uv run COMMAND, NEVER: just COMMAND",
+        "ALWAYS: uv sync, NEVER: pip install"
+      ]
+    },
+    {
+      "name": "rules_python",
+      "entityType": "constraint",
+      "tags": ["python", "version", "critical"],
+      "observations": [
+        "REQUIRED: Python 3.12+",
+        "check: python --version or python3 --version"
+      ]
+    },
+    {
+      "name": "rules_system_deps",
+      "entityType": "constraint",
+      "tags": ["dependencies", "system", "audio"],
+      "observations": [
+        "REQUIRED: ffmpeg (for audio loading)",
+        "OPTIONAL: python3-dev, build-essential (Ubuntu/Debian, for compilation)"
+      ]
+    },
+    {
+      "name": "debug_command_not_found",
+      "entityType": "decision_tree",
+      "tags": ["troubleshooting", "debugging", "errors"],
+      "observations": [
+        "symptom: command not found (edm, pytest, ruff, mypy)",
+        "check: missing 'uv run' prefix? → add 'uv run' prefix",
+        "check: uv not installed? → run setup",
+        "check: wrong directory? → cd /home/crsmi/edm"
+      ]
+    },
+    {
+      "name": "debug_import_failure",
+      "entityType": "decision_tree",
+      "tags": ["troubleshooting", "debugging", "dependencies"],
+      "observations": [
+        "symptom: ModuleNotFoundError, ImportError",
+        "check: dependencies not installed? → uv sync",
+        "check: wrong Python version? → verify Python 3.12+",
+        "check: corrupted environment? → rm -rf .venv && uv sync"
+      ]
+    },
+    {
+      "name": "debug_audio_loading",
+      "entityType": "decision_tree",
+      "tags": ["troubleshooting", "debugging", "audio"],
+      "observations": [
+        "symptom: cannot load audio file, codec errors, librosa errors",
+        "check: ffmpeg not installed? → install ffmpeg",
+        "check: unsupported format? → convert to wav/flac/mp3",
+        "check: corrupted file? → verify file integrity, try different file"
+      ]
+    },
+    {
+      "name": "antipattern_bare_commands",
+      "entityType": "antipattern",
+      "tags": ["mistakes", "errors", "wrong-environment"],
+      "observations": [
+        "NEVER: pytest (without uv run)",
+        "NEVER: mypy (without uv run)",
+        "NEVER: ruff (without uv run)",
+        "why: runs in system Python, not project environment",
+        "consequence: ModuleNotFoundError, wrong package versions"
+      ]
+    },
+    {
+      "name": "antipattern_pip_install",
+      "entityType": "antipattern",
+      "tags": ["mistakes", "package-management"],
+      "observations": [
+        "NEVER: pip install PACKAGE",
+        "NEVER: pip install -r requirements.txt",
+        "why: project uses uv, not pip",
+        "correct: uv sync (reads pyproject.toml)",
+        "consequence: dependency conflicts, wrong versions"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "from": "setup",
+      "to": "test_default",
+      "relationType": "prerequisite"
+    },
+    {
+      "from": "setup",
+      "to": "test_all",
+      "relationType": "prerequisite"
+    },
+    {
+      "from": "setup",
+      "to": "test_unit",
+      "relationType": "prerequisite"
+    },
+    {
+      "from": "setup",
+      "to": "test_integration",
+      "relationType": "prerequisite"
+    },
+    {
+      "from": "rules_uv",
+      "to": "test_default",
+      "relationType": "enforces"
+    },
+    {
+      "from": "rules_uv",
+      "to": "test_all",
+      "relationType": "enforces"
+    },
+    {
+      "from": "rules_uv",
+      "to": "test_unit",
+      "relationType": "enforces"
+    },
+    {
+      "from": "rules_uv",
+      "to": "test_integration",
+      "relationType": "enforces"
+    },
+    {
+      "from": "rules_uv",
+      "to": "quality",
+      "relationType": "enforces"
+    },
+    {
+      "from": "workflow_release",
+      "to": "quality",
+      "relationType": "uses"
+    },
+    {
+      "from": "workflow_release",
+      "to": "test_all",
+      "relationType": "uses"
+    },
+    {
+      "from": "debug_command_not_found",
+      "to": "rules_uv",
+      "relationType": "diagnoses"
+    },
+    {
+      "from": "debug_command_not_found",
+      "to": "setup",
+      "relationType": "suggests"
+    },
+    {
+      "from": "debug_import_failure",
+      "to": "setup",
+      "relationType": "suggests"
+    },
+    {
+      "from": "debug_import_failure",
+      "to": "rules_python",
+      "relationType": "diagnoses"
+    },
+    {
+      "from": "debug_audio_loading",
+      "to": "rules_system_deps",
+      "relationType": "diagnoses"
+    },
+    {
+      "from": "rules_uv",
+      "to": "clean",
+      "relationType": "enforces"
+    },
+    {
+      "from": "rules_uv",
+      "to": "deps",
+      "relationType": "enforces"
+    },
+    {
+      "from": "antipattern_bare_commands",
+      "to": "rules_uv",
+      "relationType": "violates"
+    },
+    {
+      "from": "antipattern_pip_install",
+      "to": "rules_uv",
+      "relationType": "violates"
+    }
+  ]
+}

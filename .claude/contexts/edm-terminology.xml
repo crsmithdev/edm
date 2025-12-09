@@ -1,35 +1,8 @@
 <edm-terminology>
-  <purpose>Core EDM track structure terminology for audio analysis</purpose>
-
-  <sections>
-    <intro role="opening" energy="low" len="8-32 bars" desc="Minimalistic, sparse drums, atmospheric"/>
-    <buildup role="tension" energy="ascending" len="8-16 bars" desc="Progressive layering, risers, filters"/>
-    <drop role="peak" energy="highest" len="16-32 bars" desc="Full instrumentation, main hook, heavy bass" equiv="chorus"/>
-    <breakdown role="contrast" energy="moderate" len="8-16 bars" desc="Reduced elements, removed bass/drums" equiv="verse"/>
-    <outro role="closing" energy="descending" len="16-32 bars" desc="Gradual element removal, DJ transition"/>
-  </sections>
-
-  <theory>
-    <beat desc="Timing/rhythm unit, consistent pulse"/>
-    <bar desc="Measure, 4 beats in 4/4 time" groups="4/8/16/32"/>
-    <downbeat desc="First beat of measure (beat 1), strongest anchor"/>
-    <phrase desc="Complete musical idea, typically 8-16 bars"/>
-    <time-sig default="4/4" desc="4 quarter-note beats per bar"/>
-  </theory>
-
-  <structures>
-    <abab desc="Most common: Intro→Breakdown→Buildup→Drop→Breakdown→Buildup→Drop→Outro"/>
-    <club-mix desc="Extended 32-bar sections for DJ mixing"/>
-    <radio-edit desc="Shortened 8-16 bar sections, 3-4 min total"/>
-  </structures>
-
-  <energy-pattern desc="Dramatic peaks (drop) and troughs (breakdown), cyclical flow"/>
-
-  <map verse="breakdown" chorus="drop" bridge="breakdown/transition" pre-chorus="buildup"/>
-
-  <mirex-labels standard="2025">intro, verse, chorus, bridge, inst, outro, silence</mirex-labels>
-
-  <bar-indexing base="1" formula="timestamp = downbeat + (bar-1) * 60/bpm * 4"/>
-
-  <reference doc="docs/edm-terminology.md"/>
+  <sections intro="8-32bar,low-E,sparse" buildup="8-16bar,rising-E,risers" drop="16-32bar,peak-E,full(chorus)" breakdown="8-16bar,mid-E,reduced(verse)" outro="16-32bar,falling-E,fadeout"/>
+  <theory bar="4beats(4/4)" downbeat="beat1" phrase="8-16bar"/>
+  <struct abab="Intro→Breakdown→Buildup→Drop(x2)→Outro" club="32bar-sections" radio="8-16bar-short"/>
+  <map verse="breakdown" chorus="drop" bridge="breakdown" pre-chorus="buildup"/>
+  <mirex>intro,verse,chorus,bridge,inst,outro,silence</mirex>
+  <bar-idx base="1" formula="t=downbeat+(bar-1)*60/bpm*4"/>
 </edm-terminology>

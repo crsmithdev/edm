@@ -19,10 +19,7 @@ INJECT_FILES=()
 # Category detection (case-insensitive)
 PROMPT_LOWER=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]')
 
-# Project setup keywords: command, run, test, structure, setup, install, cli
-if echo "$PROMPT_LOWER" | grep -qE '(command|run|test|lint|structure|setup|install|cli|train|analyze|evaluate|uv|pytest|ruff|mypy|typer)'; then
-    INJECT_FILES+=("$CONTEXTS_DIR/project-setup.xml")
-fi
+# Project setup removed - use Makefile or /cmds instead
 
 # Audio analysis keywords: bpm, beat, structure, drop, breakdown, msaf, librosa, beat_this
 if echo "$PROMPT_LOWER" | grep -qE '(bpm|beat|tempo|structure|drop|breakdown|buildup|intro|outro|msaf|librosa|beat_this|essentia|detector|section|bar)'; then

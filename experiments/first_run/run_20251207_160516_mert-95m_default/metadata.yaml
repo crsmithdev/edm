@@ -1,0 +1,10 @@
+run_name: run_20251207_160516_mert-95m_default
+start_time: '2025-12-07T16:05:17.536082'
+end_time: '2025-12-07T16:21:00.840253'
+final_metrics:
+  best_epoch: 0
+  best_val_loss: 0.07750068770514594
+dataset:
+  data_dvc_hash: 8b21e4f497146b0d1a4139220bacd0da.dir
+git_commit: cbef8f8
+device: cuda

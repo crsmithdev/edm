@@ -26,7 +26,7 @@ lint:
 
 # Type check
 types:
-    uv run mypy src/
+    uv run mypy packages/edm-lib/src/
 
 # Run tests
 test *ARGS='':
@@ -34,7 +34,11 @@ test *ARGS='':
 
 # Run tests with coverage
 test-cov:
-    uv run pytest --cov=src --cov-report=term --cov-report=html
+    uv run pytest --cov=packages/edm-lib/src --cov-report=term --cov-report=html
+
+# Run annotator web app
+annotator:
+    cd packages/edm-annotator && uv run flask --app src/edm_annotator/app run
 
 # Run all quality checks
 check:

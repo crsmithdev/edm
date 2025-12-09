@@ -7,6 +7,16 @@
 
 A Python library and CLI for analyzing EDM tracks, providing BPM detection and structure analysis using neural network-based audio processing.
 
+## Monorepo Structure
+
+This project is organized as a monorepo with multiple packages:
+
+- **`packages/edm-lib`** - Core library for audio analysis, ML models, and training
+- **`packages/edm-cli`** - Command-line interface
+- **`packages/edm-annotator`** - Web-based annotation tool
+
+All packages are managed using uv workspaces with a single lockfile for consistent dependencies.
+
 ## Installation
 
 ### Prerequisites
@@ -95,9 +105,21 @@ Each worker loads one audio file into memory. Budget approximately:
 ## Development
 
 ```bash
-uv run pytest -v                           # Run tests
-uv run ruff check --fix . && ruff format . # Lint and format
-uv run mypy src/                           # Type check
+# Run all tests
+uv run pytest -v
+
+# Run tests for specific package
+uv run pytest packages/edm-lib/tests
+
+# Lint and format
+uv run ruff check --fix . && ruff format .
+
+# Type check
+uv run mypy packages/edm-lib/src/
+
+# Run annotator webapp
+just annotator
+# Or: cd packages/edm-annotator && uv run flask --app src/edm_annotator/app run
 ```
 
 See [development.md](docs/development.md) for details.
