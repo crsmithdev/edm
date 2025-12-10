@@ -1,28 +1,32 @@
-import { useWaveformInteraction } from "@/hooks/useWaveformInteraction";
-import { useWaveformStore, useUIStore, useTrackStore, useTempoStore, useAudioStore } from "@/stores";
-import { WaveformCanvas } from "./WaveformCanvas";
-import { BeatGrid } from "./BeatGrid";
-import { Playhead } from "./Playhead";
-import { BoundaryMarkers } from "./BoundaryMarkers";
-import { RegionOverlays } from "./RegionOverlays";
+import { useState } from "react";
+import { useWaveformStore, useTrackStore, useTempoStore, useAudioStore } from "@/stores";
+import { OverviewWaveform } from "./OverviewWaveform";
+import { DetailWaveform } from "./DetailWaveform";
 import { InfoCard } from "@/components/UI";
 
+/** Default time span for detail view in seconds */
+const DEFAULT_DETAIL_SPAN = 16;
+const MIN_DETAIL_SPAN = 4;
+const MAX_DETAIL_SPAN = 60;
+
 /**
- * Container for waveform visualization and overlays
+ * Container for dual waveform display:
+ * - Overview: full track, moving playhead
+ * - Detail: centered playhead, scrolling waveform
  */
 export function WaveformContainer() {
-  const { zoom, duration } = useWaveformStore();
-  const { isDragging } = useUIStore();
+  const { duration } = useWaveformStore();
   const { currentTrack } = useTrackStore();
   const { trackBPM, timeToBar } = useTempoStore();
   const { currentTime } = useAudioStore();
-  const { handleMouseDown, handleMouseMove, handleMouseUp, handleWheel } =
-    useWaveformInteraction();
+
+  // Detail view span (how many seconds to show around playhead)
+  const [detailSpan, setDetailSpan] = useState(DEFAULT_DETAIL_SPAN);
 
   const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const formatTime = (seconds: number): string => {
@@ -32,6 +36,18 @@ export function WaveformContainer() {
   };
 
   const currentBar = timeToBar(currentTime);
+
+  const handleZoomIn = () => {
+    setDetailSpan((prev) => Math.max(MIN_DETAIL_SPAN, prev / 1.5));
+  };
+
+  const handleZoomOut = () => {
+    setDetailSpan((prev) => Math.min(MAX_DETAIL_SPAN, prev * 1.5));
+  };
+
+  const handleReset = () => {
+    setDetailSpan(DEFAULT_DETAIL_SPAN);
+  };
 
   return (
     <div
@@ -45,37 +61,12 @@ export function WaveformContainer() {
         overflow: "hidden",
       }}
     >
-      {/* Waveform Display */}
-      <div
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onWheel={handleWheel}
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "var(--waveform-height)",
-          background: "var(--bg-tertiary)",
-          border: "1px solid var(--border-subtle)",
-          borderRadius: "var(--radius-lg)",
-          cursor: isDragging ? "grabbing" : "crosshair",
-          overflow: "hidden",
-        }}
-      >
-        {/* Region overlays (behind everything) */}
-        <RegionOverlays />
+      {/* Overview Waveform (full track) */}
+      <OverviewWaveform detailSpan={detailSpan} />
 
-        {/* Waveform canvas */}
-        <WaveformCanvas />
-
-        {/* Beat grid overlay */}
-        <BeatGrid />
-
-        {/* Boundary markers */}
-        <BoundaryMarkers />
-
-        {/* Playhead (on top) */}
-        <Playhead />
+      {/* Detail Waveform (centered playhead) */}
+      <div style={{ marginTop: "var(--space-3)" }}>
+        <DetailWaveform span={detailSpan} />
       </div>
 
       {/* Track Info and Zoom Controls */}
@@ -89,7 +80,9 @@ export function WaveformContainer() {
         }}
       >
         {/* Track metadata on left */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}
+        >
           <div
             style={{
               fontSize: "var(--font-size-lg)",
@@ -122,53 +115,59 @@ export function WaveformContainer() {
 
         {/* Zoom controls on right */}
         <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
-        <button
-          onClick={() => zoom(-1)}
-          style={{
-            padding: "var(--space-2) var(--space-4)",
-            background: "var(--border-subtle)",
-            color: "var(--text-secondary)",
-            border: "none",
-            borderRadius: "var(--radius-sm)",
-            fontSize: "var(--font-size-lg)",
-            cursor: "pointer",
-            fontWeight: "var(--font-weight-semibold)",
-          }}
-        >
-          −
-        </button>
-        <button
-          onClick={() => zoom(1)}
-          style={{
-            padding: "var(--space-2) var(--space-4)",
-            background: "var(--border-subtle)",
-            color: "var(--text-secondary)",
-            border: "none",
-            borderRadius: "var(--radius-sm)",
-            fontSize: "var(--font-size-lg)",
-            cursor: "pointer",
-            fontWeight: "var(--font-weight-semibold)",
-          }}
-        >
-          +
-        </button>
-        <button
-          onClick={() => {
-            const { zoomToFit } = useWaveformStore.getState();
-            zoomToFit();
-          }}
-          style={{
-            padding: "var(--space-2) var(--space-4)",
-            background: "var(--border-subtle)",
-            color: "var(--text-secondary)",
-            border: "none",
-            borderRadius: "var(--radius-sm)",
-            fontSize: "var(--font-size-sm)",
-            cursor: "pointer",
-          }}
-        >
-          Reset
-        </button>
+          <span
+            style={{
+              fontSize: "var(--font-size-xs)",
+              color: "var(--text-tertiary)",
+              marginRight: "var(--space-2)",
+            }}
+          >
+            {detailSpan.toFixed(0)}s view
+          </span>
+          <button
+            onClick={handleZoomOut}
+            style={{
+              padding: "var(--space-2) var(--space-4)",
+              background: "var(--border-subtle)",
+              color: "var(--text-secondary)",
+              border: "none",
+              borderRadius: "var(--radius-sm)",
+              fontSize: "var(--font-size-lg)",
+              cursor: "pointer",
+              fontWeight: "var(--font-weight-semibold)",
+            }}
+          >
+            −
+          </button>
+          <button
+            onClick={handleZoomIn}
+            style={{
+              padding: "var(--space-2) var(--space-4)",
+              background: "var(--border-subtle)",
+              color: "var(--text-secondary)",
+              border: "none",
+              borderRadius: "var(--radius-sm)",
+              fontSize: "var(--font-size-lg)",
+              cursor: "pointer",
+              fontWeight: "var(--font-weight-semibold)",
+            }}
+          >
+            +
+          </button>
+          <button
+            onClick={handleReset}
+            style={{
+              padding: "var(--space-2) var(--space-4)",
+              background: "var(--border-subtle)",
+              color: "var(--text-secondary)",
+              border: "none",
+              borderRadius: "var(--radius-sm)",
+              fontSize: "var(--font-size-sm)",
+              cursor: "pointer",
+            }}
+          >
+            Reset
+          </button>
         </div>
       </div>
     </div>
