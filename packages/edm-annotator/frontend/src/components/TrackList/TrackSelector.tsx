@@ -47,6 +47,9 @@ export function TrackSelector() {
       // Update tempo store
       if (data.bpm) {
         setBPM(data.bpm);
+      } else {
+        // Set to 0 when no annotation exists (will display as "--")
+        setBPM(0);
       }
       setDownbeat(data.downbeat);
 
