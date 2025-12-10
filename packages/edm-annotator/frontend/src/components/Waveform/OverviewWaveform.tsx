@@ -94,27 +94,29 @@ export function OverviewWaveform() {
         overflow: "hidden",
       }}
     >
-      {/* Region overlays (subtle, behind waveform) */}
+      {/* Region overlays (subtle, behind waveform) - skip unlabeled regions */}
       {duration > 0 &&
-        regions.map((region, idx) => {
-          const leftPercent = (region.start / duration) * 100;
-          const widthPercent = ((region.end - region.start) / duration) * 100;
-          return (
-            <div
-              key={idx}
-              style={{
-                position: "absolute",
-                left: `${leftPercent}%`,
-                top: 0,
-                width: `${widthPercent}%`,
-                height: "100%",
-                background: labelColors[region.label],
-                opacity: 0.15,
-                pointerEvents: "none",
-              }}
-            />
-          );
-        })}
+        regions
+          .filter((region) => region.label !== "unlabeled")
+          .map((region, idx) => {
+            const leftPercent = (region.start / duration) * 100;
+            const widthPercent = ((region.end - region.start) / duration) * 100;
+            return (
+              <div
+                key={idx}
+                style={{
+                  position: "absolute",
+                  left: `${leftPercent}%`,
+                  top: 0,
+                  width: `${widthPercent}%`,
+                  height: "100%",
+                  background: labelColors[region.label],
+                  opacity: 0.15,
+                  pointerEvents: "none",
+                }}
+              />
+            );
+          })}
 
       {/* Waveform SVG */}
       <svg
