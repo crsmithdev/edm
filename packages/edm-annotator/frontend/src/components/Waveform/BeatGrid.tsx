@@ -45,12 +45,8 @@ export function BeatGrid() {
       // Medium-close zoom (15-20% visible) - show every 2 bars, no beats
       barInterval = 2;
       showBeats = false;
-    } else if (zoomRatio > 0.1) {
-      // Zoomed in (10-15% visible) - show all bars, no beats
-      barInterval = 1;
-      showBeats = false;
     } else {
-      // Very zoomed in (<10% visible) - show all bars and beats
+      // Zoomed in (<15% visible) - show all bars and beats
       barInterval = 1;
       showBeats = true;
     }
@@ -123,8 +119,8 @@ export function BeatGrid() {
                   ? "#f44336"
                   : line.type === "bar"
                     ? "#ff9800"
-                    : "#444",
-              opacity: line.type === "downbeat" ? 0.8 : line.type === "bar" ? 0.6 : 0.25,
+                    : "rgba(123, 106, 255, 0.4)",
+              opacity: line.type === "downbeat" ? 0.8 : line.type === "bar" ? 0.6 : 0.4,
               pointerEvents: "none",
             }}
           >
