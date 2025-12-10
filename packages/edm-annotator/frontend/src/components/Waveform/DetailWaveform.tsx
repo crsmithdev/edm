@@ -275,11 +275,20 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
       // Convert pixel delta to time delta
       // Dragging left (negative deltaX) should move forward in time
       const timeDelta = (-deltaX / containerWidth) * viewportDuration;
-      const newTime = Math.max(0, Math.min(duration, dragStartTime.current + timeDelta));
+      let newTime = Math.max(0, Math.min(duration, dragStartTime.current + timeDelta));
+
+      // Snap to nearest beat if quantize enabled
+      if (quantizeEnabled && trackBPM > 0) {
+        const beatDuration = getBeatDuration(trackBPM);
+        const beatsFromDownbeat = (newTime - trackDownbeat) / beatDuration;
+        const nearestBeat = Math.round(beatsFromDownbeat);
+        newTime = trackDownbeat + nearestBeat * beatDuration;
+        newTime = Math.max(0, Math.min(duration, newTime));
+      }
 
       seek(newTime);
     },
-    [isDragging, viewport.end, viewport.start, duration, seek]
+    [isDragging, viewport.end, viewport.start, duration, seek, quantizeEnabled, trackBPM, trackDownbeat]
   );
 
   const handleMouseUp = useCallback(() => {
