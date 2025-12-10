@@ -1,5 +1,5 @@
 import { useStructureStore, useWaveformStore } from "@/stores";
-import { labelColors } from "@/utils/colors";
+import { labelColors, labelBorderColors } from "@/utils/colors";
 
 /**
  * Colored region overlays showing structure sections
@@ -36,8 +36,11 @@ export function RegionOverlays() {
               width: `${widthPercent}%`,
               height: "100%",
               background: labelColors[region.label],
+              border: `2px solid ${labelBorderColors[region.label]}`,
+              borderTop: "none",
+              borderBottom: "none",
               pointerEvents: "none",
-              opacity: 0.3,
+              opacity: 0.4,
             }}
           />
         );

@@ -21,10 +21,10 @@ export function Playhead() {
         position: "absolute",
         left: `${xPercent}%`,
         top: 0,
-        width: "3px",
+        width: "2px",
         height: "100%",
-        background: "#00E6B8",
-        boxShadow: "0 0 10px rgba(0, 230, 184, 0.5)",
+        background: "linear-gradient(180deg, #1affef 0%, #00e5cc 100%)",
+        boxShadow: "0 0 15px rgba(26, 255, 239, 0.6), 0 0 30px rgba(26, 255, 239, 0.3)",
         pointerEvents: "none",
         zIndex: 10,
       }}

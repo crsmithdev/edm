@@ -4,31 +4,35 @@
  */
 
 :root {
-  /* ========== Colors - Background ========== */
-  --bg-primary: #0f1419;
-  --bg-secondary: #1e2139;
-  --bg-tertiary: #151828;
-  --bg-elevated: #252a45;
-  --bg-hover: #1a1f38;
+  /* ========== Colors - Background (ToneForge-inspired) ========== */
+  --bg-primary: #0a0a12;
+  --bg-secondary: #1a1a28;
+  --bg-tertiary: #252535;
+  --bg-elevated: #2a2a3a;
+  --bg-sidebar: #12121a;
+  --bg-hover: #2f2f42;
 
   /* ========== Colors - Borders ========== */
-  --border-subtle: #2a2f4c;
-  --border-focus: #5b7cff;
-  --border-primary: rgba(91, 124, 255, 0.1);
+  --border-subtle: rgba(123, 106, 255, 0.15);
+  --border-focus: #7b6aff;
+  --border-accent: #00e5cc;
+  --border-primary: rgba(123, 106, 255, 0.1);
 
   /* ========== Colors - Semantic ========== */
-  --color-primary: #5b7cff;
-  --color-primary-hover: #7291ff;
-  --color-accent: #00e6b8;
+  --color-primary: #7b6aff;
+  --color-primary-hover: #8b7aff;
+  --color-accent: #00e5cc;
+  --color-accent-bright: #1affef;
   --color-danger: #ff6b6b;
-  --color-warning: #ffb800;
-  --color-success: #00e6b8;
+  --color-warning: #ffd966;
+  --color-success: #00e5cc;
+  --color-pink: #ff6bb5;
 
   /* ========== Colors - Text ========== */
   --text-primary: #ffffff;
-  --text-secondary: #e5e7eb;
-  --text-tertiary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-secondary: #b8b8c0;
+  --text-tertiary: #808088;
+  --text-muted: #606068;
 
   /* ========== Spacing (4px grid) ========== */
   --space-0: 0;
@@ -65,11 +69,21 @@
   --radius-lg: 10px;
   --radius-xl: 14px;
 
+  /* ========== Waveform Colors ========== */
+  --waveform-purple: #7b6aff;
+  --waveform-cyan: #00e5cc;
+  --waveform-yellow: #ffd966;
+  --waveform-pink: #ff6bb5;
+  --waveform-default: #e8e8ea;
+
   /* ========== Shadows ========== */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.4);
-  --shadow-focus: 0 0 0 3px rgba(91, 124, 255, 0.1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-focus: 0 0 0 3px rgba(123, 106, 255, 0.1);
+  --shadow-glow-purple: 0 0 20px rgba(123, 106, 255, 0.3);
+  --shadow-glow-cyan: 0 0 20px rgba(0, 229, 204, 0.3);
+  --shadow-glow-yellow: 0 0 20px rgba(255, 217, 102, 0.3);
 
   /* ========== Transitions ========== */
   --transition-fast: 0.1s ease;

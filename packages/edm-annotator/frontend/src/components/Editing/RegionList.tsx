@@ -75,6 +75,7 @@ export function RegionList() {
           disabled={!currentTrack || boundaries.length === 0 || isSaving}
           variant="primary"
           icon={<Save size={16} />}
+          style={{ width: "auto" }}
         >
           {isSaving ? "Saving..." : "Save"}
         </Button>

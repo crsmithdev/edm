@@ -6,7 +6,8 @@
 
 body {
   font-family: var(--font-family);
-  background: var(--bg-primary);
+  background: linear-gradient(180deg, #0a0a12 0%, #12121a 100%);
+  background-attachment: fixed;
   color: var(--text-secondary);
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);

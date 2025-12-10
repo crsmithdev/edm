@@ -1,12 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "SlashCommand(/ship)"
+      "SlashCommand(/ship)",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__read_multiple_files"
     ],
     "deny": [],
     "ask": []
   },
-  "outputStyle": "default",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -19,5 +20,6 @@
         ]
       }
     ]
-  }
+  },
+  "outputStyle": "default"
 }

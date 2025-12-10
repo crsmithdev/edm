@@ -1,25 +1,37 @@
 import type { SectionLabel } from "@/types/structure";
 
 /**
- * Color mapping for section labels
+ * Color mapping for section labels (ToneForge-inspired)
  */
 export const labelColors: Record<SectionLabel, string> = {
-  intro: "rgba(91, 124, 255, 0.2)", // Blue
-  buildup: "rgba(255, 184, 0, 0.2)", // Orange
-  breakdown: "rgba(0, 230, 184, 0.2)", // Cyan
-  breakbuild: "rgba(255, 107, 107, 0.2)", // Red
-  outro: "rgba(156, 39, 176, 0.2)", // Purple
-  unlabeled: "rgba(128, 128, 128, 0.1)", // Gray
+  intro: "rgba(123, 106, 255, 0.2)", // Purple
+  buildup: "rgba(0, 229, 204, 0.2)", // Cyan
+  breakdown: "rgba(255, 107, 181, 0.2)", // Pink
+  breakbuild: "rgba(167, 139, 250, 0.2)", // Light purple
+  outro: "rgba(139, 122, 255, 0.2)", // Medium purple
+  unlabeled: "rgba(96, 96, 104, 0.1)", // Gray
 };
 
 /**
- * Border color mapping for section labels
+ * Border color mapping for section labels (ToneForge-inspired)
  */
 export const labelBorderColors: Record<SectionLabel, string> = {
-  intro: "rgba(91, 124, 255, 0.8)",
-  buildup: "rgba(255, 184, 0, 0.8)",
-  breakdown: "rgba(0, 230, 184, 0.8)",
-  breakbuild: "rgba(255, 107, 107, 0.8)",
-  outro: "rgba(156, 39, 176, 0.8)",
-  unlabeled: "rgba(128, 128, 128, 0.5)",
+  intro: "#7b6aff", // Purple
+  buildup: "#00e5cc", // Cyan
+  breakdown: "#ff6bb5", // Pink
+  breakbuild: "#a78bfa", // Light purple
+  outro: "#8b7aff", // Medium purple
+  unlabeled: "#606068", // Gray
+};
+
+/**
+ * Solid fill colors for waveforms (ToneForge-inspired)
+ */
+export const labelWaveformColors: Record<SectionLabel, string> = {
+  intro: "#7b6aff", // Purple
+  buildup: "#00e5cc", // Cyan
+  breakdown: "#ff6bb5", // Pink
+  breakbuild: "#a78bfa", // Light purple
+  outro: "#8b7aff", // Medium purple
+  unlabeled: "#e8e8ea", // Light gray
 };

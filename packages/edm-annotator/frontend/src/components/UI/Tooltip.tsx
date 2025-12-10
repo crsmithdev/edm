@@ -14,7 +14,7 @@ export function Tooltip({ content, children, shortcut }: TooltipProps) {
 
   return (
     <div
-      style={{ position: "relative", display: "inline-block" }}
+      style={{ position: "relative", display: "block", width: "100%", height: "100%" }}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
       onFocus={() => setIsVisible(true)}

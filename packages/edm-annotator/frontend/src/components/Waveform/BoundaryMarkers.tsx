@@ -28,8 +28,9 @@ export function BoundaryMarkers() {
               left: `${xPercent}%`,
               top: 0,
               height: "100%",
-              width: "2px",
-              background: "#5B7CFF",
+              width: "3px",
+              background: "#00e5cc",
+              boxShadow: "0 0 10px rgba(0, 229, 204, 0.5)",
               cursor: "pointer",
               zIndex: 5,
             }}
@@ -47,12 +48,14 @@ export function BoundaryMarkers() {
                 top: "-25px",
                 left: "50%",
                 transform: "translateX(-50%)",
-                background: "rgba(0,0,0,0.8)",
+                background: "rgba(10, 10, 18, 0.95)",
                 padding: "2px 8px",
-                borderRadius: "3px",
+                borderRadius: "4px",
                 fontSize: "11px",
                 whiteSpace: "nowrap",
-                color: "#5B7CFF",
+                color: "#00e5cc",
+                fontWeight: "600",
+                border: "1px solid rgba(0, 229, 204, 0.3)",
               }}
             >
               {formatTime(time)}

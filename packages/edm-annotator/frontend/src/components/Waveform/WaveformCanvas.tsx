@@ -89,27 +89,27 @@ export function WaveformCanvas() {
       style={{
         width: "100%",
         height: "100%",
-        background: "#151828",
+        background: "#0a0a12",
       }}
     >
-      {/* Bass band (top third) - red */}
+      {/* Bass band (top third) - cyan */}
       <path
         d={generateBandPath(waveformBass, 0, bandHeight)}
-        fill="rgba(244, 67, 54, 0.6)"
+        fill="rgba(0, 229, 204, 0.7)"
         stroke="none"
       />
 
-      {/* Mids band (middle third) - green */}
+      {/* Mids band (middle third) - purple */}
       <path
         d={generateBandPath(waveformMids, bandHeight, bandHeight)}
-        fill="rgba(76, 175, 80, 0.6)"
+        fill="rgba(123, 106, 255, 0.7)"
         stroke="none"
       />
 
-      {/* Highs band (bottom third) - blue */}
+      {/* Highs band (bottom third) - pink */}
       <path
         d={generateBandPath(waveformHighs, bandHeight * 2, bandHeight)}
-        fill="rgba(33, 150, 243, 0.6)"
+        fill="rgba(255, 107, 181, 0.7)"
         stroke="none"
       />
 
@@ -119,7 +119,7 @@ export function WaveformCanvas() {
         y1={bandHeight}
         x2="100"
         y2={bandHeight}
-        stroke="#666"
+        stroke="rgba(123, 106, 255, 0.2)"
         strokeWidth="0.5"
       />
       <line
@@ -127,7 +127,7 @@ export function WaveformCanvas() {
         y1={bandHeight * 2}
         x2="100"
         y2={bandHeight * 2}
-        stroke="#666"
+        stroke="rgba(123, 106, 255, 0.2)"
         strokeWidth="0.5"
       />
     </svg>
