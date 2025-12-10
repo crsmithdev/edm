@@ -60,7 +60,15 @@ export function useKeyboardShortcuts() {
           toggleQuantize();
           break;
 
-        case "c": // C - return to cue
+        case "c": // C - return to cue (unless Ctrl/Cmd+C for copy)
+          if (e.ctrlKey || e.metaKey) {
+            // Allow Ctrl+C / Cmd+C for copy
+            return;
+          }
+          e.preventDefault();
+          returnToCue();
+          break;
+
         case "r": // R - return to cue
           e.preventDefault();
           returnToCue();
