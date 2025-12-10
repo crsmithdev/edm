@@ -225,7 +225,7 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
       }}
     >
       {/* Region overlays (behind everything) */}
-      <RegionOverlays />
+      <RegionOverlays viewportStart={viewport.start} viewportEnd={viewport.end} />
 
       {/* Waveform SVG */}
       <svg
@@ -261,10 +261,10 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
       </svg>
 
       {/* Beat grid overlay */}
-      <BeatGrid />
+      <BeatGrid viewportStart={viewport.start} viewportEnd={viewport.end} />
 
       {/* Boundary markers */}
-      <BoundaryMarkers />
+      <BoundaryMarkers viewportStart={viewport.start} viewportEnd={viewport.end} />
 
       {/* Fixed center playhead */}
       <div

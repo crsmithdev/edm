@@ -2,11 +2,21 @@ import { useMemo } from "react";
 import { useWaveformStore, useTempoStore } from "@/stores";
 import { getBarDuration, getBeatDuration } from "@/utils/barCalculations";
 
+interface BeatGridProps {
+  /** Override viewport start (for centered playhead mode) */
+  viewportStart?: number;
+  /** Override viewport end (for centered playhead mode) */
+  viewportEnd?: number;
+}
+
 /**
  * Beat grid overlay showing bars and beats
  */
-export function BeatGrid() {
-  const { viewportStart, viewportEnd, duration } = useWaveformStore();
+export function BeatGrid(props: BeatGridProps) {
+  const store = useWaveformStore();
+  const viewportStart = props.viewportStart ?? store.viewportStart;
+  const viewportEnd = props.viewportEnd ?? store.viewportEnd;
+  const { duration } = store;
   const { trackBPM, trackDownbeat } = useTempoStore();
 
   const gridLines = useMemo(() => {

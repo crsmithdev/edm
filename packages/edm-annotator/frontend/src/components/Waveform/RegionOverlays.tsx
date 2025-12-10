@@ -1,12 +1,21 @@
 import { useStructureStore, useWaveformStore } from "@/stores";
 import { labelColors, labelBorderColors } from "@/utils/colors";
 
+interface RegionOverlaysProps {
+  /** Override viewport start (for centered playhead mode) */
+  viewportStart?: number;
+  /** Override viewport end (for centered playhead mode) */
+  viewportEnd?: number;
+}
+
 /**
  * Colored region overlays showing structure sections
  */
-export function RegionOverlays() {
+export function RegionOverlays(props: RegionOverlaysProps) {
   const { regions } = useStructureStore();
-  const { viewportStart, viewportEnd } = useWaveformStore();
+  const store = useWaveformStore();
+  const viewportStart = props.viewportStart ?? store.viewportStart;
+  const viewportEnd = props.viewportEnd ?? store.viewportEnd;
 
   const viewportDuration = viewportEnd - viewportStart;
 

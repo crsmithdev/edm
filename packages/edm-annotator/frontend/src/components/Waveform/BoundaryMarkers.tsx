@@ -1,12 +1,21 @@
 import { useStructureStore, useWaveformStore } from "@/stores";
 import { formatTime } from "@/utils/timeFormat";
 
+interface BoundaryMarkersProps {
+  /** Override viewport start (for centered playhead mode) */
+  viewportStart?: number;
+  /** Override viewport end (for centered playhead mode) */
+  viewportEnd?: number;
+}
+
 /**
  * Boundary markers showing structure boundaries
  */
-export function BoundaryMarkers() {
+export function BoundaryMarkers(props: BoundaryMarkersProps) {
   const { boundaries, removeBoundary } = useStructureStore();
-  const { viewportStart, viewportEnd } = useWaveformStore();
+  const store = useWaveformStore();
+  const viewportStart = props.viewportStart ?? store.viewportStart;
+  const viewportEnd = props.viewportEnd ?? store.viewportEnd;
 
   const viewportDuration = viewportEnd - viewportStart;
 
