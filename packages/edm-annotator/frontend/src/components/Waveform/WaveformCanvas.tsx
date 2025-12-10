@@ -3,8 +3,8 @@ import { useWaveformStore } from "@/stores";
 
 /**
  * SVG-based stacked area chart waveform visualization
- * Displays bass/mids/highs as cumulative stacked layers
- * Based on best practices from audio visualization research
+ * Displays bass/mids/highs as cumulative stacked layers, mirrored along x-axis
+ * Bass (inner), mids (middle), highs (outer) extend symmetrically from center
  */
 export function WaveformCanvas() {
   const {
@@ -71,51 +71,85 @@ export function WaveformCanvas() {
     );
     const scale = (height * 0.9) / maxCumulative;
 
-    // Generate bass area (bottom layer)
+    const center = height / 2;
+    const halfScale = scale / 2;
+
+    // Generate bass area (innermost layer, mirrored)
     const bassTopPoints = cumulativeData.map((d) => {
-      const y = height - d.bassTop * scale;
+      const y = center - d.bassTop * halfScale;
       return `${d.x},${y}`;
     });
+
+    const bassBottomPoints = cumulativeData
+      .map((d) => {
+        const y = center + d.bassTop * halfScale;
+        return `${d.x},${y}`;
+      })
+      .reverse();
 
     const bassPath =
-      bassTopPoints.length > 0
-        ? `M0,${height} L${bassTopPoints.join(" L")} L${width},${height} Z`
+      bassTopPoints.length > 0 && bassBottomPoints.length > 0
+        ? `M${bassTopPoints.join(" L")} L${bassBottomPoints.join(" L")} Z`
         : "";
 
-    // Generate mids area (middle layer)
+    // Generate mids area (middle layer, mirrored)
     const midsTopPoints = cumulativeData.map((d) => {
-      const y = height - d.midsTop * scale;
+      const y = center - d.midsTop * halfScale;
       return `${d.x},${y}`;
     });
+
+    const midsTopBasePoints = cumulativeData
+      .map((d) => {
+        const y = center - d.bassTop * halfScale;
+        return `${d.x},${y}`;
+      })
+      .reverse();
 
     const midsBottomPoints = cumulativeData
       .map((d) => {
-        const y = height - d.bassTop * scale;
+        const y = center + d.midsTop * halfScale;
         return `${d.x},${y}`;
       })
       .reverse();
 
-    const midsPath =
-      midsTopPoints.length > 0 && midsBottomPoints.length > 0
-        ? `M${midsBottomPoints[midsBottomPoints.length - 1]} L${midsTopPoints.join(" L")} L${midsBottomPoints.join(" L")} Z`
-        : "";
-
-    // Generate highs area (top layer)
-    const highsTopPoints = cumulativeData.map((d) => {
-      const y = height - d.highsTop * scale;
+    const midsBottomBasePoints = cumulativeData.map((d) => {
+      const y = center + d.bassTop * halfScale;
       return `${d.x},${y}`;
     });
 
-    const highsBottomPoints = cumulativeData
+    const midsPath =
+      midsTopPoints.length > 0
+        ? `M${midsTopPoints.join(" L")} L${midsTopBasePoints.join(" L")} M${midsBottomBasePoints.join(" L")} L${midsBottomPoints.join(" L")} Z`
+        : "";
+
+    // Generate highs area (outermost layer, mirrored)
+    const highsTopPoints = cumulativeData.map((d) => {
+      const y = center - d.highsTop * halfScale;
+      return `${d.x},${y}`;
+    });
+
+    const highsTopBasePoints = cumulativeData
       .map((d) => {
-        const y = height - d.midsTop * scale;
+        const y = center - d.midsTop * halfScale;
         return `${d.x},${y}`;
       })
       .reverse();
 
+    const highsBottomPoints = cumulativeData
+      .map((d) => {
+        const y = center + d.highsTop * halfScale;
+        return `${d.x},${y}`;
+      })
+      .reverse();
+
+    const highsBottomBasePoints = cumulativeData.map((d) => {
+      const y = center + d.midsTop * halfScale;
+      return `${d.x},${y}`;
+    });
+
     const highsPath =
-      highsTopPoints.length > 0 && highsBottomPoints.length > 0
-        ? `M${highsBottomPoints[highsBottomPoints.length - 1]} L${highsTopPoints.join(" L")} L${highsBottomPoints.join(" L")} Z`
+      highsTopPoints.length > 0
+        ? `M${highsTopPoints.join(" L")} L${highsTopBasePoints.join(" L")} M${highsBottomBasePoints.join(" L")} L${highsBottomPoints.join(" L")} Z`
         : "";
 
     return {
@@ -143,36 +177,35 @@ export function WaveformCanvas() {
         background: "#0a0a12",
       }}
     >
-      {/* Bass layer (bottom) - cyan */}
+      {/* Bass layer (innermost, mirrored) - cyan */}
       <path
         d={bassPath}
         fill="rgba(0, 229, 204, 0.8)"
         stroke="none"
       />
 
-      {/* Mids layer (middle) - purple */}
+      {/* Mids layer (middle, mirrored) - purple */}
       <path
         d={midsPath}
         fill="rgba(123, 106, 255, 0.8)"
         stroke="none"
       />
 
-      {/* Highs layer (top) - pink */}
+      {/* Highs layer (outermost, mirrored) - pink */}
       <path
         d={highsPath}
         fill="rgba(255, 107, 181, 0.8)"
         stroke="none"
       />
 
-      {/* Center baseline for reference */}
+      {/* Center baseline */}
       <line
         x1="0"
         y1="50"
         x2="100"
         y2="50"
-        stroke="rgba(255, 255, 255, 0.1)"
-        strokeWidth="0.3"
-        strokeDasharray="2,2"
+        stroke="rgba(255, 255, 255, 0.15)"
+        strokeWidth="0.2"
       />
     </svg>
   );
