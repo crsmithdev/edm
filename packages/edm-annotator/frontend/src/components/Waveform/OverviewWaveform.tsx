@@ -90,7 +90,7 @@ export function OverviewWaveform() {
         background: "var(--bg-tertiary)",
         border: "1px solid var(--border-subtle)",
         borderRadius: "var(--radius-md)",
-        cursor: "pointer",
+        cursor: "default",
         overflow: "hidden",
       }}
     >

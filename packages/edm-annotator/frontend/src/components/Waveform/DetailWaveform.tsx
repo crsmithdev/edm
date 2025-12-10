@@ -205,9 +205,26 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
 
   // Drag state for scrubbing
   const [isDragging, setIsDragging] = useState(false);
+  const [isShiftDown, setIsShiftDown] = useState(false);
   const dragStartX = useRef<number>(0);
   const dragStartTime = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Track shift key state for cursor changes
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Shift") setIsShiftDown(true);
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Shift") setIsShiftDown(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   // Handle shift+click for boundaries (at click position, respecting quantize)
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -293,7 +310,7 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
         background: "var(--bg-tertiary)",
         border: "1px solid var(--border-subtle)",
         borderRadius: "var(--radius-lg)",
-        cursor: isDragging ? "grabbing" : "grab",
+        cursor: isDragging ? "grabbing" : isShiftDown ? "crosshair" : "grab",
         overflow: "hidden",
         userSelect: "none",
       }}
