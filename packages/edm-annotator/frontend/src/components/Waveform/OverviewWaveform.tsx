@@ -1,16 +1,11 @@
 import { useMemo } from "react";
 import { useWaveformStore, useAudioStore } from "@/stores";
 
-interface OverviewWaveformProps {
-  /** Time span shown in detail view (seconds) */
-  detailSpan: number;
-}
-
 /**
  * Compact full-track waveform overview with moving playhead
- * Shows entire track duration with viewport indicator for detail view
+ * Shows entire track duration, waveform extends upward from baseline
  */
-export function OverviewWaveform({ detailSpan }: OverviewWaveformProps) {
+export function OverviewWaveform() {
   const {
     waveformBass,
     waveformMids,
@@ -20,7 +15,7 @@ export function OverviewWaveform({ detailSpan }: OverviewWaveformProps) {
   } = useWaveformStore();
   const { currentTime, seek } = useAudioStore();
 
-  // Generate simplified waveform path for full track
+  // Generate simplified waveform path for full track (non-mirrored, extends upward)
   const waveformPath = useMemo(() => {
     if (waveformTimes.length === 0 || duration <= 0) return "";
 
@@ -45,53 +40,21 @@ export function OverviewWaveform({ detailSpan }: OverviewWaveformProps) {
 
     // Find max for scaling
     const maxAmplitude = Math.max(...samples.map((s) => s.amplitude), 0.001);
-    const scale = (height * 0.8) / maxAmplitude;
-    const center = height / 2;
-    const halfScale = scale / 2;
+    const scale = (height * 0.85) / maxAmplitude;
+    const baseline = height; // Bottom of SVG
 
-    // Generate mirrored path
-    const topPoints = samples.map((s) => {
-      const y = center - s.amplitude * halfScale;
+    // Generate path extending upward from baseline
+    const points = samples.map((s) => {
+      const y = baseline - s.amplitude * scale;
       return `${s.x},${y}`;
     });
 
-    const bottomPoints = samples
-      .map((s) => {
-        const y = center + s.amplitude * halfScale;
-        return `${s.x},${y}`;
-      })
-      .reverse();
-
-    return `M${topPoints.join(" L")} L${bottomPoints.join(" L")} Z`;
+    // Close path along baseline
+    return `M0,${baseline} L${points.join(" L")} L${width},${baseline} Z`;
   }, [waveformBass, waveformMids, waveformHighs, waveformTimes, duration]);
 
   // Calculate playhead position
   const playheadPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
-
-  // Calculate viewport indicator position and width
-  const viewportIndicator = useMemo(() => {
-    if (duration <= 0) return { left: 0, width: 100 };
-
-    // Detail view shows detailSpan seconds centered on currentTime
-    const halfSpan = detailSpan / 2;
-    let viewStart = currentTime - halfSpan;
-    let viewEnd = currentTime + halfSpan;
-
-    // Clamp to track boundaries
-    if (viewStart < 0) {
-      viewStart = 0;
-      viewEnd = Math.min(detailSpan, duration);
-    }
-    if (viewEnd > duration) {
-      viewEnd = duration;
-      viewStart = Math.max(0, duration - detailSpan);
-    }
-
-    const left = (viewStart / duration) * 100;
-    const width = ((viewEnd - viewStart) / duration) * 100;
-
-    return { left, width };
-  }, [currentTime, duration, detailSpan]);
 
   // Handle click to seek
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -128,32 +91,7 @@ export function OverviewWaveform({ detailSpan }: OverviewWaveformProps) {
       >
         {/* Combined waveform - single color for overview */}
         <path d={waveformPath} fill="rgba(100, 140, 180, 0.6)" stroke="none" />
-
-        {/* Center baseline */}
-        <line
-          x1="0"
-          y1="50"
-          x2="100"
-          y2="50"
-          stroke="rgba(255, 255, 255, 0.1)"
-          strokeWidth="0.3"
-        />
       </svg>
-
-      {/* Viewport indicator - shows detail view extent */}
-      <div
-        style={{
-          position: "absolute",
-          left: `${viewportIndicator.left}%`,
-          top: 0,
-          width: `${viewportIndicator.width}%`,
-          height: "100%",
-          background: "rgba(26, 255, 239, 0.1)",
-          borderLeft: "1px solid rgba(26, 255, 239, 0.4)",
-          borderRight: "1px solid rgba(26, 255, 239, 0.4)",
-          pointerEvents: "none",
-        }}
-      />
 
       {/* Playhead */}
       <div

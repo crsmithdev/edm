@@ -62,7 +62,7 @@ export function WaveformContainer() {
       }}
     >
       {/* Overview Waveform (full track) */}
-      <OverviewWaveform detailSpan={detailSpan} />
+      <OverviewWaveform />
 
       {/* Detail Waveform (centered playhead) */}
       <div style={{ marginTop: "var(--space-3)" }}>
