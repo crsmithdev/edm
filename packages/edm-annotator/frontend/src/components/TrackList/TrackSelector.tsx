@@ -12,7 +12,7 @@ export function TrackSelector() {
   const { setWaveformData, reset: resetWaveform } = useWaveformStore();
   const { setBPM, setDownbeat, reset: resetTempo } = useTempoStore();
   const { player, reset: resetAudio } = useAudioStore();
-  const { reset: resetStructure } = useStructureStore();
+  const { reset: resetStructure, setBoundaries } = useStructureStore();
   const { showStatus } = useUIStore();
 
   // Auto-load track list on mount
@@ -43,6 +43,9 @@ export function TrackSelector() {
         waveform_times: data.waveform_times,
         duration: data.duration,
       });
+
+      // Initialize with a single region spanning the entire track
+      setBoundaries([0, data.duration]);
 
       // Update tempo store
       if (data.bpm) {
