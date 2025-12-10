@@ -210,13 +210,13 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
   const dragStartTime = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Track shift key state for cursor changes
+  // Track ctrl key state for cursor changes (ctrl+click adds boundary)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Shift") setIsShiftDown(true);
+      if (e.key === "Control") setIsShiftDown(true);
     };
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "Shift") setIsShiftDown(false);
+      if (e.key === "Control") setIsShiftDown(false);
     };
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
@@ -226,10 +226,10 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     };
   }, []);
 
-  // Handle shift+click for boundaries (at click position, respecting quantize)
+  // Handle ctrl+click for boundaries (at click position, respecting quantize)
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Only handle shift+click for boundaries
-    if (!e.shiftKey) return;
+    // Only handle ctrl+click for boundaries
+    if (!e.ctrlKey && !e.metaKey) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -252,14 +252,18 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     addBoundary(time);
   };
 
+  // Track if shift was held when drag started (to bypass quantize)
+  const shiftHeldOnDragStart = useRef(false);
+
   // Drag to scrub - dragging left moves playback forward, right moves backward
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.shiftKey) return; // Don't start drag on shift+click
+      if (e.ctrlKey || e.metaKey) return; // Don't start drag on ctrl+click (boundary mode)
       e.preventDefault();
       setIsDragging(true);
       dragStartX.current = e.clientX;
       dragStartTime.current = currentTime;
+      shiftHeldOnDragStart.current = e.shiftKey; // Remember if shift was held
     },
     [currentTime]
   );
@@ -277,8 +281,8 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
       const timeDelta = (-deltaX / containerWidth) * viewportDuration;
       let newTime = Math.max(0, Math.min(duration, dragStartTime.current + timeDelta));
 
-      // Snap to nearest beat if quantize enabled
-      if (quantizeEnabled && trackBPM > 0) {
+      // Snap to nearest beat if quantize enabled (shift bypasses quantize)
+      if (quantizeEnabled && trackBPM > 0 && !shiftHeldOnDragStart.current) {
         const beatDuration = getBeatDuration(trackBPM);
         const beatsFromDownbeat = (newTime - trackDownbeat) / beatDuration;
         const nearestBeat = Math.round(beatsFromDownbeat);
