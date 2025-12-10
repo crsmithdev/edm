@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { useWaveformStore } from "@/stores";
 
 /**
- * SVG-based 3-band waveform visualization
- * Displays bass/mids/highs in 3 separate horizontal bands, each mirrored vertically
+ * SVG-based stacked area chart waveform visualization
+ * Displays bass/mids/highs as cumulative stacked layers
+ * Based on best practices from audio visualization research
  */
 export function WaveformCanvas() {
   const {
@@ -32,55 +33,105 @@ export function WaveformCanvas() {
     };
   }, [waveformTimes, viewportStart, viewportEnd]);
 
-  // Generate mirrored waveform path for a single band
-  const generateBandPath = (
-    samples: number[],
-    offsetY: number,
-    bandHeight: number
-  ): string => {
-    if (visibleSamples.indices.length === 0) return "";
+  // Generate stacked area paths
+  const { bassPath, midsPath, highsPath } = useMemo(() => {
+    if (visibleSamples.indices.length === 0) {
+      return { bassPath: "", midsPath: "", highsPath: "" };
+    }
 
     const viewportDuration = viewportEnd - viewportStart;
-    if (viewportDuration <= 0) return "";
+    if (viewportDuration <= 0) {
+      return { bassPath: "", midsPath: "", highsPath: "" };
+    }
 
     const width = 100;
-    const center = offsetY + bandHeight / 2;
+    const height = 100;
 
-    // Find max amplitude for scaling
-    const maxAmp = Math.max(...visibleSamples.indices.map((idx) => Math.abs(samples[idx] || 0)));
-    const scale = maxAmp > 0 ? (bandHeight / 2 * 0.9) / maxAmp : 1;
+    // Calculate cumulative heights for each sample
+    const cumulativeData = visibleSamples.indices.map((idx) => {
+      const bass = Math.abs(waveformBass[idx] || 0);
+      const mids = Math.abs(waveformMids[idx] || 0);
+      const highs = Math.abs(waveformHighs[idx] || 0);
+      const time = waveformTimes[idx];
+      const x = ((time - viewportStart) / viewportDuration) * width;
 
-    // Build top half (left to right)
-    const topPoints = visibleSamples.indices
-      .map((idx) => {
-        const time = waveformTimes[idx];
-        if (time === undefined) return null;
-        const x = ((time - viewportStart) / viewportDuration) * width;
-        const amp = Math.abs(samples[idx] || 0);
-        const y = center - amp * scale;
-        return `${x},${y}`;
+      return {
+        x,
+        bass,
+        bassTop: bass,
+        midsTop: bass + mids,
+        highsTop: bass + mids + highs,
+      };
+    });
+
+    // Find max cumulative height for scaling
+    const maxCumulative = Math.max(
+      ...cumulativeData.map((d) => d.highsTop),
+      0.001
+    );
+    const scale = (height * 0.9) / maxCumulative;
+
+    // Generate bass area (bottom layer)
+    const bassTopPoints = cumulativeData.map((d) => {
+      const y = height - d.bassTop * scale;
+      return `${d.x},${y}`;
+    });
+
+    const bassPath =
+      bassTopPoints.length > 0
+        ? `M0,${height} L${bassTopPoints.join(" L")} L${width},${height} Z`
+        : "";
+
+    // Generate mids area (middle layer)
+    const midsTopPoints = cumulativeData.map((d) => {
+      const y = height - d.midsTop * scale;
+      return `${d.x},${y}`;
+    });
+
+    const midsBottomPoints = cumulativeData
+      .map((d) => {
+        const y = height - d.bassTop * scale;
+        return `${d.x},${y}`;
       })
-      .filter((p): p is string => p !== null);
-
-    // Build bottom half (right to left, mirrored)
-    const bottomPoints = visibleSamples.indices
-      .map((idx) => {
-        const time = waveformTimes[idx];
-        if (time === undefined) return null;
-        const x = ((time - viewportStart) / viewportDuration) * width;
-        const amp = Math.abs(samples[idx] || 0);
-        const y = center + amp * scale;
-        return `${x},${y}`;
-      })
-      .filter((p): p is string => p !== null)
       .reverse();
 
-    if (topPoints.length === 0 || bottomPoints.length === 0) return "";
+    const midsPath =
+      midsTopPoints.length > 0 && midsBottomPoints.length > 0
+        ? `M${midsBottomPoints[midsBottomPoints.length - 1]} L${midsTopPoints.join(" L")} L${midsBottomPoints.join(" L")} Z`
+        : "";
 
-    return `M${topPoints.join(" L")} L${bottomPoints.join(" L")} Z`;
-  };
+    // Generate highs area (top layer)
+    const highsTopPoints = cumulativeData.map((d) => {
+      const y = height - d.highsTop * scale;
+      return `${d.x},${y}`;
+    });
 
-  const bandHeight = 100 / 3;
+    const highsBottomPoints = cumulativeData
+      .map((d) => {
+        const y = height - d.midsTop * scale;
+        return `${d.x},${y}`;
+      })
+      .reverse();
+
+    const highsPath =
+      highsTopPoints.length > 0 && highsBottomPoints.length > 0
+        ? `M${highsBottomPoints[highsBottomPoints.length - 1]} L${highsTopPoints.join(" L")} L${highsBottomPoints.join(" L")} Z`
+        : "";
+
+    return {
+      bassPath,
+      midsPath,
+      highsPath,
+    };
+  }, [
+    visibleSamples,
+    waveformBass,
+    waveformMids,
+    waveformHighs,
+    waveformTimes,
+    viewportStart,
+    viewportEnd,
+  ]);
 
   return (
     <svg
@@ -92,43 +143,36 @@ export function WaveformCanvas() {
         background: "#0a0a12",
       }}
     >
-      {/* Bass band (top third) - cyan */}
+      {/* Bass layer (bottom) - cyan */}
       <path
-        d={generateBandPath(waveformBass, 0, bandHeight)}
-        fill="rgba(0, 229, 204, 0.7)"
+        d={bassPath}
+        fill="rgba(0, 229, 204, 0.8)"
         stroke="none"
       />
 
-      {/* Mids band (middle third) - purple */}
+      {/* Mids layer (middle) - purple */}
       <path
-        d={generateBandPath(waveformMids, bandHeight, bandHeight)}
-        fill="rgba(123, 106, 255, 0.7)"
+        d={midsPath}
+        fill="rgba(123, 106, 255, 0.8)"
         stroke="none"
       />
 
-      {/* Highs band (bottom third) - pink */}
+      {/* Highs layer (top) - pink */}
       <path
-        d={generateBandPath(waveformHighs, bandHeight * 2, bandHeight)}
-        fill="rgba(255, 107, 181, 0.7)"
+        d={highsPath}
+        fill="rgba(255, 107, 181, 0.8)"
         stroke="none"
       />
 
-      {/* Separator lines */}
+      {/* Center baseline for reference */}
       <line
         x1="0"
-        y1={bandHeight}
+        y1="50"
         x2="100"
-        y2={bandHeight}
-        stroke="rgba(123, 106, 255, 0.2)"
-        strokeWidth="0.5"
-      />
-      <line
-        x1="0"
-        y1={bandHeight * 2}
-        x2="100"
-        y2={bandHeight * 2}
-        stroke="rgba(123, 106, 255, 0.2)"
-        strokeWidth="0.5"
+        y2="50"
+        stroke="rgba(255, 255, 255, 0.1)"
+        strokeWidth="0.3"
+        strokeDasharray="2,2"
       />
     </svg>
   );
