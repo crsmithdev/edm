@@ -26,12 +26,12 @@ export function WaveformContainer() {
   return (
     <div
       style={{
-        background: "#1E2139",
-        padding: "24px",
-        borderRadius: "14px",
-        marginBottom: "20px",
-        border: "1px solid rgba(91, 124, 255, 0.1)",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
+        background: "var(--bg-secondary)",
+        padding: "var(--space-6)",
+        borderRadius: "var(--radius-xl)",
+        marginBottom: "var(--space-5)",
+        border: "1px solid var(--border-primary)",
+        boxShadow: "var(--shadow-md)",
       }}
     >
       {/* Waveform Display */}
@@ -43,10 +43,10 @@ export function WaveformContainer() {
         style={{
           position: "relative",
           width: "100%",
-          height: "300px",
-          background: "#151828",
-          border: "1px solid #2A2F4C",
-          borderRadius: "10px",
+          height: "var(--waveform-height)",
+          background: "var(--bg-tertiary)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-lg)",
           cursor: isDragging ? "grabbing" : "crosshair",
           overflow: "hidden",
         }}
@@ -71,19 +71,19 @@ export function WaveformContainer() {
       <div
         style={{
           display: "flex",
-          gap: "10px",
+          gap: "var(--space-2)",
           alignItems: "center",
-          marginTop: "16px",
+          marginTop: "var(--space-4)",
           justifyContent: "space-between",
         }}
       >
         {/* Track metadata on left */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
           <div
             style={{
-              fontSize: "14px",
-              fontWeight: 600,
-              color: "#E5E7EB",
+              fontSize: "var(--font-size-base)",
+              fontWeight: "var(--font-weight-semibold)",
+              color: "var(--text-secondary)",
             }}
           >
             {currentTrack || "No track loaded"}
@@ -91,10 +91,10 @@ export function WaveformContainer() {
           {currentTrack && (
             <div
               style={{
-                fontSize: "12px",
-                color: "#9CA3AF",
+                fontSize: "var(--font-size-sm)",
+                color: "var(--text-tertiary)",
                 display: "flex",
-                gap: "12px",
+                gap: "var(--space-3)",
               }}
             >
               <span>{trackBPM ? `${trackBPM} BPM` : "BPM not set"}</span>
@@ -105,18 +105,18 @@ export function WaveformContainer() {
         </div>
 
         {/* Zoom controls on right */}
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
         <button
           onClick={() => zoom(-1)}
           style={{
-            padding: "8px 16px",
-            background: "#2A2F4C",
-            color: "#E5E7EB",
+            padding: "var(--space-2) var(--space-4)",
+            background: "var(--border-subtle)",
+            color: "var(--text-secondary)",
             border: "none",
-            borderRadius: "6px",
-            fontSize: "16px",
+            borderRadius: "var(--radius-sm)",
+            fontSize: "var(--font-size-lg)",
             cursor: "pointer",
-            fontWeight: 600,
+            fontWeight: "var(--font-weight-semibold)",
           }}
         >
           −
@@ -124,14 +124,14 @@ export function WaveformContainer() {
         <button
           onClick={() => zoom(1)}
           style={{
-            padding: "8px 16px",
-            background: "#2A2F4C",
-            color: "#E5E7EB",
+            padding: "var(--space-2) var(--space-4)",
+            background: "var(--border-subtle)",
+            color: "var(--text-secondary)",
             border: "none",
-            borderRadius: "6px",
-            fontSize: "16px",
+            borderRadius: "var(--radius-sm)",
+            fontSize: "var(--font-size-lg)",
             cursor: "pointer",
-            fontWeight: 600,
+            fontWeight: "var(--font-weight-semibold)",
           }}
         >
           +
@@ -142,12 +142,12 @@ export function WaveformContainer() {
             zoomToFit();
           }}
           style={{
-            padding: "8px 16px",
-            background: "#2A2F4C",
-            color: "#E5E7EB",
+            padding: "var(--space-2) var(--space-4)",
+            background: "var(--border-subtle)",
+            color: "var(--text-secondary)",
             border: "none",
-            borderRadius: "6px",
-            fontSize: "13px",
+            borderRadius: "var(--radius-sm)",
+            fontSize: "var(--font-size-sm)",
             cursor: "pointer",
           }}
         >

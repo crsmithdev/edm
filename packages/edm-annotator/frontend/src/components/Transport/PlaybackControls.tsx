@@ -1,4 +1,6 @@
+import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Music, Clock, Zap } from "lucide-react";
 import { useAudioStore, useTempoStore, useTrackStore } from "@/stores";
+import { Button, InfoCard, Tooltip } from "@/components/UI";
 
 /**
  * Transport row with playback controls and info displays
@@ -29,9 +31,9 @@ export function PlaybackControls() {
       style={{
         display: "grid",
         gridTemplateColumns: "1fr auto",
-        gap: "20px",
+        gap: "var(--space-5)",
         alignItems: "center",
-        paddingBottom: "20px",
+        paddingBottom: "var(--space-5)",
       }}
     >
       {/* Left: Transport buttons */}
@@ -39,94 +41,46 @@ export function PlaybackControls() {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "12px",
+          gap: "var(--space-3)",
           alignItems: "stretch",
         }}
       >
-        <button
-          onClick={togglePlayback}
-          style={{
-            padding: "12px 20px",
-            fontSize: "14px",
-            fontWeight: 600,
-            background: isPlaying ? "#FF6B6B" : "#00E6B8",
-            color: isPlaying ? "#FFFFFF" : "#0F1419",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "44px",
-          }}
-        >
-          {isPlaying ? "⏸ Pause" : "▶ Play"}
-        </button>
-        <button
-          onClick={returnToCue}
-          style={{
-            padding: "12px 20px",
-            fontSize: "14px",
-            fontWeight: 600,
-            background: "#FFB800",
-            color: "#0F1419",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "44px",
-          }}
-        >
-          ↺ Cue
-        </button>
-        <button
-          onClick={previousTrack}
-          style={{
-            padding: "12px 20px",
-            fontSize: "14px",
-            fontWeight: 600,
-            background: "#2A2F4C",
-            color: "#E5E7EB",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "44px",
-          }}
-        >
-          ◀ Previous
-        </button>
-        <button
-          onClick={nextTrack}
-          style={{
-            padding: "12px 20px",
-            fontSize: "14px",
-            fontWeight: 600,
-            background: "#2A2F4C",
-            color: "#E5E7EB",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "44px",
-          }}
-        >
-          Next ▶
-        </button>
+        <Tooltip content="Toggle playback" shortcut="Space">
+          <Button
+            onClick={togglePlayback}
+            variant={isPlaying ? "danger" : "accent"}
+            icon={isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          >
+            {isPlaying ? "Pause" : "Play"}
+          </Button>
+        </Tooltip>
+        <Tooltip content="Return to cue point" shortcut="C / R">
+          <Button
+            onClick={returnToCue}
+            variant="warning"
+            icon={<RotateCcw size={16} />}
+          >
+            Cue
+          </Button>
+        </Tooltip>
+        <Tooltip content="Previous track" shortcut="↑">
+          <Button
+            onClick={previousTrack}
+            variant="secondary"
+            icon={<ChevronLeft size={16} />}
+          >
+            Previous
+          </Button>
+        </Tooltip>
+        <Tooltip content="Next track" shortcut="↓">
+          <Button
+            onClick={nextTrack}
+            variant="secondary"
+            icon={<ChevronRight size={16} />}
+          >
+            Next
+          </Button>
+        </Tooltip>
       </div>
 
       {/* Right: Info displays */}
@@ -134,117 +88,12 @@ export function PlaybackControls() {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "12px",
+          gap: "var(--space-3)",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "4px",
-            padding: "8px 16px",
-            background: "#151828",
-            border: "1px solid #2A2F4C",
-            borderRadius: "8px",
-            height: "44px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 600,
-              color: "#6B7280",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            BPM
-          </span>
-          <span
-            style={{
-              fontSize: "16px",
-              fontWeight: 700,
-              color: "#00E6B8",
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {trackBPM || "--"}
-          </span>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "4px",
-            padding: "8px 16px",
-            background: "#151828",
-            border: "1px solid #2A2F4C",
-            borderRadius: "8px",
-            height: "44px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 600,
-              color: "#6B7280",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Bar
-          </span>
-          <span
-            style={{
-              fontSize: "16px",
-              fontWeight: 700,
-              color: "#00E6B8",
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {currentBar}
-          </span>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "4px",
-            padding: "8px 16px",
-            background: "#151828",
-            border: "1px solid #2A2F4C",
-            borderRadius: "8px",
-            height: "44px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 600,
-              color: "#6B7280",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Time
-          </span>
-          <span
-            style={{
-              fontSize: "16px",
-              fontWeight: 700,
-              color: "#00E6B8",
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {formatTime(currentTime)}
-          </span>
-        </div>
+        <InfoCard label="BPM" value={trackBPM || "--"} icon={<Zap size={14} />} />
+        <InfoCard label="Bar" value={currentBar} icon={<Music size={14} />} />
+        <InfoCard label="Time" value={formatTime(currentTime)} icon={<Clock size={14} />} />
       </div>
     </div>
   );

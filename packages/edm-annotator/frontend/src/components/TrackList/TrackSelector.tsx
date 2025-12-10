@@ -1,6 +1,8 @@
 import { useEffect } from "react";
+import { Music, CheckCircle, FileQuestion } from "lucide-react";
 import { useTrackStore, useWaveformStore, useTempoStore, useAudioStore, useStructureStore, useUIStore } from "@/stores";
 import { trackService } from "@/services/api";
+import { Card, EmptyState, TrackItemSkeleton } from "@/components/UI";
 
 /**
  * Track list sidebar with selection and loading
@@ -61,57 +63,67 @@ export function TrackSelector() {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          padding: "24px",
-          background: "#1E2139",
-          borderRadius: "10px",
-          border: "1px solid rgba(91, 124, 255, 0.1)",
-          textAlign: "center",
-          color: "#9CA3AF",
-        }}
-      >
-        Loading tracks...
-      </div>
+      <Card style={{ display: "flex", flexDirection: "column", maxHeight: "600px" }}>
+        <div
+          style={{
+            padding: "var(--space-4)",
+            borderBottom: "1px solid var(--border-primary)",
+          }}
+        >
+          <h3 style={{ color: "var(--text-primary)", fontSize: "var(--font-size-lg)", margin: 0 }}>
+            Tracks
+          </h3>
+        </div>
+        <div>
+          {[...Array(5)].map((_, i) => (
+            <TrackItemSkeleton key={i} />
+          ))}
+        </div>
+      </Card>
     );
   }
 
   if (tracks.length === 0) {
     return (
-      <div
-        style={{
-          padding: "24px",
-          background: "#1E2139",
-          borderRadius: "10px",
-          border: "1px solid rgba(91, 124, 255, 0.1)",
-          textAlign: "center",
-          color: "#6B7280",
-        }}
-      >
-        No audio files found. Check EDM_AUDIO_DIR environment variable.
-      </div>
+      <Card>
+        <EmptyState
+          icon={<FileQuestion size={48} />}
+          title="No Tracks Found"
+          description="No audio files found. Check EDM_AUDIO_DIR environment variable or add audio files to your tracks directory."
+        />
+      </Card>
     );
   }
 
   return (
-    <div
+    <Card
+      padding="sm"
       style={{
-        background: "#1E2139",
-        borderRadius: "10px",
-        border: "1px solid rgba(91, 124, 255, 0.1)",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         maxHeight: "600px",
+        padding: 0,
       }}
     >
       <div
         style={{
-          padding: "16px",
-          borderBottom: "1px solid rgba(91, 124, 255, 0.1)",
+          padding: "var(--space-4)",
+          borderBottom: "1px solid var(--border-primary)",
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--space-2)",
         }}
       >
-        <h3 style={{ color: "#FFFFFF", fontSize: "16px", margin: 0 }}>
+        <Music size={18} style={{ color: "var(--color-primary)" }} />
+        <h3
+          style={{
+            color: "var(--text-primary)",
+            fontSize: "var(--font-size-lg)",
+            fontWeight: "var(--font-weight-semibold)",
+            margin: 0,
+          }}
+        >
           Tracks ({tracks.length})
         </h3>
       </div>
@@ -130,15 +142,15 @@ export function TrackSelector() {
               key={track.filename}
               onClick={() => handleTrackClick(track.filename)}
               style={{
-                padding: "12px 16px",
-                borderBottom: "1px solid rgba(91, 124, 255, 0.05)",
+                padding: "var(--space-3) var(--space-4)",
+                borderBottom: "1px solid var(--border-primary)",
                 cursor: "pointer",
                 background: isSelected ? "rgba(91, 124, 255, 0.1)" : "transparent",
-                transition: "all 0.2s",
+                transition: "all var(--transition-base)",
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
-                  e.currentTarget.style.background = "#252A45";
+                  e.currentTarget.style.background = "var(--bg-elevated)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -149,35 +161,41 @@ export function TrackSelector() {
             >
               <div
                 style={{
-                  fontSize: "13px",
-                  color: isSelected ? "#5B7CFF" : "#E5E7EB",
-                  fontWeight: isSelected ? 600 : 400,
-                  marginBottom: "4px",
+                  fontSize: "var(--font-size-sm)",
+                  color: isSelected ? "var(--color-primary)" : "var(--text-secondary)",
+                  fontWeight: isSelected ? "var(--font-weight-semibold)" : "var(--font-weight-normal)",
+                  marginBottom: "var(--space-1)",
                   wordBreak: "break-word",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--space-2)",
                 }}
               >
                 {track.has_reference && (
-                  <span
+                  <CheckCircle
+                    size={14}
                     style={{
-                      color: "#00E6B8",
-                      marginRight: "6px",
-                      fontSize: "12px",
+                      color: "var(--color-success)",
+                      flexShrink: 0,
                     }}
-                  >
-                    ✓
-                  </span>
+                  />
                 )}
-                {track.filename}
+                <span>{track.filename}</span>
               </div>
-              <div style={{ fontSize: "11px", color: "#6B7280" }}>
-                {track.has_reference && "Reference"}
-                {track.has_generated && !track.has_reference && "Generated"}
+              <div
+                style={{
+                  fontSize: "var(--font-size-xs)",
+                  color: "var(--text-muted)",
+                }}
+              >
+                {track.has_reference && "Reference annotation"}
+                {track.has_generated && !track.has_reference && "Generated annotation"}
                 {!track.has_reference && !track.has_generated && "No annotation"}
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }
