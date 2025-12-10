@@ -1,6 +1,7 @@
 import { useMemo } from "react";
-import { useWaveformStore, useAudioStore, useTempoStore, useUIStore } from "@/stores";
+import { useWaveformStore, useAudioStore, useTempoStore, useUIStore, useStructureStore } from "@/stores";
 import { timeToBar, barToTime } from "@/utils/barCalculations";
+import { labelColors } from "@/utils/colors";
 
 /**
  * Compact full-track waveform overview with moving playhead
@@ -18,6 +19,7 @@ export function OverviewWaveform() {
   const { currentTime, seek } = useAudioStore();
   const { trackBPM, trackDownbeat } = useTempoStore();
   const { quantizeEnabled } = useUIStore();
+  const { regions, boundaries } = useStructureStore();
 
   // Generate simplified waveform path for full track (non-mirrored, extends upward)
   const waveformPath = useMemo(() => {
@@ -92,19 +94,62 @@ export function OverviewWaveform() {
         overflow: "hidden",
       }}
     >
+      {/* Region overlays (subtle, behind waveform) */}
+      {duration > 0 &&
+        regions.map((region, idx) => {
+          const leftPercent = (region.start / duration) * 100;
+          const widthPercent = ((region.end - region.start) / duration) * 100;
+          return (
+            <div
+              key={idx}
+              style={{
+                position: "absolute",
+                left: `${leftPercent}%`,
+                top: 0,
+                width: `${widthPercent}%`,
+                height: "100%",
+                background: labelColors[region.label],
+                opacity: 0.15,
+                pointerEvents: "none",
+              }}
+            />
+          );
+        })}
+
       {/* Waveform SVG */}
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
         style={{
+          position: "relative",
           width: "100%",
           height: "100%",
-          background: "#0a0a12",
+          background: "transparent",
         }}
       >
         {/* Combined waveform - single color for overview */}
         <path d={waveformPath} fill="rgba(100, 140, 180, 0.6)" stroke="none" />
       </svg>
+
+      {/* Boundary markers (subtle) */}
+      {duration > 0 &&
+        boundaries.map((time, idx) => {
+          const xPercent = (time / duration) * 100;
+          return (
+            <div
+              key={idx}
+              style={{
+                position: "absolute",
+                left: `${xPercent}%`,
+                top: 0,
+                width: "1px",
+                height: "100%",
+                background: "rgba(0, 229, 204, 0.5)",
+                pointerEvents: "none",
+              }}
+            />
+          );
+        })}
 
       {/* Playhead */}
       <div
