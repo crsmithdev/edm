@@ -61,6 +61,16 @@ export function BeatGrid() {
       trackDownbeat <= viewportEnd
     ) {
       lines.push({ time: trackDownbeat, type: "downbeat", bar: 1 });
+
+      // Add beat lines within bar 1 (only when zoomed in enough)
+      if (showBeats) {
+        for (let beat = 1; beat < 4; beat++) {
+          const beatTime = trackDownbeat + beat * beatDuration;
+          if (beatTime >= viewportStart && beatTime <= viewportEnd) {
+            lines.push({ time: beatTime, type: "beat" });
+          }
+        }
+      }
     }
 
     // Add bar lines
