@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState, useRef, useCallback } from "react";
 import { useWaveformStore, useAudioStore, useStructureStore, useUIStore, useTempoStore } from "@/stores";
 import { getBeatDuration } from "@/utils/barCalculations";
 import { BeatGrid } from "./BeatGrid";
@@ -203,8 +203,17 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     globalMaxAmplitude,
   ]);
 
-  // Handle click - shift+click adds boundary, regular click seeks
+  // Drag state for scrubbing
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef<number>(0);
+  const dragStartTime = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle shift+click for boundaries (at click position, respecting quantize)
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only handle shift+click for boundaries
+    if (!e.shiftKey) return;
+
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percent = x / rect.width;
@@ -223,18 +232,60 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
       time = Math.max(0, Math.min(duration, time));
     }
 
-    if (e.shiftKey) {
-      // Shift+click: add boundary without seeking
-      addBoundary(time);
-    } else {
-      // Regular click: seek to position
-      seek(time);
-    }
+    addBoundary(time);
   };
+
+  // Drag to scrub - dragging left moves playback forward, right moves backward
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.shiftKey) return; // Don't start drag on shift+click
+      e.preventDefault();
+      setIsDragging(true);
+      dragStartX.current = e.clientX;
+      dragStartTime.current = currentTime;
+    },
+    [currentTime]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return;
+
+      const deltaX = e.clientX - dragStartX.current;
+      const containerWidth = containerRef.current.getBoundingClientRect().width;
+      const viewportDuration = viewport.end - viewport.start;
+
+      // Convert pixel delta to time delta
+      // Dragging left (negative deltaX) should move forward in time
+      const timeDelta = (-deltaX / containerWidth) * viewportDuration;
+      const newTime = Math.max(0, Math.min(duration, dragStartTime.current + timeDelta));
+
+      seek(newTime);
+    },
+    [isDragging, viewport.end, viewport.start, duration, seek]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Add global mouse listeners for drag
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <div
+      ref={containerRef}
       onClick={handleClick}
+      onMouseDown={handleMouseDown}
       style={{
         position: "relative",
         width: "100%",
@@ -242,8 +293,9 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
         background: "var(--bg-tertiary)",
         border: "1px solid var(--border-subtle)",
         borderRadius: "var(--radius-lg)",
-        cursor: "crosshair",
+        cursor: isDragging ? "grabbing" : "grab",
         overflow: "hidden",
+        userSelect: "none",
       }}
     >
       {/* Region overlays (behind everything) */}

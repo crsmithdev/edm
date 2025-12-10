@@ -13,7 +13,7 @@ import { getBarDuration } from "@/utils/barCalculations";
  * Handles keyboard shortcuts for the application
  */
 export function useKeyboardShortcuts() {
-  const { isPlaying, play, pause, seek, currentTime, returnToCue } =
+  const { isPlaying, play, pause, seek, currentTime, returnToCue, setCuePoint } =
     useAudioStore();
   const { addBoundary } = useStructureStore();
   const { setDownbeat, trackBPM } = useTempoStore();
@@ -60,18 +60,25 @@ export function useKeyboardShortcuts() {
           toggleQuantize();
           break;
 
-        case "c": // C - return to cue (unless Ctrl/Cmd+C for copy)
+        case "c": // C - set cue when stopped, return to cue when playing
           if (e.ctrlKey || e.metaKey) {
             // Allow Ctrl+C / Cmd+C for copy
             return;
           }
           e.preventDefault();
-          returnToCue();
+          if (isPlaying) {
+            returnToCue();
+            showStatus("Returned to cue");
+          } else {
+            setCuePoint(currentTime);
+            showStatus(`Cue point set at ${currentTime.toFixed(2)}s`);
+          }
           break;
 
-        case "r": // R - return to cue
+        case "r": // R - return to cue (always)
           e.preventDefault();
           returnToCue();
+          showStatus("Returned to cue");
           break;
 
         case "ArrowLeft": // Left arrow - jump backward
@@ -147,6 +154,7 @@ export function useKeyboardShortcuts() {
     seek,
     currentTime,
     returnToCue,
+    setCuePoint,
     addBoundary,
     setDownbeat,
     toggleQuantize,
