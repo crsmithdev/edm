@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useWaveformStore, useAudioStore } from "@/stores";
 import { BeatGrid } from "./BeatGrid";
 import { BoundaryMarkers } from "./BoundaryMarkers";
@@ -34,12 +34,26 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
   }, [currentTime, span]);
 
   // Update the store viewport for BeatGrid and overlays to use
-  useMemo(() => {
+  useEffect(() => {
     setViewport(
       Math.max(0, viewport.start),
       Math.min(duration, viewport.end)
     );
   }, [viewport.start, viewport.end, duration, setViewport]);
+
+  // Calculate global max amplitude once for consistent scaling
+  const globalMaxAmplitude = useMemo(() => {
+    if (waveformTimes.length === 0) return 0.001;
+    let max = 0;
+    for (let i = 0; i < waveformTimes.length; i++) {
+      const total =
+        Math.abs(waveformBass[i] || 0) +
+        Math.abs(waveformMids[i] || 0) +
+        Math.abs(waveformHighs[i] || 0);
+      if (total > max) max = total;
+    }
+    return Math.max(max, 0.001);
+  }, [waveformBass, waveformMids, waveformHighs, waveformTimes]);
 
   // Generate stacked area paths for the visible portion
   const { bassPath, midsPath, highsPath } = useMemo(() => {
@@ -89,12 +103,8 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
       };
     });
 
-    // Find max cumulative height for scaling
-    const maxCumulative = Math.max(
-      ...cumulativeData.map((d) => d.highsTop),
-      0.001
-    );
-    const scale = (height * 0.9) / maxCumulative;
+    // Use global max for consistent scaling across all viewport positions
+    const scale = (height * 0.9) / globalMaxAmplitude;
 
     const center = height / 2;
     const halfScale = scale / 2;
@@ -186,6 +196,7 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     viewport.start,
     viewport.end,
     duration,
+    globalMaxAmplitude,
   ]);
 
   // Handle click to seek - account for centered viewport
