@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import { useStructureStore, useAudioStore, useTempoStore } from "@/stores";
 import { formatTime } from "@/utils/timeFormat";
 import type { SectionLabel } from "@/types/structure";
@@ -15,9 +16,19 @@ const VALID_LABELS: SectionLabel[] = [
  * List of regions with label editing
  */
 export function RegionList() {
-  const { regions, setRegionLabel } = useStructureStore();
+  const { regions, setRegionLabel, removeBoundary } = useStructureStore();
   const { seek } = useAudioStore();
   const { timeToBar } = useTempoStore();
+
+  const handleDeleteRegion = (idx: number, region: { start: number; end: number }) => {
+    // Can't delete if there's only one region
+    if (regions.length <= 1) return;
+
+    // For all regions except the last, remove the boundary at the end
+    // For the last region, remove the boundary at the start
+    const boundaryToRemove = idx === regions.length - 1 ? region.start : region.end;
+    removeBoundary(boundaryToRemove);
+  };
 
   return (
     <div
@@ -31,7 +42,7 @@ export function RegionList() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "140px 100px 1fr",
+          gridTemplateColumns: "140px 100px 1fr 40px",
           gap: "var(--space-3)",
           padding: "var(--space-2) var(--space-4)",
           borderBottom: "2px solid var(--border-primary)",
@@ -45,6 +56,7 @@ export function RegionList() {
         <div>Time</div>
         <div>Bars</div>
         <div>Label</div>
+        <div></div>
       </div>
 
       {/* Regions */}
@@ -57,7 +69,7 @@ export function RegionList() {
             key={idx}
             style={{
               display: "grid",
-              gridTemplateColumns: "140px 100px 1fr",
+              gridTemplateColumns: "140px 100px 1fr 40px",
               gap: "var(--space-3)",
               padding: "var(--space-3) var(--space-4)",
               borderBottom: "1px solid var(--border-primary)",
@@ -132,6 +144,40 @@ export function RegionList() {
                 </option>
               ))}
             </select>
+
+            {/* Delete Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteRegion(idx, region);
+              }}
+              disabled={regions.length <= 1}
+              style={{
+                padding: "var(--space-1)",
+                border: "none",
+                background: "transparent",
+                color: regions.length <= 1 ? "var(--text-disabled)" : "var(--text-tertiary)",
+                cursor: regions.length <= 1 ? "not-allowed" : "pointer",
+                borderRadius: "var(--radius-sm)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all var(--transition-base)",
+                opacity: regions.length <= 1 ? 0.3 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (regions.length > 1) {
+                  e.currentTarget.style.background = "var(--bg-hover)";
+                  e.currentTarget.style.color = "var(--color-error)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = regions.length <= 1 ? "var(--text-disabled)" : "var(--text-tertiary)";
+              }}
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
         );
       })}
