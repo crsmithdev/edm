@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from "react";
 import { useWaveformStore, useAudioStore, useStructureStore, useUIStore, useTempoStore } from "@/stores";
-import { timeToBar, barToTime } from "@/utils/barCalculations";
+import { getBeatDuration } from "@/utils/barCalculations";
 import { BeatGrid } from "./BeatGrid";
 import { BoundaryMarkers } from "./BoundaryMarkers";
 import { RegionOverlays } from "./RegionOverlays";
@@ -214,11 +214,12 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     // Clamp to valid track time
     let time = Math.max(0, Math.min(duration, rawTime));
 
-    // Snap to nearest bar if quantize enabled
+    // Snap to nearest beat if quantize enabled
     if (quantizeEnabled && trackBPM > 0) {
-      const bar = timeToBar(time, trackBPM, trackDownbeat);
-      const nearestBar = Math.round(bar);
-      time = barToTime(nearestBar, trackBPM, trackDownbeat);
+      const beatDuration = getBeatDuration(trackBPM);
+      const beatsFromDownbeat = (time - trackDownbeat) / beatDuration;
+      const nearestBeat = Math.round(beatsFromDownbeat);
+      time = trackDownbeat + nearestBeat * beatDuration;
       time = Math.max(0, Math.min(duration, time));
     }
 
