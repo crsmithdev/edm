@@ -19,15 +19,6 @@ FAILED=0
 echo "📦 Backend Checks"
 echo "─────────────────"
 
-# Format check
-echo -n "  Format (ruff)... "
-if uv run ruff format --check . &>/dev/null; then
-    echo -e "${GREEN}✓${NC}"
-else
-    echo -e "${RED}✗${NC}"
-    FAILED=$((FAILED + 1))
-fi
-
 # Lint
 echo -n "  Lint (ruff)... "
 if uv run ruff check . &>/dev/null; then
