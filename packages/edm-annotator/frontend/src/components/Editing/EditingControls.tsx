@@ -1,4 +1,6 @@
+import { Plus, MapPin, Grid3x3 } from "lucide-react";
 import { useAudioStore, useStructureStore, useTempoStore, useUIStore, useTrackStore } from "@/stores";
+import { Button } from "@/components/UI";
 
 /**
  * Editing row - three action buttons
@@ -20,71 +22,37 @@ export function EditingControls() {
     showStatus(`Added boundary at ${currentTime.toFixed(2)}s`);
   };
 
-  const actionBtnStyle = {
-    padding: "12px 20px",
-    fontSize: "14px",
-    fontWeight: 600,
-    background: "#5B7CFF",
-    color: "#FFFFFF",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    transition: "all 0.2s",
-    whiteSpace: "nowrap" as const,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "44px",
-  };
-
-  const actionBtnInactiveStyle = {
-    ...actionBtnStyle,
-    background: "#2A2F4C",
-    color: "#9CA3AF",
-  };
-
-  const actionBtnActiveStyle = {
-    ...actionBtnStyle,
-    background: "#5B7CFF",
-    color: "#FFFFFF",
-  };
-
   return (
     <div
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(3, 1fr)",
-        gap: "12px",
+        gap: "var(--space-3)",
       }}
     >
-      <button
+      <Button
         onClick={handleAddBoundary}
         disabled={!currentTrack}
-        style={{
-          ...actionBtnStyle,
-          opacity: currentTrack ? 1 : 0.6,
-          cursor: currentTrack ? "pointer" : "not-allowed",
-        }}
+        variant="primary"
+        icon={<Plus size={16} />}
       >
-        + Boundary
-      </button>
-      <button
+        Boundary
+      </Button>
+      <Button
         onClick={handleSetDownbeat}
         disabled={!currentTrack}
-        style={{
-          ...actionBtnStyle,
-          opacity: currentTrack ? 1 : 0.6,
-          cursor: currentTrack ? "pointer" : "not-allowed",
-        }}
+        variant="primary"
+        icon={<MapPin size={16} />}
       >
         Downbeat
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={toggleQuantize}
-        style={quantizeEnabled ? actionBtnActiveStyle : actionBtnInactiveStyle}
+        variant={quantizeEnabled ? "primary" : "secondary"}
+        icon={<Grid3x3 size={16} />}
       >
         Quantize
-      </button>
+      </Button>
     </div>
   );
 }

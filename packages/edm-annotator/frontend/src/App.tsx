@@ -34,16 +34,16 @@ function App() {
       style={{
         maxWidth: "1600px",
         margin: "0 auto",
-        padding: "24px",
+        padding: "var(--space-6)",
       }}
     >
       {/* Header */}
-      <header style={{ marginBottom: "24px" }}>
+      <header style={{ marginBottom: "var(--space-6)" }}>
         <h1
           style={{
-            color: "#FFFFFF",
-            fontSize: "28px",
-            fontWeight: 700,
+            color: "var(--text-primary)",
+            fontSize: "var(--font-size-3xl)",
+            fontWeight: "var(--font-weight-bold)",
             letterSpacing: "-0.02em",
             margin: 0,
           }}
@@ -60,21 +60,21 @@ function App() {
         style={{
           display: "grid",
           gridTemplateColumns: "3fr 2fr",
-          gap: "20px",
-          marginBottom: "20px",
+          gap: "var(--space-5)",
+          marginBottom: "var(--space-5)",
         }}
       >
         {/* Left Column: Controls */}
         <div
           style={{
-            background: "#1E2139",
-            padding: "20px",
-            borderRadius: "14px",
-            border: "1px solid rgba(91, 124, 255, 0.1)",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
+            background: "var(--bg-secondary)",
+            padding: "var(--space-5)",
+            borderRadius: "var(--radius-xl)",
+            border: "1px solid var(--border-primary)",
+            boxShadow: "var(--shadow-md)",
             display: "flex",
             flexDirection: "column",
-            gap: "20px",
+            gap: "var(--space-5)",
           }}
         >
           {/* Transport Row */}
@@ -99,24 +99,24 @@ function App() {
       {/* Instructions */}
       <div
         style={{
-          marginTop: "30px",
-          fontSize: "12px",
-          lineHeight: "1.8",
-          color: "#6B7280",
+          marginTop: "var(--space-8)",
+          fontSize: "var(--font-size-sm)",
+          lineHeight: "var(--line-height-relaxed)",
+          color: "var(--text-muted)",
         }}
       >
-        <strong style={{ color: "#9CA3AF", fontWeight: 600 }}>Workflow:</strong>{" "}
+        <strong style={{ color: "var(--text-tertiary)", fontWeight: "var(--font-weight-semibold)" }}>Workflow:</strong>{" "}
         Shift+Click waveform to add boundaries → Label regions using dropdowns in list below
         <br />
-        <strong style={{ color: "#9CA3AF", fontWeight: 600 }}>Navigate:</strong>{" "}
+        <strong style={{ color: "var(--text-tertiary)", fontWeight: "var(--font-weight-semibold)" }}>Navigate:</strong>{" "}
         Left/Right ±4 bars | Ctrl+Left/Right ±1 bar | Shift+Left/Right ±8 bars |
         Up/Down previous/next track
         <br />
-        <strong style={{ color: "#9CA3AF", fontWeight: 600 }}>Playback:</strong>{" "}
+        <strong style={{ color: "var(--text-tertiary)", fontWeight: "var(--font-weight-semibold)" }}>Playback:</strong>{" "}
         Click waveform to set cue point | Spacebar play/pause | C/R return to cue |
         Drag to pan | Scroll to zoom
         <br />
-        <strong style={{ color: "#9CA3AF", fontWeight: 600 }}>Editing:</strong>{" "}
+        <strong style={{ color: "var(--text-tertiary)", fontWeight: "var(--font-weight-semibold)" }}>Editing:</strong>{" "}
         B add boundary | D set downbeat | Q toggle quantize
       </div>
 

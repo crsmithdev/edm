@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Save } from "lucide-react";
 import { useStructureStore, useAudioStore, useTempoStore, useUIStore, useTrackStore } from "@/stores";
 import { trackService } from "@/services/api";
 import { formatTime } from "@/utils/timeFormat";
 import type { SectionLabel } from "@/types/structure";
+import { Button } from "@/components/UI";
 
 const VALID_LABELS: SectionLabel[] = [
   "intro",
@@ -68,24 +70,14 @@ export function RegionList() {
         >
           Regions (<span>{regions.length}</span>)
         </h2>
-        <button
+        <Button
           onClick={handleSave}
           disabled={!currentTrack || boundaries.length === 0 || isSaving}
-          style={{
-            background: "#5B7CFF",
-            color: "#FFFFFF",
-            border: "none",
-            cursor: currentTrack && boundaries.length > 0 && !isSaving ? "pointer" : "not-allowed",
-            fontWeight: 600,
-            transition: "all 0.2s",
-            borderRadius: "8px",
-            padding: "10px 18px",
-            fontSize: "14px",
-            opacity: currentTrack && boundaries.length > 0 && !isSaving ? 1 : 0.5,
-          }}
+          variant="primary"
+          icon={<Save size={16} />}
         >
-          {isSaving ? "Saving..." : "💾 Save Annotation"}
-        </button>
+          {isSaving ? "Saving..." : "Save"}
+        </Button>
       </div>
 
       {/* Region items */}
@@ -95,27 +87,27 @@ export function RegionList() {
             <div
               key={idx}
               style={{
-                background: "#151828",
-                padding: "14px 16px",
-                borderRadius: "10px",
-                marginBottom: "10px",
+                background: "var(--bg-tertiary)",
+                padding: "var(--space-3) var(--space-4)",
+                borderRadius: "var(--radius-lg)",
+                marginBottom: "var(--space-2)",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                transition: "all 0.2s",
-                border: "1px solid #2A2F4C",
+                transition: "all var(--transition-base)",
+                border: "1px solid var(--border-subtle)",
                 cursor: "pointer",
               }}
               onClick={() => seek(region.start)}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#1A1F38";
-                e.currentTarget.style.borderColor = "#5B7CFF";
+                e.currentTarget.style.background = "var(--bg-hover)";
+                e.currentTarget.style.borderColor = "var(--border-focus)";
                 e.currentTarget.style.transform = "translateY(-1px)";
-                e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+                e.currentTarget.style.boxShadow = "var(--shadow-md)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#151828";
-                e.currentTarget.style.borderColor = "#2A2F4C";
+                e.currentTarget.style.background = "var(--bg-tertiary)";
+                e.currentTarget.style.borderColor = "var(--border-subtle)";
                 e.currentTarget.style.transform = "translateY(0)";
                 e.currentTarget.style.boxShadow = "none";
               }}
@@ -123,10 +115,10 @@ export function RegionList() {
               {/* Time */}
               <div
                 style={{
-                  fontWeight: 600,
-                  color: "#5B7CFF",
+                  fontWeight: "var(--font-weight-semibold)",
+                  color: "var(--color-primary)",
                   minWidth: "120px",
-                  fontSize: "14px",
+                  fontSize: "var(--font-size-base)",
                 }}
               >
                 {formatTime(region.start)} - {formatTime(region.end)}
@@ -141,24 +133,24 @@ export function RegionList() {
                 }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  padding: "6px 12px",
-                  border: "1px solid #2A2F4C",
-                  background: "#0F1419",
-                  color: "#E5E7EB",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  fontWeight: 600,
+                  padding: "var(--space-1) var(--space-3)",
+                  border: "1px solid var(--border-subtle)",
+                  background: "var(--bg-primary)",
+                  color: "var(--text-secondary)",
+                  borderRadius: "var(--radius-sm)",
+                  fontSize: "var(--font-size-sm)",
+                  fontWeight: "var(--font-weight-semibold)",
                   textTransform: "uppercase",
                   cursor: "pointer",
-                  transition: "all 0.2s",
+                  transition: "all var(--transition-base)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#1A1F38";
-                  e.currentTarget.style.borderColor = "#5B7CFF";
+                  e.currentTarget.style.background = "var(--bg-hover)";
+                  e.currentTarget.style.borderColor = "var(--border-focus)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#0F1419";
-                  e.currentTarget.style.borderColor = "#2A2F4C";
+                  e.currentTarget.style.background = "var(--bg-primary)";
+                  e.currentTarget.style.borderColor = "var(--border-subtle)";
                 }}
               >
                 {VALID_LABELS.map((label) => (
