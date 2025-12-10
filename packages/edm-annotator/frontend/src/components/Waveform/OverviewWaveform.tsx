@@ -1,9 +1,11 @@
 import { useMemo } from "react";
-import { useWaveformStore, useAudioStore } from "@/stores";
+import { useWaveformStore, useAudioStore, useTempoStore, useUIStore } from "@/stores";
+import { timeToBar, barToTime } from "@/utils/barCalculations";
 
 /**
  * Compact full-track waveform overview with moving playhead
  * Shows entire track duration, waveform extends upward from baseline
+ * Click snaps to nearest bar
  */
 export function OverviewWaveform() {
   const {
@@ -14,6 +16,8 @@ export function OverviewWaveform() {
     duration,
   } = useWaveformStore();
   const { currentTime, seek } = useAudioStore();
+  const { trackBPM, trackDownbeat } = useTempoStore();
+  const { quantizeEnabled } = useUIStore();
 
   // Generate simplified waveform path for full track (non-mirrored, extends upward)
   const waveformPath = useMemo(() => {
@@ -56,13 +60,22 @@ export function OverviewWaveform() {
   // Calculate playhead position
   const playheadPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  // Handle click to seek
+  // Handle click to seek - snap to nearest bar if quantize enabled
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percent = x / rect.width;
-    const time = percent * duration;
-    seek(Math.max(0, Math.min(duration, time)));
+    const rawTime = percent * duration;
+
+    // Snap to nearest bar if quantize enabled and BPM available
+    let seekTime = rawTime;
+    if (quantizeEnabled && trackBPM > 0) {
+      const bar = timeToBar(rawTime, trackBPM, trackDownbeat);
+      const nearestBar = Math.round(bar);
+      seekTime = barToTime(nearestBar, trackBPM, trackDownbeat);
+    }
+
+    seek(Math.max(0, Math.min(duration, seekTime)));
   };
 
   return (
