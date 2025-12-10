@@ -1,5 +1,6 @@
 import { useMemo, useEffect } from "react";
-import { useWaveformStore, useAudioStore } from "@/stores";
+import { useWaveformStore, useAudioStore, useStructureStore, useUIStore, useTempoStore } from "@/stores";
+import { timeToBar, barToTime } from "@/utils/barCalculations";
 import { BeatGrid } from "./BeatGrid";
 import { BoundaryMarkers } from "./BoundaryMarkers";
 import { RegionOverlays } from "./RegionOverlays";
@@ -23,6 +24,9 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     setViewport,
   } = useWaveformStore();
   const { currentTime, seek } = useAudioStore();
+  const { addBoundary } = useStructureStore();
+  const { quantizeEnabled } = useUIStore();
+  const { trackBPM, trackDownbeat } = useTempoStore();
 
   // Calculate the viewport centered on currentTime
   const viewport = useMemo(() => {
@@ -199,15 +203,32 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     globalMaxAmplitude,
   ]);
 
-  // Handle click to seek - account for centered viewport
+  // Handle click - shift+click adds boundary, regular click seeks
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percent = x / rect.width;
     const viewportDuration = viewport.end - viewport.start;
-    const time = viewport.start + percent * viewportDuration;
+    const rawTime = viewport.start + percent * viewportDuration;
+
     // Clamp to valid track time
-    seek(Math.max(0, Math.min(duration, time)));
+    let time = Math.max(0, Math.min(duration, rawTime));
+
+    // Snap to nearest bar if quantize enabled
+    if (quantizeEnabled && trackBPM > 0) {
+      const bar = timeToBar(time, trackBPM, trackDownbeat);
+      const nearestBar = Math.round(bar);
+      time = barToTime(nearestBar, trackBPM, trackDownbeat);
+      time = Math.max(0, Math.min(duration, time));
+    }
+
+    if (e.shiftKey) {
+      // Shift+click: add boundary without seeking
+      addBoundary(time);
+    } else {
+      // Regular click: seek to position
+      seek(time);
+    }
   };
 
   return (
