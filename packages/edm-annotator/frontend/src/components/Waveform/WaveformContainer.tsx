@@ -1,5 +1,5 @@
 import { useWaveformInteraction } from "@/hooks/useWaveformInteraction";
-import { useWaveformStore, useUIStore } from "@/stores";
+import { useWaveformStore, useUIStore, useTrackStore, useTempoStore } from "@/stores";
 import { WaveformCanvas } from "./WaveformCanvas";
 import { BeatGrid } from "./BeatGrid";
 import { Playhead } from "./Playhead";
@@ -10,10 +10,18 @@ import { RegionOverlays } from "./RegionOverlays";
  * Container for waveform visualization and overlays
  */
 export function WaveformContainer() {
-  const { zoom } = useWaveformStore();
+  const { zoom, duration } = useWaveformStore();
   const { isDragging } = useUIStore();
+  const { currentTrack } = useTrackStore();
+  const { trackBPM } = useTempoStore();
   const { handleMouseDown, handleMouseMove, handleMouseUp, handleWheel } =
     useWaveformInteraction();
+
+  const formatDuration = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div
@@ -59,16 +67,45 @@ export function WaveformContainer() {
         <Playhead />
       </div>
 
-      {/* Zoom Controls */}
+      {/* Track Info and Zoom Controls */}
       <div
         style={{
           display: "flex",
           gap: "10px",
           alignItems: "center",
           marginTop: "16px",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
         }}
       >
+        {/* Track metadata on left */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "#E5E7EB",
+            }}
+          >
+            {currentTrack || "No track loaded"}
+          </div>
+          {currentTrack && (
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#9CA3AF",
+                display: "flex",
+                gap: "12px",
+              }}
+            >
+              <span>{trackBPM ? `${trackBPM} BPM` : "BPM not set"}</span>
+              <span>•</span>
+              <span>{formatDuration(duration)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Zoom controls on right */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         <button
           onClick={() => zoom(-1)}
           style={{
@@ -116,6 +153,7 @@ export function WaveformContainer() {
         >
           Reset
         </button>
+        </div>
       </div>
     </div>
   );

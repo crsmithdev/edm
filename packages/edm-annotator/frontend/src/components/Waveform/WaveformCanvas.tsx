@@ -3,6 +3,7 @@ import { useWaveformStore } from "@/stores";
 
 /**
  * SVG-based 3-band waveform visualization
+ * Displays bass/mids/highs in 3 separate horizontal bands, each mirrored vertically
  */
 export function WaveformCanvas() {
   const {
@@ -31,41 +32,44 @@ export function WaveformCanvas() {
     };
   }, [waveformTimes, viewportStart, viewportEnd]);
 
-  // Generate stacked area path (filled polygon from baseline to top edge)
-  const generateStackedPath = (
-    bottomSamples: number[],
-    topSamples: number[]
+  // Generate mirrored waveform path for a single band
+  const generateBandPath = (
+    samples: number[],
+    offsetY: number,
+    bandHeight: number
   ): string => {
     if (visibleSamples.indices.length === 0) return "";
-    if (bottomSamples.length === 0 || topSamples.length === 0) return "";
 
     const viewportDuration = viewportEnd - viewportStart;
     if (viewportDuration <= 0) return "";
 
     const width = 100;
-    const height = 100;
-    const centerY = height / 2;
+    const center = offsetY + bandHeight / 2;
 
-    // Build top edge (left to right)
+    // Find max amplitude for scaling
+    const maxAmp = Math.max(...visibleSamples.indices.map((idx) => Math.abs(samples[idx] || 0)));
+    const scale = maxAmp > 0 ? (bandHeight / 2 * 0.9) / maxAmp : 1;
+
+    // Build top half (left to right)
     const topPoints = visibleSamples.indices
       .map((idx) => {
         const time = waveformTimes[idx];
         if (time === undefined) return null;
         const x = ((time - viewportStart) / viewportDuration) * width;
-        const topValue = topSamples[idx] || 0;
-        const y = centerY - (topValue * height) / 2;
+        const amp = Math.abs(samples[idx] || 0);
+        const y = center - amp * scale;
         return `${x},${y}`;
       })
       .filter((p): p is string => p !== null);
 
-    // Build bottom edge (right to left)
+    // Build bottom half (right to left, mirrored)
     const bottomPoints = visibleSamples.indices
       .map((idx) => {
         const time = waveformTimes[idx];
         if (time === undefined) return null;
         const x = ((time - viewportStart) / viewportDuration) * width;
-        const bottomValue = bottomSamples[idx] || 0;
-        const y = centerY - (bottomValue * height) / 2;
+        const amp = Math.abs(samples[idx] || 0);
+        const y = center + amp * scale;
         return `${x},${y}`;
       })
       .filter((p): p is string => p !== null)
@@ -76,33 +80,7 @@ export function WaveformCanvas() {
     return `M${topPoints.join(" L")} L${bottomPoints.join(" L")} Z`;
   };
 
-  // Calculate cumulative stacked values
-  const stackedMidsPlusBass = useMemo(() => {
-    return visibleSamples.indices.map((idx) => {
-      const bass = waveformBass[idx] || 0;
-      const mids = waveformMids[idx] || 0;
-      return bass + mids;
-    });
-  }, [visibleSamples.indices, waveformBass, waveformMids]);
-
-  const stackedAll = useMemo(() => {
-    return visibleSamples.indices.map((idx) => {
-      const bass = waveformBass[idx] || 0;
-      const mids = waveformMids[idx] || 0;
-      const highs = waveformHighs[idx] || 0;
-      return bass + mids + highs;
-    });
-  }, [visibleSamples.indices, waveformBass, waveformMids, waveformHighs]);
-
-  const zeroes = useMemo(
-    () => new Array(visibleSamples.indices.length).fill(0),
-    [visibleSamples.indices.length]
-  );
-
-  const bassOnly = useMemo(
-    () => visibleSamples.indices.map((idx) => waveformBass[idx] || 0),
-    [visibleSamples.indices, waveformBass]
-  );
+  const bandHeight = 100 / 3;
 
   return (
     <svg
@@ -114,25 +92,43 @@ export function WaveformCanvas() {
         background: "#151828",
       }}
     >
-      {/* Highs layer (top, stacked on bass + mids) */}
+      {/* Bass band (top third) - red */}
       <path
-        d={generateStackedPath(stackedMidsPlusBass, stackedAll)}
-        fill="rgba(91, 124, 255, 0.6)"
+        d={generateBandPath(waveformBass, 0, bandHeight)}
+        fill="rgba(244, 67, 54, 0.6)"
         stroke="none"
       />
 
-      {/* Mids layer (middle, stacked on bass) */}
+      {/* Mids band (middle third) - green */}
       <path
-        d={generateStackedPath(bassOnly, stackedMidsPlusBass)}
-        fill="rgba(0, 230, 184, 0.6)"
+        d={generateBandPath(waveformMids, bandHeight, bandHeight)}
+        fill="rgba(76, 175, 80, 0.6)"
         stroke="none"
       />
 
-      {/* Bass layer (bottom) */}
+      {/* Highs band (bottom third) - blue */}
       <path
-        d={generateStackedPath(zeroes, bassOnly)}
-        fill="rgba(255, 107, 107, 0.6)"
+        d={generateBandPath(waveformHighs, bandHeight * 2, bandHeight)}
+        fill="rgba(33, 150, 243, 0.6)"
         stroke="none"
+      />
+
+      {/* Separator lines */}
+      <line
+        x1="0"
+        y1={bandHeight}
+        x2="100"
+        y2={bandHeight}
+        stroke="#666"
+        strokeWidth="0.5"
+      />
+      <line
+        x1="0"
+        y1={bandHeight * 2}
+        x2="100"
+        y2={bandHeight * 2}
+        stroke="#666"
+        strokeWidth="0.5"
       />
     </svg>
   );

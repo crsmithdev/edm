@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Region, Boundary, SectionLabel } from "@/types/structure";
+import type { Region, SectionLabel } from "@/types/structure";
 
 interface StructureState {
   // State

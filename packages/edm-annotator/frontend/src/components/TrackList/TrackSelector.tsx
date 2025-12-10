@@ -10,7 +10,7 @@ export function TrackSelector() {
   const { setWaveformData, reset: resetWaveform } = useWaveformStore();
   const { setBPM, setDownbeat, reset: resetTempo } = useTempoStore();
   const { player, reset: resetAudio } = useAudioStore();
-  const { setBoundaries, reset: resetStructure } = useStructureStore();
+  const { reset: resetStructure } = useStructureStore();
   const { showStatus } = useUIStore();
 
   useEffect(() => {

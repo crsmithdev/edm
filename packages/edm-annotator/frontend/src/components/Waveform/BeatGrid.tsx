@@ -7,7 +7,7 @@ import { getBarDuration, getBeatDuration } from "@/utils/barCalculations";
  */
 export function BeatGrid() {
   const { viewportStart, viewportEnd, duration } = useWaveformStore();
-  const { trackBPM, trackDownbeat, timeToBar } = useTempoStore();
+  const { trackBPM, trackDownbeat } = useTempoStore();
 
   const gridLines = useMemo(() => {
     if (trackBPM === 0 || duration === 0) return [];
@@ -20,6 +20,40 @@ export function BeatGrid() {
 
     const barDuration = getBarDuration(trackBPM);
     const beatDuration = getBeatDuration(trackBPM);
+    const viewportDuration = viewportEnd - viewportStart;
+
+    // Calculate zoom level and adjust granularity
+    const zoomRatio = viewportDuration / duration;
+
+    // Determine bar and beat granularity based on zoom level
+    let barInterval = 1; // Show every bar
+    let showBeats = false;
+
+    if (zoomRatio > 0.5) {
+      // Very zoomed out (>50% of track visible) - show every 16 bars, no beats
+      barInterval = 16;
+      showBeats = false;
+    } else if (zoomRatio > 0.3) {
+      // Zoomed out (30-50% visible) - show every 8 bars, no beats
+      barInterval = 8;
+      showBeats = false;
+    } else if (zoomRatio > 0.2) {
+      // Medium zoom (20-30% visible) - show every 4 bars, no beats
+      barInterval = 4;
+      showBeats = false;
+    } else if (zoomRatio > 0.15) {
+      // Medium-close zoom (15-20% visible) - show every 2 bars, no beats
+      barInterval = 2;
+      showBeats = false;
+    } else if (zoomRatio > 0.1) {
+      // Zoomed in (10-15% visible) - show all bars, no beats
+      barInterval = 1;
+      showBeats = false;
+    } else {
+      // Very zoomed in (<10% visible) - show all bars and beats
+      barInterval = 1;
+      showBeats = true;
+    }
 
     // Calculate first bar in viewport
     const firstBar = Math.floor((viewportStart - trackDownbeat) / barDuration);
@@ -36,16 +70,26 @@ export function BeatGrid() {
     // Add bar lines
     for (let bar = firstBar; bar <= lastBar; bar++) {
       const barTime = trackDownbeat + bar * barDuration;
-      if (barTime >= viewportStart && barTime <= viewportEnd && barTime !== trackDownbeat) {
-        const barNumber = bar + 1;
-        lines.push({ time: barTime, type: "bar", bar: barNumber });
+
+      // Skip if outside viewport or is the downbeat
+      if (barTime < viewportStart || barTime > viewportEnd || barTime === trackDownbeat) {
+        continue;
       }
 
-      // Add beat lines within each bar
-      for (let beat = 1; beat < 4; beat++) {
-        const beatTime = barTime + beat * beatDuration;
-        if (beatTime >= viewportStart && beatTime <= viewportEnd) {
-          lines.push({ time: beatTime, type: "beat" });
+      const barNumber = bar + 1;
+
+      // Only add bar if it matches the interval
+      if (bar % barInterval === 0) {
+        lines.push({ time: barTime, type: "bar", bar: barNumber });
+
+        // Add beat lines within this bar (only when zoomed in enough)
+        if (showBeats) {
+          for (let beat = 1; beat < 4; beat++) {
+            const beatTime = barTime + beat * beatDuration;
+            if (beatTime >= viewportStart && beatTime <= viewportEnd) {
+              lines.push({ time: beatTime, type: "beat" });
+            }
+          }
         }
       }
     }
@@ -79,8 +123,8 @@ export function BeatGrid() {
                   ? "#f44336"
                   : line.type === "bar"
                     ? "#ff9800"
-                    : "#666",
-              opacity: line.type === "downbeat" ? 0.8 : line.type === "bar" ? 0.6 : 0.4,
+                    : "#444",
+              opacity: line.type === "downbeat" ? 0.8 : line.type === "bar" ? 0.6 : 0.25,
               pointerEvents: "none",
             }}
           >

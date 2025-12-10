@@ -6,10 +6,9 @@ import { getBarDuration } from "@/utils/barCalculations";
  */
 export function NavigationControls() {
   const { currentTime, seek } = useAudioStore();
-  const { trackBPM, timeToBar } = useTempoStore();
+  const { trackBPM } = useTempoStore();
   const { jumpMode, toggleJumpMode } = useUIStore();
 
-  const currentBar = timeToBar(currentTime);
   const barDuration = getBarDuration(trackBPM);
 
   const jumpBars = (count: number) => {
@@ -17,127 +16,89 @@ export function NavigationControls() {
     seek(Math.max(0, newTime));
   };
 
+  const navBtnStyle = {
+    padding: "12px 16px",
+    fontSize: "13px",
+    background: "#151828",
+    color: "#E5E7EB",
+    border: "1px solid #2A2F4C",
+    borderRadius: "8px",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.2s",
+    whiteSpace: "nowrap" as const,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "44px",
+    minWidth: "70px",
+  };
+
+  const actionBtnStyle = {
+    padding: "12px 20px",
+    fontSize: "14px",
+    fontWeight: 600,
+    background: "#2A2F4C",
+    color: "#9CA3AF",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    whiteSpace: "nowrap" as const,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "44px",
+    minWidth: "80px",
+  };
+
   return (
     <div
       style={{
         display: "flex",
-        gap: "8px",
-        alignItems: "center",
-        padding: "16px",
-        background: "#1E2139",
-        borderRadius: "10px",
-        border: "1px solid rgba(91, 124, 255, 0.1)",
+        gap: "10px",
+        alignItems: "stretch",
+        justifyContent: "center",
+        paddingBottom: "20px",
+        marginBottom: "20px",
+        borderBottom: "1px solid #2A2F4C",
       }}
     >
-      <div style={{ marginRight: "8px", color: "#9CA3AF" }}>
-        <strong style={{ color: "#5B7CFF" }}>Bar:</strong> {currentBar}
-      </div>
-
-      <button
-        onClick={() => jumpBars(-8)}
-        style={{
-          padding: "8px 12px",
-          background: "#2A2F4C",
-          color: "#E5E7EB",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "13px",
-          cursor: "pointer",
-        }}
-      >
-        -8
+      <button onClick={() => jumpBars(-16)} style={navBtnStyle}>
+        ◀ 16
       </button>
-
-      <button
-        onClick={() => jumpBars(-4)}
-        style={{
-          padding: "8px 12px",
-          background: "#2A2F4C",
-          color: "#E5E7EB",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "13px",
-          cursor: "pointer",
-        }}
-      >
-        -4
+      <button onClick={() => jumpBars(-8)} style={navBtnStyle}>
+        ◀ 8
       </button>
-
-      <button
-        onClick={() => jumpBars(-1)}
-        style={{
-          padding: "8px 12px",
-          background: "#2A2F4C",
-          color: "#E5E7EB",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "13px",
-          cursor: "pointer",
-        }}
-      >
-        -1
+      <button onClick={() => jumpBars(-4)} style={navBtnStyle}>
+        ◀ 4
       </button>
-
-      <button
-        onClick={() => jumpBars(1)}
-        style={{
-          padding: "8px 12px",
-          background: "#2A2F4C",
-          color: "#E5E7EB",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "13px",
-          cursor: "pointer",
-        }}
-      >
-        +1
+      <button onClick={() => jumpBars(-2)} style={navBtnStyle}>
+        ◀ 2
       </button>
-
-      <button
-        onClick={() => jumpBars(4)}
-        style={{
-          padding: "8px 12px",
-          background: "#2A2F4C",
-          color: "#E5E7EB",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "13px",
-          cursor: "pointer",
-        }}
-      >
-        +4
+      <button onClick={() => jumpBars(-1)} style={navBtnStyle}>
+        ◀ 1
       </button>
-
-      <button
-        onClick={() => jumpBars(8)}
-        style={{
-          padding: "8px 12px",
-          background: "#2A2F4C",
-          color: "#E5E7EB",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "13px",
-          cursor: "pointer",
-        }}
-      >
-        +8
-      </button>
-
       <button
         onClick={toggleJumpMode}
-        style={{
-          marginLeft: "auto",
-          padding: "8px 16px",
-          background: "#5B7CFF",
-          color: "#FFFFFF",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "13px",
-          cursor: "pointer",
-          minWidth: "70px",
-        }}
+        style={actionBtnStyle}
       >
-        {jumpMode === "bars" ? "Bars" : "Beats"}
+        {jumpMode === "bars" ? "Beats" : "Bars"}
+      </button>
+      <button onClick={() => jumpBars(1)} style={navBtnStyle}>
+        1 ▶
+      </button>
+      <button onClick={() => jumpBars(2)} style={navBtnStyle}>
+        2 ▶
+      </button>
+      <button onClick={() => jumpBars(4)} style={navBtnStyle}>
+        4 ▶
+      </button>
+      <button onClick={() => jumpBars(8)} style={navBtnStyle}>
+        8 ▶
+      </button>
+      <button onClick={() => jumpBars(16)} style={navBtnStyle}>
+        16 ▶
       </button>
     </div>
   );

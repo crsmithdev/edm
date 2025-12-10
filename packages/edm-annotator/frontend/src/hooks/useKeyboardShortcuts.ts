@@ -7,7 +7,7 @@ import {
   useUIStore,
   useTrackStore,
 } from "@/stores";
-import { getBeatDuration, getBarDuration } from "@/utils/barCalculations";
+import { getBarDuration } from "@/utils/barCalculations";
 
 /**
  * Handles keyboard shortcuts for the application

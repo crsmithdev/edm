@@ -52,64 +52,76 @@ function App() {
         </h1>
       </header>
 
-      {/* Main Content */}
+      {/* Waveform */}
+      <WaveformContainer />
+
+      {/* Two Column Layout */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 300px",
+          gridTemplateColumns: "3fr 2fr",
           gap: "20px",
+          marginBottom: "20px",
         }}
       >
-        {/* Left Column: Waveform and Controls */}
-        <div>
-          {/* Waveform */}
-          <WaveformContainer />
-
-          {/* Transport Controls */}
+        {/* Left Column: Controls */}
+        <div
+          style={{
+            background: "#1E2139",
+            padding: "20px",
+            borderRadius: "14px",
+            border: "1px solid rgba(91, 124, 255, 0.1)",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+          }}
+        >
+          {/* Transport Row */}
           <PlaybackControls />
 
-          <div style={{ height: "16px" }} />
-
-          {/* Navigation Controls */}
-          <NavigationControls />
-
-          <div style={{ height: "16px" }} />
-
-          {/* Editing Controls */}
+          {/* Editing Row */}
           <EditingControls />
 
-          <div style={{ height: "16px" }} />
+          {/* Navigation Row */}
+          <NavigationControls />
 
-          {/* Region List */}
+          {/* Regions List */}
           <RegionList />
         </div>
 
-        {/* Right Column: Track Selector */}
+        {/* Right Column: Track List */}
         <div>
           <TrackSelector />
         </div>
       </div>
 
-      {/* Status Toast */}
-      <StatusToast />
-
-      {/* Keyboard Shortcuts Help */}
+      {/* Instructions */}
       <div
         style={{
-          marginTop: "24px",
-          padding: "16px",
-          background: "#1E2139",
-          borderRadius: "10px",
-          border: "1px solid rgba(91, 124, 255, 0.1)",
+          marginTop: "30px",
           fontSize: "12px",
+          lineHeight: "1.8",
           color: "#6B7280",
         }}
       >
-        <strong style={{ color: "#9CA3AF" }}>Keyboard Shortcuts:</strong>{" "}
-        Space=Play/Pause | B=Add Boundary | D=Set Downbeat | Q=Toggle Quantize |
-        C/R=Return to Cue | ←/→=Jump | ↑/↓=Previous/Next Track | +/-=Zoom | 0=Zoom
-        Reset
+        <strong style={{ color: "#9CA3AF", fontWeight: 600 }}>Workflow:</strong>{" "}
+        Shift+Click waveform to add boundaries → Label regions using dropdowns in list below
+        <br />
+        <strong style={{ color: "#9CA3AF", fontWeight: 600 }}>Navigate:</strong>{" "}
+        Left/Right ±4 bars | Ctrl+Left/Right ±1 bar | Shift+Left/Right ±8 bars |
+        Up/Down previous/next track
+        <br />
+        <strong style={{ color: "#9CA3AF", fontWeight: 600 }}>Playback:</strong>{" "}
+        Click waveform to set cue point | Spacebar play/pause | C/R return to cue |
+        Drag to pan | Scroll to zoom
+        <br />
+        <strong style={{ color: "#9CA3AF", fontWeight: 600 }}>Editing:</strong>{" "}
+        B add boundary | D set downbeat | Q toggle quantize
       </div>
+
+      {/* Status Toast */}
+      <StatusToast />
     </div>
   );
 }

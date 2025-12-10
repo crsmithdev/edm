@@ -52,7 +52,7 @@ export const useWaveformStore = create<WaveformState>((set, get) => ({
 
   zoom: (direction, centerTime) => {
     const { duration, viewportStart, viewportEnd, zoomLevel } = get();
-    const newZoomLevel = Math.max(0.1, Math.min(10, zoomLevel + direction * 0.2));
+    const newZoomLevel = Math.max(0.1, Math.min(50, zoomLevel + direction * 0.3));
 
     if (centerTime !== undefined) {
       // Zoom centered on specific time

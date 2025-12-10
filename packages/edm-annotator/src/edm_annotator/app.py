@@ -21,8 +21,13 @@ PACKAGE_ROOT = Path(__file__).parent.parent.parent
 MONOREPO_ROOT = PACKAGE_ROOT.parent.parent
 TEMPLATE_DIR = PACKAGE_ROOT / "templates"
 STATIC_DIR = PACKAGE_ROOT / "static"
+FRONTEND_DIST = PACKAGE_ROOT / "frontend" / "dist"
 
-app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
+# Use React build if it exists, otherwise fall back to templates
+if FRONTEND_DIST.exists():
+    app = Flask(__name__, static_folder=str(FRONTEND_DIST), static_url_path="")
+else:
+    app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
 AUDIO_DIR = Path(os.getenv("EDM_AUDIO_DIR", Path.home() / "music"))
 ANNOTATION_DIR = Path(os.getenv("EDM_ANNOTATION_DIR", MONOREPO_ROOT / "data" / "annotations"))
 REFERENCE_DIR = ANNOTATION_DIR / "reference"
@@ -35,6 +40,8 @@ VALID_LABELS = ["intro", "buildup", "breakdown", "breakbuild", "outro", "unlabel
 @app.route("/")
 def index():
     """Main annotation interface."""
+    if FRONTEND_DIST.exists():
+        return send_file(FRONTEND_DIST / "index.html")
     return render_template("index.html")
 
 

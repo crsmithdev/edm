@@ -20,14 +20,13 @@ describe("RegionList", () => {
   });
 
   describe("Empty State", () => {
-    it("renders empty state when no regions exist", () => {
-      useStructureStore.setState({ regions: [] });
+    it("renders header with count when no regions exist", () => {
+      useStructureStore.setState({ regions: [], boundaries: [] });
 
       render(<RegionList />);
 
-      expect(
-        screen.getByText(/No regions yet. Add boundaries to create regions./)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Regions \(/)).toBeInTheDocument();
+      expect(screen.getByText("0", { exact: false })).toBeInTheDocument();
     });
   });
 
@@ -43,7 +42,7 @@ describe("RegionList", () => {
 
       render(<RegionList />);
 
-      expect(screen.getByText("Structure Regions")).toBeInTheDocument();
+      expect(screen.getByText(/Regions \(3\)/)).toBeInTheDocument();
 
       // Check that all regions are displayed
       expect(screen.getByText(/00:00\.000 - 00:10\.000/)).toBeInTheDocument();
@@ -60,7 +59,7 @@ describe("RegionList", () => {
 
       render(<RegionList />);
 
-      expect(screen.getByText(/\(15.5s\)/)).toBeInTheDocument();
+      expect(screen.getByText(/00:00\.000 - 00:15\.500/)).toBeInTheDocument();
     });
 
     it("renders region with formatted timestamps", () => {
@@ -272,9 +271,8 @@ describe("RegionList", () => {
 
       render(<RegionList />);
 
-      expect(screen.getByText("Structure Regions")).toBeInTheDocument();
+      expect(screen.getByText(/Regions \(1\)/)).toBeInTheDocument();
       expect(screen.getByText(/00:00\.000 - 03:00\.000/)).toBeInTheDocument();
-      expect(screen.getByText(/\(180.0s\)/)).toBeInTheDocument();
     });
 
     it("handles regions with very small durations", () => {
@@ -286,7 +284,7 @@ describe("RegionList", () => {
 
       render(<RegionList />);
 
-      expect(screen.getByText(/\(0.1s\)/)).toBeInTheDocument();
+      expect(screen.getByText(/00:00\.000 - 00:00\.100/)).toBeInTheDocument();
     });
 
     it("handles many regions with scrolling", () => {
@@ -347,26 +345,28 @@ describe("RegionList", () => {
     });
 
     it("transitions from empty to populated state", () => {
-      useStructureStore.setState({ regions: [] });
+      useStructureStore.setState({ regions: [], boundaries: [] });
 
       const { rerender } = render(<RegionList />);
 
-      expect(screen.getByText(/No regions yet/)).toBeInTheDocument();
+      expect(screen.getByText(/Regions \(0\)/)).toBeInTheDocument();
 
       // Add regions
       useStructureStore.setState({
         regions: [{ start: 0, end: 10, label: "intro" }],
+        boundaries: [0, 10],
       });
 
       rerender(<RegionList />);
 
-      expect(screen.queryByText(/No regions yet/)).not.toBeInTheDocument();
+      expect(screen.getByText(/Regions \(1\)/)).toBeInTheDocument();
       expect(screen.getByText(/00:00\.000 - 00:10\.000/)).toBeInTheDocument();
     });
 
     it("transitions from populated to empty state", () => {
       useStructureStore.setState({
         regions: [{ start: 0, end: 10, label: "intro" }],
+        boundaries: [0, 10],
       });
 
       const { rerender } = render(<RegionList />);
@@ -374,11 +374,11 @@ describe("RegionList", () => {
       expect(screen.getByText(/00:00\.000 - 00:10\.000/)).toBeInTheDocument();
 
       // Clear regions
-      useStructureStore.setState({ regions: [] });
+      useStructureStore.setState({ regions: [], boundaries: [] });
 
       rerender(<RegionList />);
 
-      expect(screen.getByText(/No regions yet/)).toBeInTheDocument();
+      expect(screen.getByText(/Regions \(0\)/)).toBeInTheDocument();
     });
   });
 });

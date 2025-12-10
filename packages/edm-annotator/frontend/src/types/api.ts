@@ -1,4 +1,4 @@
-import type { Track, LoadedTrack } from "./track";
+import type { Track } from "./track";
 import type { WaveformData } from "./waveform";
 import type { Boundary } from "./structure";
 
