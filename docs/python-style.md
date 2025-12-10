@@ -1,10 +1,12 @@
 # Python Style Guide
 
+This guide covers code style, best practices, and patterns for Python code in the EDM project. We use Python 3.12+ and enforce strict type checking with mypy.
+
 ## Code Style
 
 ### Formatter and Linter
 
-Use Ruff for both formatting and linting:
+Use **Ruff** for both formatting and linting:
 
 ```bash
 uv run ruff format .        # Format code
@@ -15,6 +17,27 @@ Run both together:
 
 ```bash
 uv run ruff check --fix . && ruff format .
+```
+
+### Quality Checks
+
+Run all quality checks before committing:
+
+```bash
+# Formatting
+uv run ruff format .
+
+# Linting
+uv run ruff check --fix .
+
+# Type checking
+uv run mypy packages/edm-lib/src/
+
+# Tests
+uv run pytest -v
+
+# All together (recommended)
+just check
 ```
 
 ### Line Length
@@ -298,6 +321,483 @@ Key points:
 - Log in natural language: "Starting BPM analysis" not "start_bpm_analysis"
 - Use appropriate capitalization and punctuation
 - Prefer f-strings in log calls only when level is enabled (or use lazy `%` formatting)
+
+## Naming Conventions
+
+### General Rules
+
+Follow PEP 8 naming conventions:
+
+**Good:**
+```python
+# Variables and functions: snake_case
+audio_file = "track.mp3"
+def analyze_bpm(path: str) -> float: ...
+
+# Classes: PascalCase
+class BPMDetector: ...
+class AudioLoadError(Exception): ...
+
+# Constants: UPPER_SNAKE_CASE
+MAX_BPM = 200
+DEFAULT_SAMPLE_RATE = 22050
+
+# Private: leading underscore
+def _internal_helper() -> None: ...
+_cache: dict[str, Any] = {}
+
+# Type aliases: PascalCase
+AudioData: TypeAlias = tuple[np.ndarray, int]
+```
+
+**Bad:**
+```python
+# Wrong conventions
+AudioFile = "track.mp3"  # Should be audio_file
+def AnalyzeBPM(path: str) -> float: ...  # Should be analyze_bpm
+class bpm_detector: ...  # Should be BPMDetector
+maxBPM = 200  # Should be MAX_BPM
+```
+
+### Descriptive Names
+
+Use clear, descriptive names:
+
+**Good:**
+```python
+def calculate_tempo_from_onset_strength(
+    onset_envelope: np.ndarray,
+    sample_rate: int,
+    hop_length: int
+) -> float:
+    """Calculate tempo from onset strength envelope."""
+    autocorrelation = librosa.autocorrelate(onset_envelope)
+    tempo_candidates = _extract_tempo_candidates(autocorrelation)
+    return _select_most_likely_tempo(tempo_candidates)
+```
+
+**Bad:**
+```python
+def calc(x: np.ndarray, sr: int, hl: int) -> float:
+    ac = librosa.autocorrelate(x)
+    tc = _extract(ac)
+    return _select(tc)
+```
+
+## Code Organization
+
+### Module Structure
+
+Organize modules consistently:
+
+```python
+"""Module docstring describing purpose."""
+
+# Standard library imports
+import os
+from pathlib import Path
+from typing import TypeAlias
+
+# Third-party imports
+import librosa
+import numpy as np
+from pydantic import BaseModel
+
+# Local imports
+from edm.analysis import BPMDetector
+from edm.config import settings
+from edm.exceptions import AudioLoadError
+
+# Type aliases
+AudioData: TypeAlias = tuple[np.ndarray, int]
+
+# Constants
+DEFAULT_SAMPLE_RATE = 22050
+MAX_BPM = 200
+
+# Public API
+__all__ = ["analyze_audio", "BPMResult"]
+
+# Module-level logger
+logger = logging.getLogger(__name__)
+
+# Classes and functions
+class BPMResult(BaseModel):
+    ...
+
+def analyze_audio(path: str) -> BPMResult:
+    ...
+
+# Private helpers
+def _load_audio_data(path: str) -> AudioData:
+    ...
+```
+
+### File Organization
+
+Keep files focused and manageable:
+
+**Good:**
+```
+src/edm/analysis/
+├── __init__.py          # Public API exports
+├── bpm.py               # BPM detection (<300 lines)
+├── structure.py         # Structure analysis (<300 lines)
+├── beat_grid.py         # Beat grid generation (<200 lines)
+└── _helpers.py          # Internal utilities
+```
+
+**Bad:**
+```
+src/edm/
+└── analysis.py          # 2000+ lines, everything mixed
+```
+
+### Class Design
+
+Keep classes focused with single responsibility:
+
+**Good:**
+```python
+class BPMDetector:
+    """Detects BPM from audio using onset strength."""
+
+    def __init__(self, sample_rate: int = 22050, hop_length: int = 512):
+        self.sample_rate = sample_rate
+        self.hop_length = hop_length
+
+    def detect(self, audio: np.ndarray) -> float:
+        """Detect BPM from audio signal."""
+        onset_env = self._compute_onset_strength(audio)
+        tempo = self._estimate_tempo(onset_env)
+        return self._refine_tempo(tempo, onset_env)
+
+    def _compute_onset_strength(self, audio: np.ndarray) -> np.ndarray:
+        """Compute onset strength envelope."""
+        return librosa.onset.onset_strength(
+            y=audio,
+            sr=self.sample_rate,
+            hop_length=self.hop_length
+        )
+
+    def _estimate_tempo(self, onset_env: np.ndarray) -> float:
+        """Estimate tempo from onset envelope."""
+        return float(librosa.beat.tempo(
+            onset_envelope=onset_env,
+            sr=self.sample_rate,
+            hop_length=self.hop_length
+        )[0])
+
+    def _refine_tempo(self, tempo: float, onset_env: np.ndarray) -> float:
+        """Refine tempo estimate using autocorrelation."""
+        # Refinement logic
+        return tempo
+```
+
+**Bad:**
+```python
+class AudioAnalyzer:
+    """Does everything related to audio."""  # Too broad
+
+    def analyze(self, path: str):  # No type hints
+        # 500+ lines of mixed logic
+        # BPM, structure, beats all in one method
+        pass
+```
+
+## Performance
+
+### NumPy Optimization
+
+Use vectorized operations:
+
+**Good:**
+```python
+# Vectorized
+normalized = (audio - audio.mean()) / audio.std()
+energies = np.sum(spectrogram ** 2, axis=0)
+
+# Avoid loops for large arrays
+differences = np.diff(onset_times)
+valid_onsets = onset_times[differences > min_interval]
+```
+
+**Bad:**
+```python
+# Slow loop
+normalized = np.array([
+    (x - audio.mean()) / audio.std()
+    for x in audio
+])
+
+# Manual iteration
+energies = []
+for col in range(spectrogram.shape[1]):
+    energies.append(sum(spectrogram[:, col] ** 2))
+```
+
+### Caching
+
+Use `functools.cache` or `lru_cache` for expensive computations:
+
+**Good:**
+```python
+from functools import cache, lru_cache
+
+@cache
+def load_model(model_path: str) -> torch.nn.Module:
+    """Load model (cached after first call)."""
+    return torch.load(model_path)
+
+@lru_cache(maxsize=128)
+def compute_spectrogram(audio_hash: str, sr: int) -> np.ndarray:
+    """Compute spectrogram (cached for recent calls)."""
+    audio = _load_from_hash(audio_hash)
+    return librosa.stft(audio, sr=sr)
+```
+
+**Bad:**
+```python
+# No caching, reloads every time
+def load_model(model_path: str) -> torch.nn.Module:
+    return torch.load(model_path)
+```
+
+### Lazy Evaluation
+
+Avoid unnecessary computation:
+
+**Good:**
+```python
+def analyze_files(
+    paths: list[str],
+    max_files: int | None = None
+) -> Iterator[BPMResult]:
+    """Yield results lazily."""
+    for i, path in enumerate(paths):
+        if max_files and i >= max_files:
+            break
+        yield analyze_bpm(path)
+
+# Caller can decide when to stop
+for result in analyze_files(paths, max_files=10):
+    print(result.bpm)
+```
+
+**Bad:**
+```python
+def analyze_files(paths: list[str]) -> list[BPMResult]:
+    """Process all files upfront."""
+    return [analyze_bpm(p) for p in paths]  # Processes everything
+
+# No way to stop early
+results = analyze_files(paths)  # Processes all 1000 files
+print(results[0].bpm)  # Only needed first result
+```
+
+## Security
+
+### Path Traversal
+
+Validate file paths:
+
+**Good:**
+```python
+from pathlib import Path
+
+def safe_load_file(base_dir: Path, filename: str) -> str:
+    """Safely load file preventing path traversal."""
+    base = base_dir.resolve()
+    target = (base / filename).resolve()
+
+    # Ensure target is within base_dir
+    if not target.is_relative_to(base):
+        raise ValueError(f"Path traversal attempt: {filename}")
+
+    return target.read_text()
+```
+
+**Bad:**
+```python
+def load_file(base_dir: str, filename: str) -> str:
+    """Unsafe: allows path traversal."""
+    path = os.path.join(base_dir, filename)
+    return open(path).read()  # Vulnerable to ../../../etc/passwd
+```
+
+### Command Injection
+
+Use subprocess safely:
+
+**Good:**
+```python
+import subprocess
+from pathlib import Path
+
+def convert_audio(input_path: Path, output_path: Path) -> None:
+    """Convert audio using ffmpeg safely."""
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-i", str(input_path),
+            "-ar", "22050",
+            str(output_path)
+        ],
+        check=True,
+        capture_output=True
+    )
+```
+
+**Bad:**
+```python
+def convert_audio(input_path: str, output_path: str) -> None:
+    """Vulnerable to command injection."""
+    cmd = f"ffmpeg -i {input_path} -ar 22050 {output_path}"
+    os.system(cmd)  # Dangerous if paths contain shell metacharacters
+```
+
+### XML Parsing
+
+Use defusedxml for untrusted XML:
+
+**Good:**
+```python
+from defusedxml import ElementTree as DefusedET
+
+def parse_annotation(path: str) -> dict:
+    """Parse XML annotation safely."""
+    tree = DefusedET.parse(path)
+    root = tree.getroot()
+    return _extract_data(root)
+```
+
+**Bad:**
+```python
+import xml.etree.ElementTree as ET
+
+def parse_annotation(path: str) -> dict:
+    """Vulnerable to XXE attacks."""
+    tree = ET.parse(path)  # Dangerous with untrusted XML
+    root = tree.getroot()
+    return _extract_data(root)
+```
+
+### Secrets Management
+
+Never commit secrets:
+
+**Good:**
+```python
+import os
+from pathlib import Path
+
+def get_api_key() -> str:
+    """Get API key from environment or secure file."""
+    # Environment variable (preferred)
+    if key := os.getenv("EDM_API_KEY"):
+        return key
+
+    # Secure file outside repo
+    key_file = Path.home() / ".edm" / "api_key"
+    if key_file.exists():
+        return key_file.read_text().strip()
+
+    raise ValueError("API key not configured")
+```
+
+**Bad:**
+```python
+# Hardcoded secrets (NEVER do this)
+API_KEY = "sk-1234567890abcdef"  # Committed to git
+
+def get_api_key() -> str:
+    return API_KEY
+```
+
+## Testing Best Practices
+
+### Test Organization
+
+Organize tests to mirror source structure:
+
+```
+src/edm/analysis/
+├── bpm.py
+└── structure.py
+
+tests/unit/
+├── test_bpm.py
+└── test_structure.py
+```
+
+### Fixture Usage
+
+Use fixtures for common setup:
+
+**Good:**
+```python
+import pytest
+from pathlib import Path
+
+@pytest.fixture
+def sample_audio_path(tmp_path: Path) -> Path:
+    """Create temporary audio file for testing."""
+    path = tmp_path / "test.wav"
+    # Create test audio
+    y = np.sin(2 * np.pi * 440 * np.linspace(0, 1, 22050))
+    sf.write(path, y, 22050)
+    return path
+
+def test_bpm_detection(sample_audio_path: Path):
+    """Test BPM detection with fixture."""
+    result = analyze_bpm(str(sample_audio_path))
+    assert result.bpm > 0
+```
+
+**Bad:**
+```python
+def test_bpm_detection():
+    """Inline setup in every test."""
+    # Repeated in every test
+    path = "/tmp/test.wav"
+    y = np.sin(2 * np.pi * 440 * np.linspace(0, 1, 22050))
+    sf.write(path, y, 22050)
+    result = analyze_bpm(path)
+    assert result.bpm > 0
+```
+
+### Parametrized Tests
+
+Use parametrization for multiple cases:
+
+**Good:**
+```python
+@pytest.mark.parametrize("bpm,expected", [
+    (60, 60.0),
+    (120, 120.0),
+    (180, 180.0),
+])
+def test_bpm_detection_accuracy(bpm: int, expected: float):
+    """Test BPM detection for various tempos."""
+    audio = generate_click_track(bpm)
+    result = detect_bpm(audio)
+    assert abs(result - expected) < 1.0
+```
+
+**Bad:**
+```python
+def test_bpm_60():
+    audio = generate_click_track(60)
+    assert abs(detect_bpm(audio) - 60.0) < 1.0
+
+def test_bpm_120():
+    audio = generate_click_track(120)
+    assert abs(detect_bpm(audio) - 120.0) < 1.0
+
+def test_bpm_180():
+    audio = generate_click_track(180)
+    assert abs(detect_bpm(audio) - 180.0) < 1.0
+```
 
 ## Documentation
 

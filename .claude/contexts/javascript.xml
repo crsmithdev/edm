@@ -1,0 +1,99 @@
+<javascript-context>
+  <purpose>JavaScript/TypeScript code style, testing, tooling for EDM project</purpose>
+
+  <style>
+    <format tool="prettier" line="100" quotes='double (JS), single (JSX)' semi="true"/>
+    <lint tool="eslint" config="eslint.config.js" strict="true"/>
+    <types required="all" strict="true" checker="typescript"/>
+  </style>
+
+  <typescript version="5.7+" mode="strict">
+    <prefer>interface over type for objects</prefer>
+    <prefer>type for unions/intersections</prefer>
+    <prefer>undefined for optional, null for intentional absence</prefer>
+    <avoid>enums (use const objects or unions)</avoid>
+    <avoid>any (use unknown)</avoid>
+  </typescript>
+
+  <imports order="node:* → external → internal" separator="blank line">
+    <syntax>import type { Type } from "module" for type-only imports</syntax>
+    <alias>"@/*" for absolute imports from project root</alias>
+  </imports>
+
+  <errors>
+    <classes>AppError (base), AudioLoadError, BPMDetectionError</classes>
+    <pattern>Result&lt;T, E&gt; type for safe error handling</pattern>
+    <rule>Preserve stack traces with Error.captureStackTrace</rule>
+  </errors>
+
+  <validation lib="zod">
+    <schema>z.object() for runtime validation</schema>
+    <infer>type from schema with z.infer</infer>
+    <safe>use .safeParse() for user input</safe>
+  </validation>
+
+  <async>
+    <prefer>async/await over raw promises</prefer>
+    <parallel>Promise.all() for independent operations</parallel>
+    <errors>always handle with try/catch or .catch()</errors>
+  </async>
+
+  <modern-js>
+    <syntax>optional chaining (?.)</syntax>
+    <syntax>nullish coalescing (??)</syntax>
+    <syntax>destructuring, spread, template literals</syntax>
+    <syntax>arrow functions for callbacks</syntax>
+  </modern-js>
+
+  <react conditional="if applicable">
+    <components>functional components only</components>
+    <hooks>useState, useEffect, useMemo, useCallback</hooks>
+    <rules>call hooks at top level only</rules>
+    <props>explicit interface for all props</props>
+  </react>
+
+  <testing framework="vitest" runner="pnpm test">
+    <structure>describe/it blocks, beforeEach for setup</structure>
+    <assertions>expect().toBe(), toEqual(), toThrow()</assertions>
+    <mocks>vi.mock(), vi.fn(), vi.spyOn()</mocks>
+    <coverage>aim for 80%+ coverage</coverage>
+  </testing>
+
+  <node version="20+">
+    <imports>use node: prefix (import fs from "node:fs")</imports>
+    <fs>use node:fs/promises for async operations</fs>
+    <path>use node:path for path manipulation</path>
+  </node>
+
+  <logging lib="pino recommended">
+    <init>const logger = pino({ level: "info" })</init>
+    <structured>logger.info({ file, bpm }, "message")</structured>
+    <levels>debug, info, warn, error</levels>
+  </logging>
+
+  <package-manager tool="pnpm">
+    <install>pnpm install</install>
+    <add>pnpm add package</add>
+    <dev>pnpm add -D package</dev>
+    <run>pnpm run script</run>
+  </package-manager>
+
+  <documentation>
+    <style>JSDoc for public APIs</style>
+    <include>@param, @returns, @throws, @example</include>
+    <omit>type info (already in TypeScript)</omit>
+  </documentation>
+
+  <commands>
+    <lint>pnpm run lint</lint>
+    <format>pnpm run format</format>
+    <typecheck>pnpm run typecheck</typecheck>
+    <test>pnpm test</test>
+    <check>pnpm run check (all quality checks)</check>
+  </commands>
+
+  <files>
+    <config>package.json, tsconfig.json, eslint.config.js, prettier.config.js</config>
+    <docs>docs/javascript-style.md</docs>
+  </files>
+</javascript-context>

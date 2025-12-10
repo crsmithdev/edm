@@ -5,11 +5,10 @@ allowed-tools: Bash
 ---
 
 ```bash
-~/.claude/scripts/check.sh
+just check
 ```
 
 <!--
 TEST CASES:
-- `/check` in repo with justfile → runs fmt, lint, types, test targets
-- `/check` in repo without justfile → reports just not found, suggests checking repo setup
+- `/check` → runs format, lint, typecheck, tests in parallel via justfile
 -->

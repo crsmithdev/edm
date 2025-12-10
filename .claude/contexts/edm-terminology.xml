@@ -1,4 +1,5 @@
 <edm-terminology>
+  <purpose>EDM song structure terminology, section types, bar indexing, MIREX labels</purpose>
   <sections intro="8-32bar,low-E,sparse" buildup="8-16bar,rising-E,risers" drop="16-32bar,peak-E,full(chorus)" breakdown="8-16bar,mid-E,reduced(verse)" outro="16-32bar,falling-E,fadeout"/>
   <theory bar="4beats(4/4)" downbeat="beat1" phrase="8-16bar"/>
   <struct abab="Intro→Breakdown→Buildup→Drop(x2)→Outro" club="32bar-sections" radio="8-16bar-short"/>

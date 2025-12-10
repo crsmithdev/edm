@@ -1,4 +1,5 @@
 <project-setup>
+  <purpose>EDM project structure, commands, tech stack, directory layout, entry points</purpose>
   <cmd run="uv run edm" train="uv run python -m cli.commands.train --config &lt;cfg&gt;" test="uv run pytest -v" lint="uv run ruff check --fix . &amp;&amp; ruff format ." typecheck="uv run mypy src/"/>
   <dirs src="cli/,edm/" data="annotations(yaml)" audio="~/music" tests="unit,integration,perf" configs="train yaml" experiments="runs,checkpoints"/>
   <pkg mgr="uv" note="prefix: uv run"/>

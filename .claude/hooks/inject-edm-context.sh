@@ -36,6 +36,11 @@ if echo "$PROMPT_LOWER" | grep -qE '(pydantic|pytest|unit.?test|ruff|mypy|import
     INJECT_FILES+=("$CONTEXTS_DIR/python.xml")
 fi
 
+# JavaScript/TypeScript keywords: js, ts, eslint, prettier, node, npm, pnpm
+if echo "$PROMPT_LOWER" | grep -qE '(javascript|typescript|jsx?|tsx?|eslint|prettier|vitest|node\.?js|npm|pnpm|package\.json|tsconfig|import.*from|export|const |let |var |interface |type |async/await)'; then
+    INJECT_FILES+=("$CONTEXTS_DIR/javascript.xml")
+fi
+
 # Report which contexts were injected
 if [ ${#INJECT_FILES[@]} -gt 0 ]; then
     NAMES=()

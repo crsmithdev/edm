@@ -16,10 +16,13 @@ from edm.data.schema import Annotation, AudioMetadata, StructureSection
 from edm.io.audio import load_audio
 from flask import Flask, jsonify, render_template, request, send_file
 
-app = Flask(__name__)
-
 # Configuration - use environment variables for flexibility
-MONOREPO_ROOT = Path(__file__).parent.parent.parent.parent
+PACKAGE_ROOT = Path(__file__).parent.parent.parent
+MONOREPO_ROOT = PACKAGE_ROOT.parent.parent
+TEMPLATE_DIR = PACKAGE_ROOT / "templates"
+STATIC_DIR = PACKAGE_ROOT / "static"
+
+app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
 AUDIO_DIR = Path(os.getenv("EDM_AUDIO_DIR", Path.home() / "music"))
 ANNOTATION_DIR = Path(os.getenv("EDM_ANNOTATION_DIR", MONOREPO_ROOT / "data" / "annotations"))
 REFERENCE_DIR = ANNOTATION_DIR / "reference"
