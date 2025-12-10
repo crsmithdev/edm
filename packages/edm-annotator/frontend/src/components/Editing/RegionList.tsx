@@ -1,4 +1,4 @@
-import { useStructureStore, useAudioStore } from "@/stores";
+import { useStructureStore, useAudioStore, useTempoStore } from "@/stores";
 import { formatTime } from "@/utils/timeFormat";
 import type { SectionLabel } from "@/types/structure";
 
@@ -17,6 +17,7 @@ const VALID_LABELS: SectionLabel[] = [
 export function RegionList() {
   const { regions, setRegionLabel } = useStructureStore();
   const { seek } = useAudioStore();
+  const { timeToBar } = useTempoStore();
 
   return (
     <div
@@ -26,15 +27,40 @@ export function RegionList() {
         padding: "var(--space-1) 0 var(--space-4) 0",
       }}
     >
+      {/* Header */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "140px 100px 1fr",
+          gap: "var(--space-3)",
+          padding: "var(--space-2) var(--space-4)",
+          borderBottom: "2px solid var(--border-primary)",
+          fontSize: "var(--font-size-xs)",
+          fontWeight: "var(--font-weight-semibold)",
+          color: "var(--text-tertiary)",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        }}
+      >
+        <div>Time</div>
+        <div>Bars</div>
+        <div>Label</div>
+      </div>
+
+      {/* Regions */}
       {regions.map((region, idx) => {
+        const startBar = timeToBar(region.start);
+        const endBar = timeToBar(region.end);
+
         return (
           <div
             key={idx}
             style={{
+              display: "grid",
+              gridTemplateColumns: "140px 100px 1fr",
+              gap: "var(--space-3)",
               padding: "var(--space-3) var(--space-4)",
               borderBottom: "1px solid var(--border-primary)",
-              display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
               cursor: "pointer",
               background: "transparent",
@@ -53,11 +79,21 @@ export function RegionList() {
               style={{
                 fontWeight: "var(--font-weight-semibold)",
                 color: "var(--color-primary)",
-                minWidth: "120px",
                 fontSize: "var(--font-size-sm)",
               }}
             >
               {formatTime(region.start)} - {formatTime(region.end)}
+            </div>
+
+            {/* Bars */}
+            <div
+              style={{
+                color: "var(--text-secondary)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "var(--font-size-sm)",
+              }}
+            >
+              {startBar}-{endBar}
             </div>
 
             {/* Label Selector */}
@@ -79,6 +115,7 @@ export function RegionList() {
                 textTransform: "uppercase",
                 cursor: "pointer",
                 transition: "all var(--transition-base)",
+                maxWidth: "180px",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "var(--bg-hover)";
