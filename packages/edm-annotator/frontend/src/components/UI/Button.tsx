@@ -52,17 +52,17 @@ const sizeStyles: Record<ButtonSize, React.CSSProperties> = {
   sm: {
     padding: "var(--space-2) var(--space-3)",
     fontSize: "var(--font-size-sm)",
-    height: "32px",
+    minHeight: "32px",
   },
   md: {
     padding: "var(--space-3) var(--space-5)",
     fontSize: "var(--font-size-base)",
-    height: "var(--button-height)",
+    minHeight: "var(--button-height)",
   },
   lg: {
     padding: "var(--space-4) var(--space-6)",
     fontSize: "var(--font-size-lg)",
-    height: "52px",
+    minHeight: "52px",
   },
 };
 

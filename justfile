@@ -36,9 +36,11 @@ test *ARGS='':
 test-cov:
     uv run pytest --cov=packages/edm-lib/src --cov-report=term --cov-report=html
 
-# Run annotator web app
+# Run annotator web app (React frontend + Flask API)
+# Starts both servers: Backend on :5000, Frontend on :5173
+# First time: uv sync && cd packages/edm-annotator/frontend && npm install
 annotator:
-    cd packages/edm-annotator && uv run flask --app src/edm_annotator/app run
+    cd packages/edm-annotator && ./run-dev.sh
 
 # Run all quality checks
 check:

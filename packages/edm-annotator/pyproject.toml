@@ -1,11 +1,11 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "edm-annotator"
-version = "0.1.0"
-description = "Web-based EDM structure annotation tool"
+version = "2.0.0"
+description = "EDM Structure Annotator - React frontend + Flask backend"
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [
@@ -15,15 +15,28 @@ authors = [
 dependencies = [
     "edm",
     "flask>=3.0.0",
+    "flask-cors>=4.0.0",
     "pyyaml>=6.0",
-    "scipy",
+    "librosa>=0.10.0",
+    "scipy>=1.11.0",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-flask>=1.3.0",
+    "black>=23.7.0",
+    "ruff>=0.0.286",
+    "mypy>=1.5.0",
 ]
 
 [project.scripts]
 edm-annotator = "edm_annotator.app:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["backend/src"]
 
 [tool.setuptools.package-data]
-edm_annotator = ["templates/*", "static/**/*"]
+edm_annotator = ["py.typed"]

@@ -117,9 +117,9 @@ uv run ruff check --fix . && ruff format .
 # Type check
 uv run mypy packages/edm-lib/src/
 
-# Run annotator webapp
+# Run annotator webapp (React + Flask)
 just annotator
-# Or: cd packages/edm-annotator && uv run flask --app src/edm_annotator/app run
+# Opens: http://localhost:5173 (frontend) + http://localhost:5000 (API)
 ```
 
 See [development.md](docs/development.md) for details.

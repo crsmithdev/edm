@@ -8,16 +8,16 @@ echo "=============================================="
 echo ""
 
 # Check if backend is set up
-if ! command -v edm-annotator &> /dev/null; then
+if ! uv run edm-annotator --help &> /dev/null; then
     echo "❌ Backend not installed. Run:"
-    echo "   cd backend && uv pip install -e \".[dev]\""
+    echo "   uv sync"
     exit 1
 fi
 
 # Check if frontend dependencies are installed
 if [ ! -d "frontend/node_modules" ]; then
     echo "❌ Frontend dependencies not installed. Run:"
-    echo "   cd frontend && pnpm install"
+    echo "   cd frontend && npm install"
     exit 1
 fi
 
@@ -41,17 +41,15 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 # Start backend in background
-cd backend
-edm-annotator --env development --port 5000 &
+uv run edm-annotator --env development --port 5000 &
 BACKEND_PID=$!
-cd ..
 
 # Wait a moment for backend to start
 sleep 2
 
 # Start frontend in background
 cd frontend
-pnpm dev &
+npm run dev &
 FRONTEND_PID=$!
 cd ..
 

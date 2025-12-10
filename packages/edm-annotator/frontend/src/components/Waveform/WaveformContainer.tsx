@@ -1,10 +1,11 @@
 import { useWaveformInteraction } from "@/hooks/useWaveformInteraction";
-import { useWaveformStore, useUIStore, useTrackStore, useTempoStore } from "@/stores";
+import { useWaveformStore, useUIStore, useTrackStore, useTempoStore, useAudioStore } from "@/stores";
 import { WaveformCanvas } from "./WaveformCanvas";
 import { BeatGrid } from "./BeatGrid";
 import { Playhead } from "./Playhead";
 import { BoundaryMarkers } from "./BoundaryMarkers";
 import { RegionOverlays } from "./RegionOverlays";
+import { InfoCard } from "@/components/UI";
 
 /**
  * Container for waveform visualization and overlays
@@ -13,7 +14,8 @@ export function WaveformContainer() {
   const { zoom, duration } = useWaveformStore();
   const { isDragging } = useUIStore();
   const { currentTrack } = useTrackStore();
-  const { trackBPM } = useTempoStore();
+  const { trackBPM, timeToBar } = useTempoStore();
+  const { currentTime } = useAudioStore();
   const { handleMouseDown, handleMouseMove, handleMouseUp, handleWheel } =
     useWaveformInteraction();
 
@@ -22,6 +24,14 @@ export function WaveformContainer() {
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = (seconds % 60).toFixed(2);
+    return `${mins}:${secs.padStart(5, "0")}`;
+  };
+
+  const currentBar = timeToBar(currentTime);
 
   return (
     <div
@@ -32,6 +42,7 @@ export function WaveformContainer() {
         marginBottom: "var(--space-5)",
         border: "1px solid var(--border-primary)",
         boxShadow: "var(--shadow-md)",
+        overflow: "hidden",
       }}
     >
       {/* Waveform Display */}
@@ -71,7 +82,7 @@ export function WaveformContainer() {
       <div
         style={{
           display: "flex",
-          gap: "var(--space-2)",
+          gap: "var(--space-5)",
           alignItems: "center",
           marginTop: "var(--space-4)",
           justifyContent: "space-between",
@@ -81,9 +92,9 @@ export function WaveformContainer() {
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
           <div
             style={{
-              fontSize: "var(--font-size-base)",
-              fontWeight: "var(--font-weight-semibold)",
-              color: "var(--text-secondary)",
+              fontSize: "var(--font-size-lg)",
+              fontWeight: "var(--font-weight-bold)",
+              color: "var(--text-primary)",
             }}
           >
             {currentTrack || "No track loaded"}
@@ -91,17 +102,22 @@ export function WaveformContainer() {
           {currentTrack && (
             <div
               style={{
-                fontSize: "var(--font-size-sm)",
+                fontSize: "var(--font-size-xs)",
                 color: "var(--text-tertiary)",
-                display: "flex",
-                gap: "var(--space-3)",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
               }}
             >
-              <span>{trackBPM ? `${trackBPM} BPM` : "BPM not set"}</span>
-              <span>•</span>
-              <span>{formatDuration(duration)}</span>
+              {formatDuration(duration)} duration
             </div>
           )}
+        </div>
+
+        {/* Status displays in middle */}
+        <div style={{ display: "flex", gap: "var(--space-6)", alignItems: "flex-end" }}>
+          <InfoCard label="BPM" value={trackBPM || "--"} />
+          <InfoCard label="Bar" value={currentBar} />
+          <InfoCard label="Time" value={formatTime(currentTime)} />
         </div>
 
         {/* Zoom controls on right */}

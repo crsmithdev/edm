@@ -41,26 +41,7 @@ export function BoundaryMarkers() {
               }
             }}
             title={`Boundary at ${formatTime(time)} (Ctrl+Click to remove)`}
-          >
-            <div
-              style={{
-                position: "absolute",
-                top: "-25px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                background: "rgba(10, 10, 18, 0.95)",
-                padding: "2px 8px",
-                borderRadius: "4px",
-                fontSize: "11px",
-                whiteSpace: "nowrap",
-                color: "#00e5cc",
-                fontWeight: "600",
-                border: "1px solid rgba(0, 229, 204, 0.3)",
-              }}
-            >
-              {formatTime(time)}
-            </div>
-          </div>
+          />
         );
       })}
     </>

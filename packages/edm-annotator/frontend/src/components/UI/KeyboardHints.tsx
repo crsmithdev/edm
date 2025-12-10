@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
-import { X, Keyboard } from "lucide-react";
-import { Button } from "./Button";
+import { useEffect } from "react";
+import { X } from "lucide-react";
 
 interface Shortcut {
   key: string;
@@ -30,59 +29,63 @@ const shortcuts: Shortcut[] = [
 ];
 
 /**
+ * Keyboard shortcuts trigger link
+ */
+export function KeyboardShortcutsLink({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        background: "transparent",
+        border: "none",
+        color: "var(--text-tertiary)",
+        fontSize: "var(--font-size-lg)",
+        cursor: "pointer",
+        padding: 0,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = "var(--text-secondary)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.color = "var(--text-tertiary)";
+      }}
+      title="Keyboard shortcuts"
+    >
+      ⌨️
+    </button>
+  );
+}
+
+/**
  * Keyboard shortcuts overlay
  */
-export function KeyboardHints() {
-  const [isOpen, setIsOpen] = useState(false);
-
+export function KeyboardHints({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "?" && e.shiftKey) {
-        setIsOpen((prev) => !prev);
-      }
-      if (e.key === "Escape" && isOpen) {
-        setIsOpen(false);
+      if (e.key === "Escape") {
+        onClose();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+  }, [onClose]);
 
   const categories = Array.from(new Set(shortcuts.map((s) => s.category)));
 
   return (
     <>
-      {/* Trigger Button */}
-      <Button
-        onClick={() => setIsOpen(true)}
-        variant="ghost"
-        size="sm"
-        icon={<Keyboard size={16} />}
+      {/* Modal Overlay */}
+      <div
         style={{
           position: "fixed",
-          bottom: "var(--space-4)",
-          right: "var(--space-4)",
-          zIndex: "var(--z-overlay)",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.7)",
+          zIndex: "var(--z-modal)",
+          animation: "fadeIn 0.2s ease-out",
         }}
-        title="Keyboard shortcuts (Shift+?)"
-      >
-        ?
-      </Button>
-
-      {/* Modal Overlay */}
-      {isOpen && (
-        <>
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0, 0, 0, 0.7)",
-              zIndex: "var(--z-modal)",
-              animation: "fadeIn 0.2s ease-out",
-            }}
-            onClick={() => setIsOpen(false)}
-          />
+        onClick={onClose}
+      />
           <div
             style={{
               position: "fixed",
@@ -122,7 +125,7 @@ export function KeyboardHints() {
                 Keyboard Shortcuts
               </h2>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={onClose}
                 style={{
                   background: "transparent",
                   border: "none",
@@ -203,8 +206,6 @@ export function KeyboardHints() {
               ))}
             </div>
           </div>
-        </>
-      )}
     </>
   );
 }

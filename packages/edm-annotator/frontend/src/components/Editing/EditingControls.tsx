@@ -28,6 +28,7 @@ export function EditingControls() {
         display: "grid",
         gridTemplateColumns: "repeat(3, 1fr)",
         gap: "var(--space-3)",
+        alignItems: "stretch",
       }}
     >
       <Tooltip content="Add boundary at current time" shortcut="B">

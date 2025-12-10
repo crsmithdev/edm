@@ -47,7 +47,7 @@ export function NavigationControls() {
       </Button>
       <Button
         onClick={toggleJumpMode}
-        variant="secondary"
+        variant="primary"
         size="sm"
         style={{ minWidth: "80px" }}
       >

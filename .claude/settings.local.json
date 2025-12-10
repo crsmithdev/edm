@@ -3,7 +3,9 @@
     "allow": [
       "SlashCommand(/ship)",
       "mcp__filesystem__list_directory",
-      "mcp__filesystem__read_multiple_files"
+      "mcp__filesystem__read_multiple_files",
+      "mcp__memory__create_relations",
+      "mcp__memory__create_entities"
     ],
     "deny": [],
     "ask": []

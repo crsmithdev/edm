@@ -5,4 +5,4 @@ export { Card } from "./Card";
 export { Tooltip } from "./Tooltip";
 export { Skeleton, TrackItemSkeleton } from "./Skeleton";
 export { EmptyState } from "./EmptyState";
-export { KeyboardHints } from "./KeyboardHints";
+export { KeyboardHints, KeyboardShortcutsLink } from "./KeyboardHints";

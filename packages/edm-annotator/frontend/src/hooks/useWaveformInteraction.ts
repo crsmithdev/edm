@@ -51,6 +51,10 @@ export function useWaveformInteraction() {
    */
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      const { isDragging } = useUIStore.getState();
+
+      // Only process movement if mouse button is actually down
+      if (!isDragging) return;
       if (!dragStartPos.current) return;
 
       const deltaX = e.clientX - dragStartPos.current.x;

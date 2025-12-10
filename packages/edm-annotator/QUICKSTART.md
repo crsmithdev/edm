@@ -3,29 +3,29 @@
 ## Prerequisites
 
 - Python 3.12+
-- Node.js 20+
-- pnpm (run `corepack enable pnpm`)
+- Node.js 18+ (for frontend)
+- uv (Python package manager)
 - Audio files in a directory
 
 ## Setup (First Time)
 
-### 1. Backend Setup
+### 1. Install All Dependencies
+
+From the repository root:
 
 ```bash
-cd packages/edm-annotator/backend
-uv pip install -e ".[dev]"
-```
+# Install backend (Python packages)
+uv sync
 
-### 2. Frontend Setup
-
-```bash
+# Install frontend (Node packages)
 cd packages/edm-annotator/frontend
-pnpm install
+npm install
+cd ../../..
 ```
 
-### 3. Environment Configuration
+### 2. Environment Configuration (Optional)
 
-Set your audio directory (optional - defaults to ~/music):
+Set your audio directory (defaults to ~/music):
 
 ```bash
 export EDM_AUDIO_DIR=/path/to/your/music
@@ -34,41 +34,55 @@ export EDM_ANNOTATION_DIR=/path/to/annotations  # Optional - defaults to data/an
 
 ## Running the Application
 
-### Terminal 1: Start Backend
+### Single Command (Recommended)
+
+From the repository root:
 
 ```bash
-cd packages/edm-annotator/backend
-edm-annotator --env development --port 5000
+just annotator
 ```
+
+This starts both servers automatically:
+- **Backend API**: http://localhost:5000
+- **Frontend**: http://localhost:5173
 
 You should see:
 ```
-Environment: development
-Audio directory: /path/to/music
-Annotation directory: /path/to/annotations
+🎵 EDM Structure Annotator - Development Mode
+==============================================
 
-Starting annotation server on http://0.0.0.0:5000
-Debug mode enabled - auto-reload active
-```
+✅ Prerequisites met
 
-### Terminal 2: Start Frontend
+Starting servers...
+  Backend:  http://localhost:5000
+  Frontend: http://localhost:5173
 
-```bash
-cd packages/edm-annotator/frontend
-pnpm dev
-```
-
-You should see:
-```
-VITE v5.x.x  ready in xxx ms
-
-➜  Local:   http://localhost:5173/
-➜  Network: use --host to expose
+Press Ctrl+C to stop both servers
 ```
 
 ### Open Application
 
 Navigate to **http://localhost:5173** in your browser.
+
+---
+
+## Manual Start (Alternative)
+
+If you prefer to run servers separately:
+
+### Terminal 1: Backend
+
+```bash
+cd packages/edm-annotator
+uv run edm-annotator --env development --port 5000
+```
+
+### Terminal 2: Frontend
+
+```bash
+cd packages/edm-annotator/frontend
+npm run dev
+```
 
 ## Usage
 
@@ -147,13 +161,14 @@ Navigate to **http://localhost:5173** in your browser.
 
 ### Backend won't start
 - Check Python version: `python --version` (needs 3.12+)
-- Verify installation: `uv pip list | grep edm-annotator`
+- Run from repo root: `uv sync` to install packages
+- Verify: `uv run edm-annotator --help` should work
 - Check audio directory exists: `ls $EDM_AUDIO_DIR`
 
 ### Frontend won't start
-- Check Node version: `node --version` (needs 20+)
-- Install dependencies: `pnpm install`
-- Clear cache: `rm -rf node_modules .vite && pnpm install`
+- Check Node version: `node --version` (needs 18+)
+- Install dependencies: `cd packages/edm-annotator/frontend && npm install`
+- Clear cache: `rm -rf node_modules .vite && npm install`
 
 ### No tracks showing
 - Verify `EDM_AUDIO_DIR` points to directory with audio files
@@ -182,18 +197,19 @@ pytest
 ### Frontend Type Check
 ```bash
 cd packages/edm-annotator/frontend
-pnpm type-check
+npm run type-check
 ```
 
 ### Frontend Lint
 ```bash
-pnpm lint
+cd packages/edm-annotator/frontend
+npm run lint
 ```
 
 ### Build for Production
 ```bash
 cd packages/edm-annotator/frontend
-pnpm build
+npm run build
 # Output in dist/
 ```
 
