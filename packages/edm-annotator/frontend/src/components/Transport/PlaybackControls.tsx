@@ -1,7 +1,6 @@
 import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Music, Clock, Zap } from "lucide-react";
 import { useAudioStore, useTempoStore, useTrackStore } from "@/stores";
-import { Button } from "@/components/UI";
-import { InfoCard } from "@/components/UI";
+import { Button, InfoCard, Tooltip } from "@/components/UI";
 
 /**
  * Transport row with playback controls and info displays
@@ -46,34 +45,42 @@ export function PlaybackControls() {
           alignItems: "stretch",
         }}
       >
-        <Button
-          onClick={togglePlayback}
-          variant={isPlaying ? "danger" : "accent"}
-          icon={isPlaying ? <Pause size={16} /> : <Play size={16} />}
-        >
-          {isPlaying ? "Pause" : "Play"}
-        </Button>
-        <Button
-          onClick={returnToCue}
-          variant="warning"
-          icon={<RotateCcw size={16} />}
-        >
-          Cue
-        </Button>
-        <Button
-          onClick={previousTrack}
-          variant="secondary"
-          icon={<ChevronLeft size={16} />}
-        >
-          Previous
-        </Button>
-        <Button
-          onClick={nextTrack}
-          variant="secondary"
-          icon={<ChevronRight size={16} />}
-        >
-          Next
-        </Button>
+        <Tooltip content="Toggle playback" shortcut="Space">
+          <Button
+            onClick={togglePlayback}
+            variant={isPlaying ? "danger" : "accent"}
+            icon={isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          >
+            {isPlaying ? "Pause" : "Play"}
+          </Button>
+        </Tooltip>
+        <Tooltip content="Return to cue point" shortcut="C / R">
+          <Button
+            onClick={returnToCue}
+            variant="warning"
+            icon={<RotateCcw size={16} />}
+          >
+            Cue
+          </Button>
+        </Tooltip>
+        <Tooltip content="Previous track" shortcut="↑">
+          <Button
+            onClick={previousTrack}
+            variant="secondary"
+            icon={<ChevronLeft size={16} />}
+          >
+            Previous
+          </Button>
+        </Tooltip>
+        <Tooltip content="Next track" shortcut="↓">
+          <Button
+            onClick={nextTrack}
+            variant="secondary"
+            icon={<ChevronRight size={16} />}
+          >
+            Next
+          </Button>
+        </Tooltip>
       </div>
 
       {/* Right: Info displays */}

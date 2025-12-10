@@ -11,6 +11,7 @@ import { EditingControls } from "./components/Editing/EditingControls";
 import { RegionList } from "./components/Editing/RegionList";
 import { TrackSelector } from "./components/TrackList/TrackSelector";
 import { StatusToast } from "./components/Layout/StatusToast";
+import { KeyboardHints } from "./components/UI";
 
 /**
  * Main application component for EDM Structure Annotator
@@ -122,6 +123,9 @@ function App() {
 
       {/* Status Toast */}
       <StatusToast />
+
+      {/* Keyboard Shortcuts Helper */}
+      <KeyboardHints />
     </div>
   );
 }

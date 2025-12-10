@@ -1,6 +1,6 @@
 import { Plus, MapPin, Grid3x3 } from "lucide-react";
 import { useAudioStore, useStructureStore, useTempoStore, useUIStore, useTrackStore } from "@/stores";
-import { Button } from "@/components/UI";
+import { Button, Tooltip } from "@/components/UI";
 
 /**
  * Editing row - three action buttons
@@ -30,29 +30,35 @@ export function EditingControls() {
         gap: "var(--space-3)",
       }}
     >
-      <Button
-        onClick={handleAddBoundary}
-        disabled={!currentTrack}
-        variant="primary"
-        icon={<Plus size={16} />}
-      >
-        Boundary
-      </Button>
-      <Button
-        onClick={handleSetDownbeat}
-        disabled={!currentTrack}
-        variant="primary"
-        icon={<MapPin size={16} />}
-      >
-        Downbeat
-      </Button>
-      <Button
-        onClick={toggleQuantize}
-        variant={quantizeEnabled ? "primary" : "secondary"}
-        icon={<Grid3x3 size={16} />}
-      >
-        Quantize
-      </Button>
+      <Tooltip content="Add boundary at current time" shortcut="B">
+        <Button
+          onClick={handleAddBoundary}
+          disabled={!currentTrack}
+          variant="primary"
+          icon={<Plus size={16} />}
+        >
+          Boundary
+        </Button>
+      </Tooltip>
+      <Tooltip content="Set downbeat at current time" shortcut="D">
+        <Button
+          onClick={handleSetDownbeat}
+          disabled={!currentTrack}
+          variant="primary"
+          icon={<MapPin size={16} />}
+        >
+          Downbeat
+        </Button>
+      </Tooltip>
+      <Tooltip content="Toggle boundary quantization to bars" shortcut="Q">
+        <Button
+          onClick={toggleQuantize}
+          variant={quantizeEnabled ? "primary" : "secondary"}
+          icon={<Grid3x3 size={16} />}
+        >
+          Quantize
+        </Button>
+      </Tooltip>
     </div>
   );
 }
