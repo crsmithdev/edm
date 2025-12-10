@@ -14,7 +14,13 @@ export function Tooltip({ content, children, shortcut }: TooltipProps) {
 
   return (
     <div
-      style={{ position: "relative", display: "block", width: "100%", height: "100%" }}
+      style={{
+        position: "relative",
+        display: "block",
+        width: "100%",
+        height: "100%",
+        overflow: "visible",
+      }}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
       onFocus={() => setIsVisible(true)}
@@ -36,9 +42,10 @@ export function Tooltip({ content, children, shortcut }: TooltipProps) {
             whiteSpace: "nowrap",
             border: "1px solid var(--border-subtle)",
             boxShadow: "var(--shadow-lg)",
-            zIndex: "var(--z-modal)",
+            zIndex: 9999,
             pointerEvents: "none",
             animation: "tooltipFadeIn 0.15s ease-out",
+            willChange: "opacity",
           }}
         >
           {content}
