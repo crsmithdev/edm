@@ -138,9 +138,9 @@ export function BeatGrid(props: BeatGridProps) {
                 line.type === "downbeat"
                   ? "#f44336"
                   : line.type === "bar"
-                    ? "#ff9800"
-                    : "rgba(123, 106, 255, 0.4)",
-              opacity: line.type === "downbeat" ? 0.8 : line.type === "bar" ? 0.6 : 0.4,
+                    ? "rgba(200, 200, 200, 0.7)"
+                    : "rgba(150, 150, 150, 0.3)",
+              opacity: line.type === "downbeat" ? 0.8 : 1,
               pointerEvents: "none",
             }}
           >
@@ -155,7 +155,7 @@ export function BeatGrid(props: BeatGridProps) {
                   padding: "2px 4px",
                   borderRadius: "2px",
                   fontSize: "10px",
-                  color: line.type === "downbeat" ? "#f44336" : "#ff9800",
+                  color: line.type === "downbeat" ? "#f44336" : "rgba(220, 220, 220, 0.9)",
                   whiteSpace: "nowrap",
                 }}
               >
