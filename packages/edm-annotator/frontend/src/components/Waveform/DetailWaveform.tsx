@@ -92,37 +92,35 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
     const width = 100;
     const height = 100;
 
-    // Apply temporal smoothing with adaptive window size based on zoom level
-    // More smoothing when zoomed out (longer spans), less when zoomed in
-    // Use exponential scaling to reduce smoothing more aggressively when zoomed in
-    const baseWindowSize = Math.max(1, Math.floor(Math.pow(span / 2, 0.8))); // Smoother overall, exponential reduction
+    // Asymmetric envelope follower: fast attack, slow release
+    // Creates sharp vertical rises (attack) with gradual slopes down (decay/release)
+    // Similar to ADSR envelope - preserves transient spikes while smoothing valleys
+    const smoothArray = (arr: number[]): number[] => {
+      if (arr.length === 0) return arr;
 
-    // Peak-preserving smoothing: high amplitudes get less smoothing, low amplitudes get more
-    const smoothArray = (arr: number[], baseWindowSize: number): number[] => {
-      if (baseWindowSize <= 1) return arr;
-
-      // Find local max for normalizing
-      const localMax = Math.max(...arr, 0.001);
+      // Attack/release coefficients adapt based on zoom level
+      // More zoomed in = faster response, more zoomed out = slower/smoother
+      const zoomFactor = Math.min(1, span / 16); // Normalize to default 16s span
+      const attackCoeff = 0.7 + 0.2 * (1 - zoomFactor); // 0.7-0.9: faster when zoomed in
+      const releaseCoeff = 0.03 + 0.07 * (1 - zoomFactor); // 0.03-0.1: slower when zoomed out
 
       const smoothed: number[] = [];
+      let envelope = arr[0] || 0;
+
       for (let i = 0; i < arr.length; i++) {
-        // Adjust window size based on local amplitude (normalized 0-1)
-        // High amplitude (peaks) -> smaller window (sharper)
-        // Low amplitude (quiet sections) -> larger window (smoother)
-        const normalizedAmp = arr[i] / localMax;
-        const ampFactor = 1 - Math.pow(normalizedAmp, 2); // Quadratic: peaks reduce window more
-        const adaptiveWindowSize = Math.max(1, Math.floor(baseWindowSize * (0.3 + 0.7 * ampFactor)));
+        const input = arr[i];
 
-        const halfWindow = Math.floor(adaptiveWindowSize / 2);
-        const windowStart = Math.max(0, i - halfWindow);
-        const windowEnd = Math.min(arr.length, i + halfWindow + 1);
-
-        let sum = 0;
-        for (let j = windowStart; j < windowEnd; j++) {
-          sum += arr[j];
+        if (input > envelope) {
+          // Attack: rise quickly toward the peak (preserves sharp transients)
+          envelope = attackCoeff * input + (1 - attackCoeff) * envelope;
+        } else {
+          // Release: fall slowly from the peak (creates flowing decay)
+          envelope = releaseCoeff * input + (1 - releaseCoeff) * envelope;
         }
-        smoothed[i] = sum / (windowEnd - windowStart);
+
+        smoothed[i] = envelope;
       }
+
       return smoothed;
     };
 
@@ -131,10 +129,10 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
     const rawMids = indices.map((idx) => Math.abs(waveformMids[idx] || 0));
     const rawHighs = indices.map((idx) => Math.abs(waveformHighs[idx] || 0));
 
-    // Apply smoothing to each band
-    const smoothedBass = smoothArray(rawBass, baseWindowSize);
-    const smoothedMids = smoothArray(rawMids, baseWindowSize);
-    const smoothedHighs = smoothArray(rawHighs, baseWindowSize);
+    // Apply envelope follower to each band
+    const smoothedBass = smoothArray(rawBass);
+    const smoothedMids = smoothArray(rawMids);
+    const smoothedHighs = smoothArray(rawHighs);
 
     // Calculate cumulative heights for each sample
     // Map time to x position based on the full viewport (including empty space)
