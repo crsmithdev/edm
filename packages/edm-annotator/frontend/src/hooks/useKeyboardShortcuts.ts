@@ -7,7 +7,7 @@ import {
   useUIStore,
   useTrackStore,
 } from "@/stores";
-import { getBarDuration } from "@/utils/barCalculations";
+import { getBarDuration, getBeatDuration } from "@/utils/barCalculations";
 
 /**
  * Handles keyboard shortcuts for the application
@@ -16,9 +16,9 @@ export function useKeyboardShortcuts() {
   const { isPlaying, play, pause, seek, currentTime, returnToCue, setCuePoint } =
     useAudioStore();
   const { addBoundary } = useStructureStore();
-  const { setDownbeat, trackBPM } = useTempoStore();
+  const { setDownbeat, trackBPM, trackDownbeat } = useTempoStore();
   const { zoom, zoomToFit } = useWaveformStore();
-  const { toggleQuantize, showStatus } = useUIStore();
+  const { toggleQuantize, showStatus, quantizeEnabled } = useUIStore();
   const { previousTrack, nextTrack } = useTrackStore();
 
   useEffect(() => {
@@ -70,8 +70,16 @@ export function useKeyboardShortcuts() {
             returnToCue();
             showStatus("Returned to cue");
           } else {
-            setCuePoint(currentTime);
-            showStatus(`Cue point set at ${currentTime.toFixed(2)}s`);
+            // Snap to nearest beat if quantize enabled
+            let cueTime = currentTime;
+            if (quantizeEnabled && trackBPM > 0) {
+              const beatDuration = getBeatDuration(trackBPM);
+              const beatsFromDownbeat = (currentTime - trackDownbeat) / beatDuration;
+              const nearestBeat = Math.round(beatsFromDownbeat);
+              cueTime = trackDownbeat + nearestBeat * beatDuration;
+            }
+            setCuePoint(cueTime);
+            showStatus(`Cue point set at ${cueTime.toFixed(2)}s`);
           }
           break;
 
@@ -164,5 +172,7 @@ export function useKeyboardShortcuts() {
     zoom,
     zoomToFit,
     trackBPM,
+    trackDownbeat,
+    quantizeEnabled,
   ]);
 }

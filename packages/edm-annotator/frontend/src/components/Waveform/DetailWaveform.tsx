@@ -23,7 +23,7 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     duration,
     setViewport,
   } = useWaveformStore();
-  const { currentTime, seek } = useAudioStore();
+  const { currentTime, seek, cuePoint } = useAudioStore();
   const { addBoundary } = useStructureStore();
   const { quantizeEnabled } = useUIStore();
   const { trackBPM, trackDownbeat } = useTempoStore();
@@ -369,6 +369,24 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
 
       {/* Boundary markers */}
       <BoundaryMarkers viewportStart={viewport.start} viewportEnd={viewport.end} />
+
+      {/* Cue point marker (moves with waveform) */}
+      {cuePoint >= viewport.start && cuePoint <= viewport.end && (
+        <div
+          style={{
+            position: "absolute",
+            left: `${((cuePoint - viewport.start) / (viewport.end - viewport.start)) * 100}%`,
+            top: 0,
+            width: "2px",
+            height: "100%",
+            background: "linear-gradient(180deg, #ff9500 0%, #ff6b00 100%)",
+            boxShadow: "0 0 8px rgba(255, 149, 0, 0.6)",
+            pointerEvents: "none",
+            zIndex: 9,
+            transform: "translateX(-1px)",
+          }}
+        />
+      )}
 
       {/* Fixed center playhead */}
       <div
