@@ -149,11 +149,7 @@ export function BeatGrid(props: BeatGridProps) {
                 style={{
                   position: "absolute",
                   top: "2px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  background: "rgba(0,0,0,0.7)",
-                  padding: "2px 4px",
-                  borderRadius: "2px",
+                  left: "4px",
                   fontSize: "10px",
                   color: line.type === "downbeat" ? "#f44336" : "rgba(220, 220, 220, 0.9)",
                   whiteSpace: "nowrap",
