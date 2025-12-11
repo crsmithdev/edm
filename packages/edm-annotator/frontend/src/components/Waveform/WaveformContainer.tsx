@@ -66,7 +66,7 @@ export function WaveformContainer() {
 
       {/* Detail Waveform (centered playhead) */}
       <div style={{ marginTop: "var(--space-3)" }}>
-        <DetailWaveform span={detailSpan} />
+        <DetailWaveform span={detailSpan} onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} />
       </div>
 
       {/* Track Info and Zoom Controls */}

@@ -8,13 +8,17 @@ import { RegionOverlays } from "./RegionOverlays";
 interface DetailWaveformProps {
   /** Time span to display (seconds) */
   span: number;
+  /** Callback to zoom in */
+  onZoomIn?: () => void;
+  /** Callback to zoom out */
+  onZoomOut?: () => void;
 }
 
 /**
  * Detail waveform with centered playhead - waveform scrolls around fixed center position
  * Shows empty space at track start/end when playhead is near boundaries
  */
-export function DetailWaveform({ span }: DetailWaveformProps) {
+export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProps) {
   const {
     waveformBass,
     waveformMids,
@@ -90,7 +94,8 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
 
     // Apply temporal smoothing with adaptive window size based on zoom level
     // More smoothing when zoomed out (longer spans), less when zoomed in
-    const smoothingWindowSize = Math.max(1, Math.floor(span / 2)); // 1 sample per 2 seconds of visible span
+    // Use exponential scaling to reduce smoothing more aggressively when zoomed in
+    const smoothingWindowSize = Math.max(1, Math.floor(Math.pow(span / 4, 0.7))); // Reduces faster as span decreases
 
     const smoothArray = (arr: number[], windowSize: number): number[] => {
       if (windowSize <= 1) return arr;
@@ -344,11 +349,25 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
+  // Handle mousewheel zoom
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY < 0 && onZoomIn) {
+        onZoomIn();
+      } else if (e.deltaY > 0 && onZoomOut) {
+        onZoomOut();
+      }
+    },
+    [onZoomIn, onZoomOut]
+  );
+
   return (
     <div
       ref={containerRef}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onWheel={handleWheel}
       style={{
         position: "relative",
         width: "100%",
