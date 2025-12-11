@@ -88,12 +88,44 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     const width = 100;
     const height = 100;
 
+    // Apply temporal smoothing with adaptive window size based on zoom level
+    // More smoothing when zoomed out (longer spans), less when zoomed in
+    const smoothingWindowSize = Math.max(1, Math.floor(span / 2)); // 1 sample per 2 seconds of visible span
+
+    const smoothArray = (arr: number[], windowSize: number): number[] => {
+      if (windowSize <= 1) return arr;
+
+      const smoothed: number[] = [];
+      for (let i = 0; i < arr.length; i++) {
+        const halfWindow = Math.floor(windowSize / 2);
+        const windowStart = Math.max(0, i - halfWindow);
+        const windowEnd = Math.min(arr.length, i + halfWindow + 1);
+
+        let sum = 0;
+        for (let j = windowStart; j < windowEnd; j++) {
+          sum += arr[j];
+        }
+        smoothed[i] = sum / (windowEnd - windowStart);
+      }
+      return smoothed;
+    };
+
+    // Extract raw amplitude values
+    const rawBass = indices.map((idx) => Math.abs(waveformBass[idx] || 0));
+    const rawMids = indices.map((idx) => Math.abs(waveformMids[idx] || 0));
+    const rawHighs = indices.map((idx) => Math.abs(waveformHighs[idx] || 0));
+
+    // Apply smoothing to each band
+    const smoothedBass = smoothArray(rawBass, smoothingWindowSize);
+    const smoothedMids = smoothArray(rawMids, smoothingWindowSize);
+    const smoothedHighs = smoothArray(rawHighs, smoothingWindowSize);
+
     // Calculate cumulative heights for each sample
     // Map time to x position based on the full viewport (including empty space)
-    const cumulativeData = indices.map((idx) => {
-      const bass = Math.abs(waveformBass[idx] || 0);
-      const mids = Math.abs(waveformMids[idx] || 0);
-      const highs = Math.abs(waveformHighs[idx] || 0);
+    const cumulativeData = indices.map((idx, i) => {
+      const bass = smoothedBass[i];
+      const mids = smoothedMids[i];
+      const highs = smoothedHighs[i];
       const time = waveformTimes[idx];
       // Position relative to viewport start (which may be negative)
       const x = ((time - viewport.start) / viewportDuration) * width;
@@ -201,6 +233,7 @@ export function DetailWaveform({ span }: DetailWaveformProps) {
     viewport.end,
     duration,
     globalMaxAmplitude,
+    span,
   ]);
 
   // Drag state for scrubbing

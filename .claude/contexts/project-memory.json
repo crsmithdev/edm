@@ -192,13 +192,17 @@
       "type": "documentation",
       "properties": {
         "readme": "README.md (quickstart, installation, benchmarks)",
-        "architecture": "docs/architecture.md (design patterns, data flow)",
+        "architecture": "docs/architecture.md (design patterns, data flow, monorepo structure)",
         "cli_reference": "docs/cli-reference.md (complete command docs)",
         "development": "docs/development.md (setup, testing, code quality)",
         "edm_terminology": "docs/edm-terminology.md (domain knowledge)",
-        "project_structure": "docs/project-structure.md (directory layout)",
-        "agent_guide": "docs/agent-guide.md (for AI agents)",
-        "training_guide": "docs/training.md (model training)",
+        "project_structure": "docs/project-structure.md (monorepo directory layout)",
+        "agent_guide": "docs/agent-guide.md (AI agent navigation, training section added)",
+        "training_guide": "docs/training.md (complete model training guide)",
+        "training_quickref": "docs/training-quickref.md (fast reference, common patterns, troubleshooting)",
+        "common_tasks": "docs/common-tasks.md (frequently needed operations)",
+        "dev_notes": ".claude/DEV_NOTES.md (training + annotator quick reference)",
+        "package_readmes": ["packages/edm-lib/README.md", "packages/edm-cli/README.md", "packages/edm-annotator/README.md"],
         "openspec": "openspec/ directory (change proposals: active + archive)"
       }
     },
@@ -216,18 +220,51 @@
       "name": "key_entry_points",
       "type": "reference",
       "properties": {
-        "bpm_api": "src/edm/analysis/bpm.py:36 → analyze_bpm()",
-        "structure_api": "src/edm/analysis/structure.py:150 → analyze_structure()",
-        "orchestrator": "src/edm/analysis/orchestrator.py:15 → AnalysisOrchestrator",
-        "cli_main": "src/cli/main.py:57 → analyze() command",
-        "cli_analyze": "src/cli/commands/analyze.py",
-        "cli_train": "src/cli/commands/train.py",
-        "cli_evaluate": "src/cli/commands/evaluate.py",
-        "trainer": "src/edm/training/trainer.py",
-        "dataset": "src/edm/training/dataset.py",
-        "schema": "src/edm/data/schema.py",
-        "tests_unit": "tests/unit/",
+        "bpm_api": "packages/edm-lib/src/edm/analysis/bpm.py:36 → analyze_bpm()",
+        "structure_api": "packages/edm-lib/src/edm/analysis/structure.py:150 → analyze_structure()",
+        "orchestrator": "packages/edm-lib/src/edm/analysis/orchestrator.py:15 → AnalysisOrchestrator",
+        "cli_main": "packages/edm-cli/src/edm_cli/main.py → Typer app",
+        "cli_analyze": "packages/edm-cli/src/edm_cli/commands/analyze.py",
+        "cli_train": "packages/edm-cli/src/edm_cli/commands/train.py",
+        "cli_evaluate": "packages/edm-cli/src/edm_cli/commands/evaluate.py",
+        "trainer": "packages/edm-lib/src/edm/training/trainer.py",
+        "dataset": "packages/edm-lib/src/edm/training/dataset.py",
+        "schema": "packages/edm-lib/src/edm/data/schema.py",
+        "tests_unit": "packages/edm-lib/tests/unit/",
         "annotations": "data/annotations/*.yaml"
+      }
+    },
+    {
+      "name": "training_quick_commands",
+      "type": "workflow",
+      "properties": {
+        "quick_test": "just train-quick (10 epochs, 2 hours)",
+        "standard_training": "just train-standard (50 epochs, 3-4 hours)",
+        "full_training": "just train-full (100 epochs, large model)",
+        "config_based": "just train-config configs/training_first_run.yaml",
+        "resume_training": "just train-resume outputs/training/run_xyz/checkpoints/epoch_20.pt",
+        "monitor": "tensorboard --logdir outputs/training/",
+        "verify_data": "ls data/annotations/*.yaml | wc -l",
+        "test_dataset": "uv run python -c 'from edm.training.dataset import EDMDataset; from pathlib import Path; dataset = EDMDataset(Path(\"data/annotations\"), Path(\"~/music\").expanduser()); print(len(dataset))'",
+        "docs": ["docs/training-quickref.md", "docs/training.md", "docs/common-tasks.md"]
+      }
+    },
+    {
+      "name": "common_task_locations",
+      "type": "reference",
+      "properties": {
+        "training_commands": "justfile → train-quick, train-standard, train-full",
+        "analysis_commands": "justfile → analyze, evaluate",
+        "quality_checks": "justfile → check, fmt, lint, types, test",
+        "annotator": "justfile → annotator",
+        "quick_reference": "docs/common-tasks.md",
+        "training_quickref": "docs/training-quickref.md",
+        "agent_guide": "docs/agent-guide.md",
+        "dev_notes": ".claude/DEV_NOTES.md",
+        "training_configs": "configs/*.yaml",
+        "outputs": "outputs/training/{run_name}/",
+        "checkpoints": "outputs/training/{run_name}/checkpoints/",
+        "tensorboard_logs": "outputs/training/{run_name}/logs/"
       }
     },
     {

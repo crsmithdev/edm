@@ -44,14 +44,29 @@ export function OverviewWaveform() {
 
     if (samples.length === 0) return "";
 
+    // Apply smoothing for cleaner visual appearance
+    const smoothingWindowSize = 5; // Fixed window for overview
+    const smoothedAmplitudes: number[] = [];
+    for (let i = 0; i < samples.length; i++) {
+      const halfWindow = Math.floor(smoothingWindowSize / 2);
+      const windowStart = Math.max(0, i - halfWindow);
+      const windowEnd = Math.min(samples.length, i + halfWindow + 1);
+
+      let sum = 0;
+      for (let j = windowStart; j < windowEnd; j++) {
+        sum += samples[j].amplitude;
+      }
+      smoothedAmplitudes[i] = sum / (windowEnd - windowStart);
+    }
+
     // Find max for scaling
-    const maxAmplitude = Math.max(...samples.map((s) => s.amplitude), 0.001);
+    const maxAmplitude = Math.max(...smoothedAmplitudes, 0.001);
     const scale = (height * 0.85) / maxAmplitude;
     const baseline = height; // Bottom of SVG
 
     // Generate path extending upward from baseline
-    const points = samples.map((s) => {
-      const y = baseline - s.amplitude * scale;
+    const points = samples.map((s, i) => {
+      const y = baseline - smoothedAmplitudes[i] * scale;
       return `${s.x},${y}`;
     });
 

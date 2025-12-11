@@ -1,0 +1,10 @@
+run_name: mert95m_4hr_70ep
+start_time: '2025-12-10T02:32:02.603153'
+end_time: '2025-12-10T03:27:15.290111'
+final_metrics:
+  best_epoch: 69
+  best_val_loss: 0.01990160397771332
+dataset:
+  data_dvc_hash: 8b21e4f497146b0d1a4139220bacd0da.dir
+git_commit: 363c08a
+device: cuda

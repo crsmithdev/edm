@@ -1,0 +1,30 @@
+{
+  "checkpoint": "experiments/4hr_training/mert95m_4hr_70ep/checkpoints/best.pt",
+  "validation_samples": 70,
+  "boundary_metrics": {
+    "boundary_f1_@0.5s": 0.6012925170068026,
+    "boundary_precision_@0.5s": 0.65,
+    "boundary_recall_@0.5s": 0.5928571428571429,
+    "boundary_f1_@1.0s": 0.6012925170068026,
+    "boundary_precision_@1.0s": 0.65,
+    "boundary_recall_@1.0s": 0.5928571428571429,
+    "boundary_f1_@2.0s": 0.6108163265306121,
+    "boundary_precision_@2.0s": 0.6642857142857143,
+    "boundary_recall_@2.0s": 0.6,
+    "boundary_f1_@3.0s": 0.6108163265306121,
+    "boundary_precision_@3.0s": 0.6642857142857143,
+    "boundary_recall_@3.0s": 0.6
+  },
+  "energy_metrics": {
+    "energy_corr_bass": 0.8006792486746134,
+    "energy_corr_mid": 0.8005789482661764,
+    "energy_corr_high": 0.8014561759842841,
+    "energy_corr_overall": 0.8011732637548744,
+    "energy_mae": 0.008423899300396442
+  },
+  "beat_metrics": {
+    "beat_f1": 0.711151982556798,
+    "beat_precision": 0.708055098334082,
+    "beat_recall": 0.7212681033124174
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "checkpoint": "experiments/4hr_training/mert95m_4hr_70ep/checkpoints/best.pt",
+  "total_samples": 70,
+  "best_samples": [
+    {
+      "filename": "UMX - Indeed (Radio)",
+      "total_loss": 0.19103446663211798,
+      "boundary_loss": 0.0737147107720375,
+      "energy_loss": 8.126408647513017e-05,
+      "beat_loss": 0.11723849177360535,
+      "boundary_f1": 1.0,
+      "energy_corr": 0.9784582930846545
+    },
+    {
+      "filename": "Gorkiz - Antimatter (Gowzer Remix)",
+      "total_loss": 0.1910614518201328,
+      "boundary_loss": 0.07197234034538269,
+      "energy_loss": 9.139606117969379e-05,
+      "beat_loss": 0.1189977154135704,
+      "boundary_f1": 1.0,
+      "energy_corr": 0.8889194702954136
+    },
+    {
+      "filename": "Volen Sentir - Luna Amazonia",
+      "total_loss": 0.19224974157987162,
+      "boundary_loss": 0.07267843931913376,
+      "energy_loss": 0.0003139415639452636,
+      "beat_loss": 0.1192573606967926,
+      "boundary_f1": 0.0,
+      "energy_corr": null
+    },
+    {
+      "filename": "Pleasurian Pneumatikos - Midnight Belongs to Us",
+      "total_loss": 0.19366279093082994,
+      "boundary_loss": 0.07511577755212784,
+      "energy_loss": 0.0004707187181338668,
+      "beat_loss": 0.11807629466056824,
+      "boundary_f1": 1.0,
+      "energy_corr": 0.2913515281869438
+    },
+    {
+      "filename": "Max Graham, Second Sine - Chance to Escape (Fabri Lopez Remix)",
+      "total_loss": 0.1947696607094258,
+      "boundary_loss": 0.07479377835988998,
+      "energy_loss": 0.0015025089960545301,
+      "beat_loss": 0.11847337335348129,
+      "boundary_f1": 0.0,
+      "energy_corr": 0.8750534087138249
+    }
+  ],
+  "worst_samples": [
+    {
+      "filename": "Flowjob - Who Is Vu",
+      "total_loss": 0.3616552581079304,
+      "boundary_loss": 0.07140742242336273,
+      "energy_loss": 0.0009389002807438374,
+      "beat_loss": 0.28930893540382385,
+      "boundary_f1": 1.0,
+      "energy_corr": 0.7857540028045653
+    },
+    {
+      "filename": "Spencer Brown, Liam Hathaway - Audio",
+      "total_loss": 0.36764507164480165,
+      "boundary_loss": 0.09193424135446548,
+      "energy_loss": 0.0005944164586253464,
+      "beat_loss": 0.2751164138317108,
+      "boundary_f1": 0.0,
+      "energy_corr": 0.7043593592670193
+    },
+    {
+      "filename": "Esilum - Room 20-1",
+      "total_loss": 0.39242659691080917,
+      "boundary_loss": 0.09252095222473145,
+      "energy_loss": 0.0001653004001127556,
+      "beat_loss": 0.29974034428596497,
+      "boundary_f1": 1.0,
+      "energy_corr": 0.9224897568983369
+    },
+    {
+      "filename": "Sara Landry, LEGZDINA, Indira Paganotto - Pressure (Indira Paganotto Remix)",
+      "total_loss": 0.4125585788860917,
+      "boundary_loss": 0.08513785153627396,
+      "energy_loss": 0.011332348920404911,
+      "beat_loss": 0.31608837842941284,
+      "boundary_f1": 1.0,
+      "energy_corr": 0.8617772234155472
+    },
+    {
+      "filename": "Dark Matter - Shrine of the Spring Night Forest (Original Mix)",
+      "total_loss": 0.44536574569065124,
+      "boundary_loss": 0.06957173347473145,
+      "energy_loss": 0.0008331128628924489,
+      "beat_loss": 0.37496089935302734,
+      "boundary_f1": 0.0,
+      "energy_corr": null
+    }
+  ]
+}

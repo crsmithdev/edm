@@ -2,6 +2,55 @@
 
 Quick reference for common development tasks.
 
+## Model Training
+
+### Quick Commands
+
+```bash
+# Quick test (10 epochs, ~2 hours)
+just train-quick
+
+# Standard training (50 epochs, ~3-4 hours)
+just train-standard
+
+# Full training (100 epochs, large model)
+just train-full
+
+# Using config file
+just train-config configs/training_first_run.yaml
+
+# Resume from checkpoint
+just train-resume outputs/training/run_xyz/checkpoints/epoch_20.pt
+```
+
+### First Time Training
+
+```bash
+# 1. Verify data
+ls data/annotations/*.yaml | wc -l  # Should show annotation count
+ls ~/music/*.{mp3,flac,wav} | head -5  # Verify audio files
+
+# 2. Quick test run
+just train-quick
+
+# 3. Monitor in TensorBoard
+tensorboard --logdir outputs/test_run/logs
+# Open http://localhost:6006
+
+# 4. Check results
+cat outputs/test_run/metadata.yaml
+ls outputs/test_run/checkpoints/
+```
+
+### Common Issues
+
+- **OOM errors**: Reduce batch size with `--batch-size 2` or use `--backbone cnn`
+- **No data found**: Check paths in YAML annotations match `--audio-dir`
+- **F1 stuck at 0**: Check annotation quality, increase boundary tolerance
+- **Slow training**: Ensure GPU is being used (`nvidia-smi`), reduce `--workers`
+
+See [docs/training-quickref.md](../docs/training-quickref.md) for detailed troubleshooting.
+
 ## Running the Annotator Web App
 
 The EDM annotator is a React + Flask application for annotating track structures.
