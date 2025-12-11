@@ -126,7 +126,7 @@ export function OverviewWaveform() {
           position: "relative",
           width: "100%",
           height: "100%",
-          background: "transparent",
+          background: "#0a0a12",
         }}
       >
         {/* Combined waveform - single color for overview */}

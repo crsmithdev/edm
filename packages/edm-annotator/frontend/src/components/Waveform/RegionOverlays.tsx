@@ -22,6 +22,11 @@ export function RegionOverlays(props: RegionOverlaysProps) {
   return (
     <>
       {regions.map((region, idx) => {
+        // Skip unlabeled regions - only show labeled sections
+        if (region.label === "unlabeled") {
+          return null;
+        }
+
         // Skip if region is completely outside viewport
         if (region.end < viewportStart || region.start > viewportEnd) {
           return null;
