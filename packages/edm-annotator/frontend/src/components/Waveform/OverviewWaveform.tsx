@@ -146,7 +146,7 @@ export function OverviewWaveform() {
                 top: 0,
                 width: "1px",
                 height: "100%",
-                background: "rgba(0, 229, 204, 0.5)",
+                background: "rgba(123, 106, 255, 0.5)",
                 pointerEvents: "none",
               }}
             />

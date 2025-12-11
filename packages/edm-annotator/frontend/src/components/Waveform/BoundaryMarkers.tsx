@@ -38,8 +38,8 @@ export function BoundaryMarkers(props: BoundaryMarkersProps) {
               top: 0,
               height: "100%",
               width: "3px",
-              background: "#00e5cc",
-              boxShadow: "0 0 10px rgba(0, 229, 204, 0.5)",
+              background: "#7b6aff",
+              boxShadow: "0 0 10px rgba(123, 106, 255, 0.5)",
               cursor: "pointer",
               zIndex: 5,
             }}
