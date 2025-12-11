@@ -95,14 +95,25 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
     // Apply temporal smoothing with adaptive window size based on zoom level
     // More smoothing when zoomed out (longer spans), less when zoomed in
     // Use exponential scaling to reduce smoothing more aggressively when zoomed in
-    const smoothingWindowSize = Math.max(1, Math.floor(Math.pow(span / 2, 0.8))); // Smoother overall, exponential reduction
+    const baseWindowSize = Math.max(1, Math.floor(Math.pow(span / 2, 0.8))); // Smoother overall, exponential reduction
 
-    const smoothArray = (arr: number[], windowSize: number): number[] => {
-      if (windowSize <= 1) return arr;
+    // Peak-preserving smoothing: high amplitudes get less smoothing, low amplitudes get more
+    const smoothArray = (arr: number[], baseWindowSize: number): number[] => {
+      if (baseWindowSize <= 1) return arr;
+
+      // Find local max for normalizing
+      const localMax = Math.max(...arr, 0.001);
 
       const smoothed: number[] = [];
       for (let i = 0; i < arr.length; i++) {
-        const halfWindow = Math.floor(windowSize / 2);
+        // Adjust window size based on local amplitude (normalized 0-1)
+        // High amplitude (peaks) -> smaller window (sharper)
+        // Low amplitude (quiet sections) -> larger window (smoother)
+        const normalizedAmp = arr[i] / localMax;
+        const ampFactor = 1 - Math.pow(normalizedAmp, 2); // Quadratic: peaks reduce window more
+        const adaptiveWindowSize = Math.max(1, Math.floor(baseWindowSize * (0.3 + 0.7 * ampFactor)));
+
+        const halfWindow = Math.floor(adaptiveWindowSize / 2);
         const windowStart = Math.max(0, i - halfWindow);
         const windowEnd = Math.min(arr.length, i + halfWindow + 1);
 
@@ -121,9 +132,9 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
     const rawHighs = indices.map((idx) => Math.abs(waveformHighs[idx] || 0));
 
     // Apply smoothing to each band
-    const smoothedBass = smoothArray(rawBass, smoothingWindowSize);
-    const smoothedMids = smoothArray(rawMids, smoothingWindowSize);
-    const smoothedHighs = smoothArray(rawHighs, smoothingWindowSize);
+    const smoothedBass = smoothArray(rawBass, baseWindowSize);
+    const smoothedMids = smoothArray(rawMids, baseWindowSize);
+    const smoothedHighs = smoothArray(rawHighs, baseWindowSize);
 
     // Calculate cumulative heights for each sample
     // Map time to x position based on the full viewport (including empty space)
