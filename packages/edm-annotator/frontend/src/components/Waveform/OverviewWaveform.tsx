@@ -144,9 +144,9 @@ export function OverviewWaveform() {
                 position: "absolute",
                 left: `${xPercent}%`,
                 top: 0,
-                width: "1px",
+                width: "2px",
                 height: "100%",
-                background: "rgba(123, 106, 255, 0.5)",
+                background: "rgba(123, 106, 255, 0.7)",
                 pointerEvents: "none",
               }}
             />
