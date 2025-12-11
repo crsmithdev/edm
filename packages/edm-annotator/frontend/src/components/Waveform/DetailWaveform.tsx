@@ -95,7 +95,7 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
     // Apply temporal smoothing with adaptive window size based on zoom level
     // More smoothing when zoomed out (longer spans), less when zoomed in
     // Use exponential scaling to reduce smoothing more aggressively when zoomed in
-    const smoothingWindowSize = Math.max(1, Math.floor(Math.pow(span / 4, 0.7))); // Reduces faster as span decreases
+    const smoothingWindowSize = Math.max(1, Math.floor(Math.pow(span / 2, 0.8))); // Smoother overall, exponential reduction
 
     const smoothArray = (arr: number[], windowSize: number): number[] => {
       if (windowSize <= 1) return arr;
