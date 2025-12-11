@@ -9,9 +9,9 @@ interface Shortcut {
 
 const shortcuts: Shortcut[] = [
   { key: "Space", description: "Play/Pause", category: "Playback" },
-  { key: "C", description: "Return to cue point", category: "Playback" },
+  { key: "C", description: "Set cue (stopped) / Return to cue (playing)", category: "Playback" },
   { key: "R", description: "Return to cue point", category: "Playback" },
-  { key: "B", description: "Add boundary at current time", category: "Editing" },
+  { key: "B", description: "Add boundary at playhead", category: "Editing" },
   { key: "D", description: "Set downbeat", category: "Editing" },
   { key: "Q", description: "Toggle quantize", category: "Editing" },
   { key: "←", description: "Jump back 4 bars", category: "Navigation" },
@@ -22,9 +22,9 @@ const shortcuts: Shortcut[] = [
   { key: "Shift + →", description: "Jump forward 8 bars", category: "Navigation" },
   { key: "↑", description: "Previous track", category: "Navigation" },
   { key: "↓", description: "Next track", category: "Navigation" },
-  { key: "Shift + Click", description: "Add boundary on waveform", category: "Waveform" },
-  { key: "Click", description: "Set cue point", category: "Waveform" },
-  { key: "Drag", description: "Pan waveform", category: "Waveform" },
+  { key: "Drag", description: "Scrub playback position", category: "Waveform" },
+  { key: "Shift + Drag", description: "Scrub (bypass quantize)", category: "Waveform" },
+  { key: "Ctrl + Click", description: "Add boundary at click position", category: "Waveform" },
   { key: "Scroll", description: "Zoom in/out", category: "Waveform" },
 ];
 
