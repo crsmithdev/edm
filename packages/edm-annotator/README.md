@@ -46,62 +46,68 @@ packages/edm-annotator/
 - ✅ Proper error handling
 - ✅ Type hints throughout
 
-### Frontend Infrastructure (Foundation Complete)
-- **Project Setup**: Vite + React 18 + TypeScript strict mode
-- **State Management**: 6 Zustand stores replacing 20+ global variables
-  - audioStore (playback state)
-  - trackStore (track selection)
-  - waveformStore (waveform data, zoom, viewport)
-  - structureStore (boundaries, regions)
-  - tempoStore (BPM, downbeat, calculations)
-  - uiStore (UI state, dragging, quantize)
-- **Type System**: Complete TypeScript interfaces for tracks, waveform, structure, API
-- **Utilities**: Time formatting, bar calculations, quantization, colors
-- **API Service**: Axios-based client with typed endpoints
-- **Configuration**: package.json, tsconfig, vite.config with proxy
+### Frontend (~90% Complete ✅)
+- **Project Setup**: Vite + React 18 + TypeScript strict mode ✅
+- **State Management**: 6 Zustand stores replacing 20+ global variables ✅
+  - audioStore (playback state, cue points) ✅
+  - trackStore (track selection) ✅
+  - waveformStore (waveform data, zoom, viewport) ✅
+  - structureStore (boundaries, regions) ✅
+  - tempoStore (BPM, downbeat, calculations) ✅
+  - uiStore (UI state, quantize, status) ✅
+- **Type System**: Complete TypeScript interfaces ✅
+- **Utilities**: Time formatting, bar calculations, quantization, colors ✅
+- **API Service**: Axios-based client with typed endpoints ✅
 
-**Key Architecture Decisions**:
+**Implemented Components**:
+- ✅ **Dual Waveform Display**
+  - `WaveformContainer.tsx` - Manages overview + detail views
+  - `OverviewWaveform.tsx` - Full track view with moving playhead
+  - `DetailWaveform.tsx` - Centered playhead with 3-band waveform
+- ✅ **Waveform Overlays**
+  - `BeatGrid.tsx` - Adaptive bar/beat grid
+  - `BoundaryMarkers.tsx` - Structure boundary markers
+  - `RegionOverlays.tsx` - Colored section overlays
+- ✅ **Controls**
+  - `PlaybackControls.tsx` - Play/pause/track navigation
+  - `EditingControls.tsx` - Boundary/downbeat/quantize controls
+  - `RegionList.tsx` - Region editor with labels
+  - `TrackSelector.tsx` - Track list sidebar
+- ✅ **Hooks**
+  - `useKeyboardShortcuts.ts` - Complete shortcut system
+  - `useAudioPlayback.ts` - Audio element management
+
+**Implemented Features**:
+- ✅ Drag-to-scrub playback (waveform moves under fixed playhead)
+- ✅ Cue point system (C/R keys, visual orange indicator)
+- ✅ Quantize snapping (with Shift bypass for fine control)
+- ✅ Boundary marking (Ctrl+click, snaps to beat)
+- ✅ Click-to-seek in overview (snaps to bar when quantize on)
+- ✅ Region labeling and visualization
+- ✅ Complete keyboard shortcuts
+- ✅ Track loading and annotation saving
+
+**Architecture Decisions**:
 - ✅ Zustand for lightweight, TypeScript-first state management
 - ✅ Multiple focused stores (better performance, testability)
 - ✅ Complete type safety (no `any` types)
-- ✅ Utility-first design (pure functions, composable)
+- ✅ SVG waveforms with viewport culling
 
 ## 🚧 Remaining Work
 
-### Frontend Components (~12-17 hours)
-
-#### Priority 1: Waveform Visualization (4-6 hours)
-- [ ] `WaveformCanvas.tsx` - SVG 3-band rendering, viewport culling
-- [ ] `BeatGrid.tsx` - Bar/beat overlay with adaptive density
-- [ ] `Playhead.tsx` - Current position indicator
-- [ ] `BoundaryMarkers.tsx` - Draggable structure markers
-- [ ] `RegionOverlays.tsx` - Colored region backgrounds
-
-#### Priority 2: Controls (2-3 hours)
-- [ ] `PlaybackControls.tsx` - Play/pause/cue buttons
-- [ ] `NavigationControls.tsx` - Bar/beat jump controls
-- [ ] `EditingControls.tsx` - Add boundary, set downbeat, quantize, tempo input
-- [ ] `RegionList.tsx` - Region editor with label dropdowns
-
-#### Priority 3: Track Management (1-2 hours)
-- [ ] `TrackSelector.tsx` - Track list sidebar with load functionality
-
-#### Priority 4: Hooks (2-3 hours)
-- [ ] `useAudioPlayback.ts` - Audio element management, event handling
-- [ ] `useWaveformInteraction.ts` - Mouse/touch interaction (click, drag, zoom)
-- [ ] `useKeyboardShortcuts.ts` - Keyboard shortcuts (space, arrows, etc.)
-
-#### Priority 5: Testing (2-3 hours)
+### Frontend Polish & Testing (~10% remaining)
 - [ ] Component tests (React Testing Library)
 - [ ] Store tests (Zustand)
-- [ ] Utility tests
-- [ ] Integration tests
+- [ ] E2E tests with real audio files
+- [ ] Accessibility improvements (ARIA labels, keyboard nav)
+- [ ] Error boundaries and loading states
+- [ ] Performance optimization for very long tracks
 
 ### Backend Testing (Optional)
 - [ ] Unit tests for services (audio, waveform, annotation)
 - [ ] Integration tests for API endpoints
 
-See `frontend/README.md` for detailed implementation guides.
+See `frontend/ARCHITECTURE.md` for detailed system documentation.
 
 ## Development Setup
 
