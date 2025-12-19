@@ -44,7 +44,7 @@ just annotator
 
 This starts both servers automatically:
 - **Backend API**: http://localhost:5000
-- **Frontend**: http://localhost:5173
+- **Frontend**: http://localhost:5174
 
 You should see:
 ```
@@ -55,14 +55,14 @@ You should see:
 
 Starting servers...
   Backend:  http://localhost:5000
-  Frontend: http://localhost:5173
+  Frontend: http://localhost:5174
 
 Press Ctrl+C to stop both servers
 ```
 
 ### Open Application
 
-Navigate to **http://localhost:5173** in your browser.
+Navigate to **http://localhost:5174** in your browser.
 
 ---
 

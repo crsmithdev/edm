@@ -105,7 +105,7 @@ Tests use proper Playwright waiting strategies:
 ## Configuration
 
 See `playwright.config.ts` for configuration:
-- Base URL: `http://localhost:5173` (Vite dev server)
+- Base URL: `http://localhost:5174` (Vite dev server)
 - Browser: Chromium (Desktop Chrome)
 - Screenshots: On failure only
 - Videos: Retained on failure

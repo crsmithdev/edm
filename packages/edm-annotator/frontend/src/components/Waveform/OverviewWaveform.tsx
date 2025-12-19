@@ -45,7 +45,7 @@ export function OverviewWaveform() {
     if (samples.length === 0) return "";
 
     // Apply smoothing for cleaner visual appearance
-    const smoothingWindowSize = 5; // Fixed window for overview
+    const smoothingWindowSize = 3; // Fixed window for overview
     const smoothedAmplitudes: number[] = [];
     for (let i = 0; i < samples.length; i++) {
       const halfWindow = Math.floor(smoothingWindowSize / 2);

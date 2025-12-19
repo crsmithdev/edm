@@ -173,7 +173,7 @@ cd ../frontend && pnpm install
 # Terminal 1: cd backend && edm-annotator --env development
 # Terminal 2: cd frontend && pnpm dev
 
-# Open http://localhost:5173
+# Open http://localhost:5174
 ```
 
 ### First Annotation

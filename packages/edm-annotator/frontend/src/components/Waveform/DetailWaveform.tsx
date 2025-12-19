@@ -101,8 +101,8 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
       // Attack/release coefficients adapt based on zoom level
       // More zoomed in = faster response, more zoomed out = slower/smoother
       const zoomFactor = Math.min(1, span / 16); // Normalize to default 16s span
-      const attackCoeff = 0.7 + 0.2 * (1 - zoomFactor); // 0.7-0.9: faster when zoomed in
-      const releaseCoeff = 0.03 + 0.07 * (1 - zoomFactor); // 0.03-0.1: slower when zoomed out
+      const attackCoeff = 0.75 + 0.2 * (1 - zoomFactor); // 0.75-0.95: faster when zoomed in
+      const releaseCoeff = 0.05 + 0.1 * (1 - zoomFactor); // 0.05-0.15: less smooth
 
       const smoothed: number[] = [];
       let envelope = arr[0] || 0;

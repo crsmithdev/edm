@@ -39,7 +39,7 @@ class Config:
     AUDIO_EXTENSIONS = ["*.mp3", "*.flac", "*.wav", "*.m4a"]
 
     # CORS settings
-    CORS_ORIGINS = ["http://localhost:5173"]  # Vite dev server
+    CORS_ORIGINS = ["http://localhost:5174"]  # Vite dev server
 
     # Flask settings
     JSON_SORT_KEYS = False

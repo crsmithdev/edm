@@ -318,7 +318,7 @@ edm-annotator --env development
 cd packages/edm-annotator/frontend
 pnpm dev
 
-# Open http://localhost:5173
+# Open http://localhost:5174
 ```
 
 ### Build for Production
