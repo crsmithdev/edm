@@ -7,7 +7,7 @@ import { trackService } from "@/services/api";
 
 vi.mock("@/services/api", () => ({
   trackService: {
-    fetchTracks: vi.fn(),
+    getTracks: vi.fn(),
     loadTrack: vi.fn(),
     getAudioUrl: vi.fn((filename) => `/audio/${filename}`),
   },
@@ -31,84 +31,81 @@ describe("TrackSelector", () => {
 
   describe("Track List Loading", () => {
     it("fetches tracks on mount", async () => {
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [
-          { filename: "track1.mp3", has_reference: true, has_generated: false },
-          { filename: "track2.mp3", has_reference: false, has_generated: true },
-        ],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+        { filename: "track2.mp3", has_reference: false, has_generated: true },
+      ]);
 
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(trackService.fetchTracks).toHaveBeenCalledTimes(1);
+        expect(trackService.getTracks).toHaveBeenCalledTimes(1);
       });
     });
 
     it("displays list of tracks", async () => {
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [
-          { filename: "track1.mp3", has_reference: true, has_generated: false },
-          { filename: "track2.mp3", has_reference: false, has_generated: true },
-        ],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+        { filename: "track2.mp3", has_reference: false, has_generated: true },
+      ]);
 
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
-        expect(screen.getByText("track2.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
+        expect(screen.getByText("track2")).toBeInTheDocument();
       });
     });
 
     it("shows reference annotation indicator", async () => {
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [
-          { filename: "track1.mp3", has_reference: true, has_generated: false },
-        ],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+      ]);
 
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("Reference annotation")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
+        // Verify CheckCircle icon is present (reference annotation)
+        const svg = document.querySelector('svg.lucide-circle-check-big');
+        expect(svg).toBeInTheDocument();
       });
     });
 
     it("shows generated annotation indicator", async () => {
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [
-          { filename: "track1.mp3", has_reference: false, has_generated: true },
-        ],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: false, has_generated: true },
+      ]);
 
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("Generated annotation")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
+        // Verify Sparkles icon is present (generated annotation)
+        const svg = document.querySelector('svg.lucide-sparkles');
+        expect(svg).toBeInTheDocument();
       });
     });
 
     it("shows no annotation indicator", async () => {
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [
-          { filename: "track1.mp3", has_reference: false, has_generated: false },
-        ],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: false, has_generated: false },
+      ]);
 
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("No annotation")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
+        // Verify Circle icon is present (no annotation)
+        const svg = document.querySelector('svg.lucide-circle');
+        expect(svg).toBeInTheDocument();
       });
     });
 
     it("shows checkmark for tracks with reference annotations", async () => {
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [
-          { filename: "track1.mp3", has_reference: true, has_generated: false },
-        ],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+      ]);
 
       render(<TrackSelector />);
 
@@ -123,20 +120,18 @@ describe("TrackSelector", () => {
     it("selects track on click", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [
-          { filename: "track1.mp3", has_reference: true, has_generated: false },
-          { filename: "track2.mp3", has_reference: false, has_generated: true },
-        ],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+        { filename: "track2.mp3", has_reference: false, has_generated: true },
+      ]);
 
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
 
       const { selectedTrack } = useTrackStore.getState();
       expect(selectedTrack).toBe("track1.mp3");
@@ -154,19 +149,17 @@ describe("TrackSelector", () => {
     it("load button is enabled when track selected", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [
-          { filename: "track1.mp3", has_reference: true, has_generated: false },
-        ],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+      ]);
 
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
 
       const button = screen.getByText("Load").closest("button");
       expect(button).not.toBeDisabled();
@@ -175,9 +168,9 @@ describe("TrackSelector", () => {
     it("loads track with waveform data", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [{ filename: "track1.mp3", has_reference: false, has_generated: false }],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: false, has_generated: false },
+      ]);
 
       vi.mocked(trackService.loadTrack).mockResolvedValue({
         filename: "track1.mp3",
@@ -193,10 +186,10 @@ describe("TrackSelector", () => {
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
       await user.click(screen.getByText("Load"));
 
       await waitFor(() => {
@@ -208,9 +201,9 @@ describe("TrackSelector", () => {
     it("loads track with reference annotations and sets tier to 1", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [{ filename: "track1.mp3", has_reference: true, has_generated: false }],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+      ]);
 
       vi.mocked(trackService.loadTrack).mockResolvedValue({
         filename: "track1.mp3",
@@ -231,10 +224,10 @@ describe("TrackSelector", () => {
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
       await user.click(screen.getByText("Load"));
 
       await waitFor(() => {
@@ -246,9 +239,9 @@ describe("TrackSelector", () => {
     it("loads track with generated annotations and sets tier to 2", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [{ filename: "track1.mp3", has_reference: false, has_generated: true }],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: false, has_generated: true },
+      ]);
 
       vi.mocked(trackService.loadTrack).mockResolvedValue({
         filename: "track1.mp3",
@@ -269,10 +262,10 @@ describe("TrackSelector", () => {
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
       await user.click(screen.getByText("Load"));
 
       await waitFor(() => {
@@ -284,9 +277,9 @@ describe("TrackSelector", () => {
     it("adds track duration as final boundary when loading annotations", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [{ filename: "track1.mp3", has_reference: true, has_generated: false }],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+      ]);
 
       vi.mocked(trackService.loadTrack).mockResolvedValue({
         filename: "track1.mp3",
@@ -308,10 +301,10 @@ describe("TrackSelector", () => {
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
       await user.click(screen.getByText("Load"));
 
       await waitFor(() => {
@@ -323,9 +316,9 @@ describe("TrackSelector", () => {
     it("sets region labels from loaded annotations", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [{ filename: "track1.mp3", has_reference: true, has_generated: false }],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: true, has_generated: false },
+      ]);
 
       vi.mocked(trackService.loadTrack).mockResolvedValue({
         filename: "track1.mp3",
@@ -346,10 +339,10 @@ describe("TrackSelector", () => {
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
       await user.click(screen.getByText("Load"));
 
       await waitFor(() => {
@@ -362,9 +355,9 @@ describe("TrackSelector", () => {
     it("initializes with single region when no annotations", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [{ filename: "track1.mp3", has_reference: false, has_generated: false }],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: false, has_generated: false },
+      ]);
 
       vi.mocked(trackService.loadTrack).mockResolvedValue({
         filename: "track1.mp3",
@@ -380,10 +373,10 @@ describe("TrackSelector", () => {
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
       await user.click(screen.getByText("Load"));
 
       await waitFor(() => {
@@ -396,9 +389,9 @@ describe("TrackSelector", () => {
     it("sets BPM to 0 when no annotation exists", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [{ filename: "track1.mp3", has_reference: false, has_generated: false }],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: false, has_generated: false },
+      ]);
 
       vi.mocked(trackService.loadTrack).mockResolvedValue({
         filename: "track1.mp3",
@@ -414,10 +407,10 @@ describe("TrackSelector", () => {
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
       await user.click(screen.getByText("Load"));
 
       await waitFor(() => {
@@ -429,9 +422,9 @@ describe("TrackSelector", () => {
     it("marks state as saved after loading", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [{ filename: "track1.mp3", has_reference: false, has_generated: false }],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([
+        { filename: "track1.mp3", has_reference: false, has_generated: false },
+      ]);
 
       vi.mocked(trackService.loadTrack).mockResolvedValue({
         filename: "track1.mp3",
@@ -447,10 +440,10 @@ describe("TrackSelector", () => {
       render(<TrackSelector />);
 
       await waitFor(() => {
-        expect(screen.getByText("track1.mp3")).toBeInTheDocument();
+        expect(screen.getByText("track1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("track1.mp3"));
+      await user.click(screen.getByText("track1"));
       await user.click(screen.getByText("Load"));
 
       await waitFor(() => {
@@ -462,9 +455,7 @@ describe("TrackSelector", () => {
 
   describe("Empty State", () => {
     it("shows empty state when no tracks", async () => {
-      vi.mocked(trackService.fetchTracks).mockResolvedValue({
-        tracks: [],
-      });
+      vi.mocked(trackService.getTracks).mockResolvedValue([]);
 
       render(<TrackSelector />);
 

@@ -31,8 +31,9 @@ export function InfoCard({ label, value }: InfoCardProps) {
       </span>
       <span
         style={{
-          fontSize: "var(--font-size-lg)",
-          fontWeight: "var(--font-weight-bold)",
+          fontSize: "var(--font-size-2xl)",
+          fontWeight: "var(--font-weight-normal)",
+          letterSpacing: "var(--letter-spacing-tighter)",
           color: "var(--color-accent)",
           fontVariantNumeric: "tabular-nums",
         }}

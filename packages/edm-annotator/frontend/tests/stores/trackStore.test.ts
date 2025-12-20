@@ -169,14 +169,14 @@ describe("trackStore", () => {
       expect(selectedTrack).toBe("track1.mp3");
     });
 
-    it("should not navigate before first track", () => {
+    it("wraps around to last track when going previous from first track", () => {
       const { selectTrack, previousTrack } = useTrackStore.getState();
 
       selectTrack("track1.mp3");
       previousTrack();
 
       const { selectedTrack } = useTrackStore.getState();
-      expect(selectedTrack).toBe("track1.mp3");
+      expect(selectedTrack).toBe("track3.mp3");
     });
 
     it("should do nothing if no track is selected", () => {
@@ -225,14 +225,14 @@ describe("trackStore", () => {
       expect(selectedTrack).toBe("track2.mp3");
     });
 
-    it("should not navigate past last track", () => {
+    it("wraps around to first track when going next from last track", () => {
       const { selectTrack, nextTrack } = useTrackStore.getState();
 
       selectTrack("track3.mp3");
       nextTrack();
 
       const { selectedTrack } = useTrackStore.getState();
-      expect(selectedTrack).toBe("track3.mp3");
+      expect(selectedTrack).toBe("track1.mp3");
     });
 
     it("should do nothing if no track is selected", () => {

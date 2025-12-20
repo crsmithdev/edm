@@ -66,10 +66,11 @@ describe("structureStore", () => {
 
       addBoundary(10);
       addBoundary(20);
+      addBoundary(30);
       removeBoundary(10.005); // Within 0.01s tolerance
 
       const { boundaries } = useStructureStore.getState();
-      expect(boundaries).toEqual([20]);
+      expect(boundaries).toEqual([20, 30]);
     });
 
     it("should not remove boundary outside tolerance", () => {
@@ -77,10 +78,11 @@ describe("structureStore", () => {
 
       addBoundary(10);
       addBoundary(20);
+      addBoundary(30);
       removeBoundary(10.02); // Outside 0.01s tolerance
 
       const { boundaries } = useStructureStore.getState();
-      expect(boundaries).toEqual([10, 20]);
+      expect(boundaries).toEqual([10, 20, 30]);
     });
 
     it("should rebuild regions after removing boundary", () => {
@@ -274,8 +276,8 @@ describe("structureStore", () => {
 
       const { regions } = useStructureStore.getState();
       expect(regions).toHaveLength(2);
-      // Note: labels are not preserved after rebuild, which is expected behavior
-      expect(regions[0]).toEqual({ start: 0, end: 60, label: "unlabeled" });
+      // Labels are preserved based on region start position
+      expect(regions[0]).toEqual({ start: 0, end: 60, label: "intro" });
       expect(regions[1]).toEqual({ start: 60, end: 90, label: "unlabeled" });
     });
 
@@ -299,16 +301,190 @@ describe("structureStore", () => {
       expect(boundaries).toHaveLength(3);
       expect(boundaries).toEqual([10.0, 10.001, 10.002]);
     });
+  });
 
-    it("should handle fractional second boundaries", () => {
-      const { setBoundaries } = useStructureStore.getState();
+  describe("region deletion and merging", () => {
+    it("should preserve all non-adjacent region labels when deleting a region", () => {
+      const { setBoundaries, removeBoundary, setRegionLabel } = useStructureStore.getState();
 
-      setBoundaries([0.5, 15.75, 30.125, 45.875]);
+      setBoundaries([0, 10, 20, 30, 40, 50]);
+      setRegionLabel(0, "intro");
+      setRegionLabel(1, "verse");
+      setRegionLabel(2, "chorus");
+      setRegionLabel(3, "bridge");
+      setRegionLabel(4, "outro");
+
+      removeBoundary(20);
+
+      const { regions } = useStructureStore.getState();
+      expect(regions).toHaveLength(4);
+      expect(regions[0].label).toBe("intro");
+      expect(regions[1].label).toBe("verse");
+      expect(regions[2].label).toBe("bridge");
+      expect(regions[3].label).toBe("outro");
+    });
+
+    it("should merge first region with next when removing its end boundary", () => {
+      const { setBoundaries, removeBoundary } = useStructureStore.getState();
+
+      setBoundaries([0, 10, 20, 30]);
+      removeBoundary(10);
 
       const { boundaries, regions } = useStructureStore.getState();
-      expect(boundaries).toEqual([0.5, 15.75, 30.125, 45.875]);
-      expect(regions[0].start).toBe(0.5);
-      expect(regions[0].end).toBe(15.75);
+      expect(boundaries).toEqual([0, 20, 30]);
+      expect(regions).toHaveLength(2);
+      expect(regions[0]).toEqual({ start: 0, end: 20, label: "unlabeled" });
+      expect(regions[1]).toEqual({ start: 20, end: 30, label: "unlabeled" });
+    });
+
+    it("should merge middle region with previous when removing its start boundary", () => {
+      const { setBoundaries, removeBoundary, setRegionLabel } = useStructureStore.getState();
+
+      setBoundaries([0, 10, 20, 30]);
+      setRegionLabel(0, "intro");
+      setRegionLabel(1, "buildup");
+      setRegionLabel(2, "breakdown");
+
+      removeBoundary(10);
+
+      const { boundaries, regions } = useStructureStore.getState();
+      expect(boundaries).toEqual([0, 20, 30]);
+      expect(regions).toHaveLength(2);
+      expect(regions[0]).toEqual({ start: 0, end: 20, label: "intro" });
+      expect(regions[1]).toEqual({ start: 20, end: 30, label: "breakdown" });
+    });
+
+    it("should merge last region with previous when removing its start boundary", () => {
+      const { setBoundaries, removeBoundary, setRegionLabel } = useStructureStore.getState();
+
+      setBoundaries([0, 10, 20, 30]);
+      setRegionLabel(0, "intro");
+      setRegionLabel(1, "buildup");
+      setRegionLabel(2, "outro");
+
+      removeBoundary(20);
+
+      const { boundaries, regions } = useStructureStore.getState();
+      expect(boundaries).toEqual([0, 10, 30]);
+      expect(regions).toHaveLength(2);
+      expect(regions[0]).toEqual({ start: 0, end: 10, label: "intro" });
+      expect(regions[1]).toEqual({ start: 10, end: 30, label: "buildup" });
+    });
+
+    it("should not delete when only one region remains", () => {
+      const { setBoundaries, removeBoundary } = useStructureStore.getState();
+
+      setBoundaries([0, 10]);
+
+      const boundariesBefore = useStructureStore.getState().boundaries;
+      removeBoundary(10);
+      const boundariesAfter = useStructureStore.getState().boundaries;
+
+      expect(boundariesAfter).toEqual(boundariesBefore);
+    });
+
+    it("should preserve label of previous region when merging", () => {
+      const { setBoundaries, removeBoundary, setRegionLabel } = useStructureStore.getState();
+
+      setBoundaries([0, 10, 20]);
+      setRegionLabel(0, "intro");
+      setRegionLabel(1, "buildup");
+
+      removeBoundary(10);
+
+      const { regions } = useStructureStore.getState();
+      expect(regions[0].label).toBe("intro");
+    });
+  });
+
+  describe("annotation tier tracking", () => {
+    it("should initialize with null annotation tier", () => {
+      const { annotationTier } = useStructureStore.getState();
+      expect(annotationTier).toBeNull();
+    });
+
+    it("should set annotation tier to 1 (reference)", () => {
+      const { setAnnotationTier } = useStructureStore.getState();
+
+      setAnnotationTier(1);
+
+      const { annotationTier } = useStructureStore.getState();
+      expect(annotationTier).toBe(1);
+    });
+
+    it("should set annotation tier to 2 (generated)", () => {
+      const { setAnnotationTier } = useStructureStore.getState();
+
+      setAnnotationTier(2);
+
+      const { annotationTier } = useStructureStore.getState();
+      expect(annotationTier).toBe(2);
+    });
+
+    it("should set annotation tier to null", () => {
+      const { setAnnotationTier } = useStructureStore.getState();
+
+      setAnnotationTier(2);
+      setAnnotationTier(null);
+
+      const { annotationTier } = useStructureStore.getState();
+      expect(annotationTier).toBeNull();
+    });
+
+    it("should reset annotation tier on reset", () => {
+      const { setAnnotationTier, reset } = useStructureStore.getState();
+
+      setAnnotationTier(2);
+      reset();
+
+      const { annotationTier } = useStructureStore.getState();
+      expect(annotationTier).toBeNull();
+    });
+  });
+
+  describe("dirty state tracking", () => {
+    it("should not be dirty when state matches saved state", () => {
+      const { setBoundaries, markAsSaved, isDirty } = useStructureStore.getState();
+
+      setBoundaries([0, 10, 20]);
+      markAsSaved();
+
+      expect(isDirty()).toBe(false);
+    });
+
+    it("should be dirty when boundaries change", () => {
+      const { setBoundaries, markAsSaved, addBoundary, isDirty } = useStructureStore.getState();
+
+      setBoundaries([0, 10, 20]);
+      markAsSaved();
+
+      addBoundary(15);
+
+      expect(isDirty()).toBe(true);
+    });
+
+    it("should be dirty when labels change", () => {
+      const { setBoundaries, markAsSaved, setRegionLabel, isDirty } = useStructureStore.getState();
+
+      setBoundaries([0, 10, 20]);
+      markAsSaved();
+
+      setRegionLabel(0, "intro");
+
+      expect(isDirty()).toBe(true);
+    });
+
+    it("should not be dirty after saving changes", () => {
+      const { setBoundaries, markAsSaved, setRegionLabel, isDirty } = useStructureStore.getState();
+
+      setBoundaries([0, 10, 20]);
+      markAsSaved();
+
+      setRegionLabel(0, "intro");
+      expect(isDirty()).toBe(true);
+
+      markAsSaved();
+      expect(isDirty()).toBe(false);
     });
   });
 });

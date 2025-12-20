@@ -43,13 +43,13 @@ export const useStructureStore = create<StructureState>((set, get) => ({
 
   removeBoundary: (time) => {
     const { boundaries } = get();
-    // Prevent removing a boundary if it would leave fewer than 2 boundaries
-    // (need at least 2 boundaries to have a valid region)
+    // Cannot delete if only 2 boundaries remain (minimum for 1 region)
     if (boundaries.length <= 2) {
       return;
     }
     // Use looser tolerance for removal (user interaction)
-    const newBoundaries = boundaries.filter((t) => Math.abs(t - time) > 0.01);
+    // Keep boundaries that are farther away than the tolerance
+    const newBoundaries = boundaries.filter((t) => Math.abs(t - time) >= 0.01);
     set({ boundaries: newBoundaries });
     get().rebuildRegions();
   },
@@ -75,9 +75,8 @@ export const useStructureStore = create<StructureState>((set, get) => ({
       const start = boundaries[i];
       const end = boundaries[i + 1];
 
-      // Find existing region that starts at the same position to preserve label
-      // When a boundary is removed, regions merge and the new region starts where
-      // the previous (earlier) region started, so we preserve that region's label
+      // Preserve labels by finding existing region that starts at the same position
+      // This maintains labels when boundaries are added/removed
       const existingRegion = regions.find((r) => Math.abs(r.start - start) < 0.00001);
 
       newRegions.push({

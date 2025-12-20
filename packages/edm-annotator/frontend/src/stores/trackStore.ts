@@ -145,10 +145,10 @@ export const useTrackStore = create<TrackState>((set, get) => ({
     if (!selectedTrack || tracks.length === 0) return;
 
     const currentIndex = tracks.findIndex((t) => t.filename === selectedTrack);
-    if (currentIndex > 0) {
-      const prevTrack = tracks[currentIndex - 1];
-      set({ selectedTrack: prevTrack.filename });
-    }
+    // Wrap around: if at first track (index 0), go to last track
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : tracks.length - 1;
+    const prevTrack = tracks[prevIndex];
+    set({ selectedTrack: prevTrack.filename });
   },
 
   nextTrack: () => {
@@ -156,10 +156,12 @@ export const useTrackStore = create<TrackState>((set, get) => ({
     if (!selectedTrack || tracks.length === 0) return;
 
     const currentIndex = tracks.findIndex((t) => t.filename === selectedTrack);
-    if (currentIndex >= 0 && currentIndex < tracks.length - 1) {
-      const nextTrack = tracks[currentIndex + 1];
-      set({ selectedTrack: nextTrack.filename });
-    }
+    if (currentIndex < 0) return;
+
+    // Wrap around: if at last track, go to first track (index 0)
+    const nextIndex = currentIndex < tracks.length - 1 ? currentIndex + 1 : 0;
+    const nextTrack = tracks[nextIndex];
+    set({ selectedTrack: nextTrack.filename });
   },
 
   reset: () =>

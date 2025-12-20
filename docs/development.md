@@ -244,6 +244,154 @@ Output to `data/accuracy/bpm/`:
 - `<timestamp>_<commit>.md` - Summary
 - `latest.*` - Symlinks to most recent
 
+## Development Servers
+
+### Annotator Web Application
+
+The annotator consists of a Flask backend and Vite frontend that run as separate dev servers.
+
+#### Quick Start (Both Servers)
+
+From repository root:
+
+```bash
+just annotator
+```
+
+This starts:
+- **Backend**: http://localhost:5000 (Flask dev server)
+- **Frontend**: http://localhost:5174 (Vite dev server)
+
+Press Ctrl+C to stop both servers.
+
+#### Manual Start (Separate Terminals)
+
+**Terminal 1 - Backend**:
+
+```bash
+cd packages/edm-annotator/backend
+uv run edm-annotator --env development --port 5000
+```
+
+Backend serves:
+- REST API endpoints at `/api/*`
+- Health check at `/health`
+- Audio file proxying
+
+**Terminal 2 - Frontend**:
+
+```bash
+cd packages/edm-annotator/frontend
+pnpm install  # First time only
+pnpm run dev
+```
+
+Frontend provides:
+- Hot module replacement (HMR)
+- React Fast Refresh
+- TypeScript type checking
+- Auto-reload on file changes
+
+#### Configuration
+
+**Backend environment**:
+
+```bash
+export EDM_AUDIO_DIR=~/music              # Audio files directory
+export EDM_ANNOTATION_DIR=data/annotations # Annotation save location
+export EDM_LOG_LEVEL=DEBUG                 # Verbose logging
+```
+
+**Frontend build config**:
+
+Vite config at `packages/edm-annotator/frontend/vite.config.ts`:
+- Dev server port: 5174
+- API proxy: http://localhost:5000
+- HMR enabled by default
+
+#### Troubleshooting
+
+**Port already in use**:
+
+```bash
+# Find process using port
+lsof -i :5000
+lsof -i :5174
+
+# Kill if needed or use different port
+uv run edm-annotator --port 5001
+```
+
+**Backend can't find audio files**:
+
+```bash
+# Check directory
+ls $EDM_AUDIO_DIR
+
+# Verify backend is scanning
+# Look for "Scanning audio directory" in logs
+```
+
+**Frontend not connecting to backend**:
+
+```bash
+# Verify backend is running
+curl http://localhost:5000/health
+
+# Check browser console (F12) for CORS errors
+# Backend enables CORS in development mode
+```
+
+**Changes not reflecting**:
+
+```bash
+# Frontend: Should auto-reload via HMR
+# If stuck, clear cache:
+rm -rf packages/edm-annotator/frontend/.vite
+pnpm run dev
+
+# Backend: Restart dev server (no auto-reload)
+# Or use auto-reload:
+FLASK_DEBUG=1 uv run edm-annotator --env development
+```
+
+### Frontend Development
+
+#### Type Checking
+
+```bash
+cd packages/edm-annotator/frontend
+pnpm run type-check
+```
+
+#### Linting
+
+```bash
+pnpm run lint        # Check
+pnpm run lint:fix    # Auto-fix
+```
+
+#### Testing
+
+```bash
+# Unit tests
+pnpm test
+
+# E2E tests (requires servers running)
+pnpm run test:e2e
+
+# See packages/edm-annotator/frontend/E2E_TESTING.md
+```
+
+#### Production Build
+
+```bash
+pnpm run build       # Output to dist/
+pnpm run preview     # Preview production build
+```
+
+For full deployment guide, see `docs/deployment.md`.
+
 ## Development Workflow
 
 ### Before Committing

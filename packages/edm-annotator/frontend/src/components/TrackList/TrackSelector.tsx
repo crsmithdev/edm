@@ -136,8 +136,9 @@ export function TrackSelector() {
         <h3
           style={{
             color: "var(--text-primary)",
-            fontSize: "var(--font-size-lg)",
-            fontWeight: "var(--font-weight-semibold)",
+            fontSize: "20px",
+            fontWeight: "var(--font-weight-normal)",
+            letterSpacing: "var(--letter-spacing-tight)",
             margin: 0,
           }}
         >
@@ -207,7 +208,7 @@ export function TrackSelector() {
                     alignItems: "center",
                     gap: "var(--space-1)",
                     transition: "all var(--transition-base)",
-                    fontWeight: isActive ? "var(--font-weight-semibold)" : "var(--font-weight-normal)",
+                    fontWeight: "var(--font-weight-normal)",
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
@@ -277,9 +278,9 @@ export function TrackSelector() {
               >
                 <div
                   style={{
-                    fontSize: "var(--font-size-sm)",
+                    fontSize: "13px",
                     color: isSelected ? "var(--color-primary)" : "var(--text-secondary)",
-                    fontWeight: isSelected ? "var(--font-weight-semibold)" : "var(--font-weight-normal)",
+                    fontWeight: "var(--font-weight-normal)",
                     marginBottom: "var(--space-1)",
                     wordBreak: "break-word",
                     display: "flex",
@@ -299,7 +300,7 @@ export function TrackSelector() {
                 {artist && (
                   <div
                     style={{
-                      fontSize: "var(--font-size-xs)",
+                      fontSize: "var(--font-size-sm)",
                       color: "var(--text-muted)",
                       paddingLeft: "calc(14px + var(--space-2))", // Align with title text
                     }}

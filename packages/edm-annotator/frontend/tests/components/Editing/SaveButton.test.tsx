@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SaveButton } from "@/components/Editing/SaveButton";
-import { useStructureStore, useTrackStore, useUIStore } from "@/stores";
+import { useStructureStore, useTrackStore, useUIStore, useTempoStore } from "@/stores";
 import { trackService } from "@/services/api";
 
 // Mock the API service
@@ -17,6 +17,7 @@ describe("SaveButton", () => {
     useStructureStore.getState().reset();
     useTrackStore.getState().reset();
     useUIStore.getState().reset();
+    useTempoStore.getState().reset();
 
     vi.clearAllMocks();
   });
@@ -74,7 +75,11 @@ describe("SaveButton", () => {
 
       // Mock a slow save
       vi.mocked(trackService.saveAnnotation).mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+        () => new Promise((resolve) => setTimeout(() => resolve({
+          success: true,
+          output: "annotations/test.jams",
+          boundaries_count: 1,
+        }), 100))
       );
 
       useTrackStore.setState({ currentTrack: "test.mp3" });
@@ -101,7 +106,11 @@ describe("SaveButton", () => {
     it("saves annotation with correct data", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.saveAnnotation).mockResolvedValue(undefined);
+      vi.mocked(trackService.saveAnnotation).mockResolvedValue({
+        success: true,
+        output: "annotations/test.jams",
+        boundaries_count: 2,
+      });
 
       useTrackStore.setState({ currentTrack: "test.mp3" });
       useStructureStore.setState({
@@ -110,7 +119,10 @@ describe("SaveButton", () => {
           { start: 10, end: 20, label: "buildup" },
         ],
         boundaries: [0, 10, 20],
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
       });
 
       render(<SaveButton />);
@@ -118,7 +130,10 @@ describe("SaveButton", () => {
       await user.click(screen.getByText("Save"));
 
       await waitFor(() => {
-        expect(trackService.saveAnnotation).toHaveBeenCalledWith("test.mp3", {
+        expect(trackService.saveAnnotation).toHaveBeenCalledWith({
+          filename: "test.mp3",
+          bpm: 0,
+          downbeat: 0,
           boundaries: [
             { time: 0, label: "intro" },
             { time: 10, label: "buildup" },
@@ -130,13 +145,20 @@ describe("SaveButton", () => {
     it("sets annotation tier to 1 (reference) after successful save", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.saveAnnotation).mockResolvedValue(undefined);
+      vi.mocked(trackService.saveAnnotation).mockResolvedValue({
+        success: true,
+        output: "annotations/test.jams",
+        boundaries_count: 1,
+      });
 
       useTrackStore.setState({ currentTrack: "test.mp3" });
       useStructureStore.setState({
         regions: [{ start: 0, end: 10, label: "intro" }],
         boundaries: [0, 10],
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
         annotationTier: 2, // Was generated
       });
 
@@ -153,13 +175,20 @@ describe("SaveButton", () => {
     it("marks state as saved after successful save", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.saveAnnotation).mockResolvedValue(undefined);
+      vi.mocked(trackService.saveAnnotation).mockResolvedValue({
+        success: true,
+        output: "annotations/test.jams",
+        boundaries_count: 1,
+      });
 
       useTrackStore.setState({ currentTrack: "test.mp3" });
       useStructureStore.setState({
         regions: [{ start: 0, end: 10, label: "intro" }],
         boundaries: [0, 10],
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
       });
 
       render(<SaveButton />);
@@ -176,7 +205,11 @@ describe("SaveButton", () => {
     it("shows success status message", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.saveAnnotation).mockResolvedValue(undefined);
+      vi.mocked(trackService.saveAnnotation).mockResolvedValue({
+        success: true,
+        output: "annotations/test.jams",
+        boundaries_count: 2,
+      });
 
       const showStatusSpy = vi.spyOn(useUIStore.getState(), "showStatus");
 
@@ -187,7 +220,10 @@ describe("SaveButton", () => {
           { start: 10, end: 20, label: "buildup" },
         ],
         boundaries: [0, 10, 20],
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
       });
 
       render(<SaveButton />);
@@ -216,7 +252,10 @@ describe("SaveButton", () => {
       useStructureStore.setState({
         regions: [{ start: 0, end: 10, label: "intro" }],
         boundaries: [0, 10],
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
       });
 
       render(<SaveButton />);
@@ -241,7 +280,10 @@ describe("SaveButton", () => {
       useStructureStore.setState({
         regions: [{ start: 0, end: 10, label: "intro" }],
         boundaries: [0, 10],
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
       });
 
       render(<SaveButton />);
@@ -253,12 +295,16 @@ describe("SaveButton", () => {
       });
 
       const { savedState } = useStructureStore.getState();
-      expect(savedState).toBeNull();
+      // savedState should still be the old empty state, not updated
+      expect(savedState?.regions).toEqual([]);
     });
 
     it("does not set tier to 1 on error", async () => {
       const user = userEvent.setup();
 
+      // Clear and reset mock to ensure clean state
+      vi.clearAllMocks();
+      vi.mocked(trackService.saveAnnotation).mockReset();
       vi.mocked(trackService.saveAnnotation).mockRejectedValue(
         new Error("Network error")
       );
@@ -267,7 +313,10 @@ describe("SaveButton", () => {
       useStructureStore.setState({
         regions: [{ start: 0, end: 10, label: "intro" }],
         boundaries: [0, 10],
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
         annotationTier: 2,
       });
 
@@ -288,7 +337,11 @@ describe("SaveButton", () => {
     it("excludes final boundary (track end) from saved data", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.saveAnnotation).mockResolvedValue(undefined);
+      vi.mocked(trackService.saveAnnotation).mockResolvedValue({
+        success: true,
+        output: "annotations/test.jams",
+        boundaries_count: 2,
+      });
 
       useTrackStore.setState({ currentTrack: "test.mp3" });
       useStructureStore.setState({
@@ -297,7 +350,10 @@ describe("SaveButton", () => {
           { start: 10, end: 180, label: "buildup" },
         ],
         boundaries: [0, 10, 180], // 180 is track end
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
       });
 
       render(<SaveButton />);
@@ -305,7 +361,10 @@ describe("SaveButton", () => {
       await user.click(screen.getByText("Save"));
 
       await waitFor(() => {
-        expect(trackService.saveAnnotation).toHaveBeenCalledWith("test.mp3", {
+        expect(trackService.saveAnnotation).toHaveBeenCalledWith({
+          filename: "test.mp3",
+          bpm: 0,
+          downbeat: 0,
           boundaries: [
             { time: 0, label: "intro" },
             { time: 10, label: "buildup" },
@@ -318,7 +377,11 @@ describe("SaveButton", () => {
     it("saves correct labels for each boundary", async () => {
       const user = userEvent.setup();
 
-      vi.mocked(trackService.saveAnnotation).mockResolvedValue(undefined);
+      vi.mocked(trackService.saveAnnotation).mockResolvedValue({
+        success: true,
+        output: "annotations/test.jams",
+        boundaries_count: 4,
+      });
 
       useTrackStore.setState({ currentTrack: "test.mp3" });
       useStructureStore.setState({
@@ -329,7 +392,10 @@ describe("SaveButton", () => {
           { start: 30, end: 40, label: "breakbuild" },
         ],
         boundaries: [0, 10, 20, 30, 40],
-        savedState: null,
+        savedState: {
+          regions: [],
+          boundaries: [],
+        },
       });
 
       render(<SaveButton />);
@@ -337,7 +403,10 @@ describe("SaveButton", () => {
       await user.click(screen.getByText("Save"));
 
       await waitFor(() => {
-        expect(trackService.saveAnnotation).toHaveBeenCalledWith("test.mp3", {
+        expect(trackService.saveAnnotation).toHaveBeenCalledWith({
+          filename: "test.mp3",
+          bpm: 0,
+          downbeat: 0,
           boundaries: [
             { time: 0, label: "intro" },
             { time: 10, label: "buildup" },

@@ -441,7 +441,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const boundaries = container.querySelectorAll('[style*="rgba(123, 106, 255"]');
+      const boundaries = container.querySelectorAll('[style*="rgba(123, 106, 255, 0.7)"]');
 
       expect(boundaries).toHaveLength(5);
     });
@@ -453,7 +453,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const boundary = container.querySelector('[style*="rgba(123, 106, 255"]');
+      const boundary = container.querySelector('[style*="rgba(123, 106, 255, 0.7)"]');
 
       // 90 / 180 * 100 = 50%
       expect(boundary?.getAttribute("style")).toContain("left: 50%");
@@ -465,7 +465,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const boundary = container.querySelector('[style*="rgba(123, 106, 255"]');
+      const boundary = container.querySelector('[style*="rgba(123, 106, 255, 0.7)"]');
 
       expect(boundary).toBeInTheDocument();
     });
@@ -476,7 +476,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const boundary = container.querySelector('[style*="rgba(123, 106, 255"]');
+      const boundary = container.querySelector('[style*="rgba(123, 106, 255, 0.7)"]');
 
       expect(boundary?.getAttribute("style")).toContain("width: 2px");
     });
@@ -487,7 +487,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const boundary = container.querySelector('[style*="rgba(123, 106, 255"]');
+      const boundary = container.querySelector('[style*="rgba(123, 106, 255, 0.7)"]');
 
       expect(boundary?.getAttribute("style")).toContain("height: 100%");
     });

@@ -79,12 +79,6 @@ def analyze(
         "-f",
         help="Output format (table, json, yaml)",
     ),
-    config: Path | None = typer.Option(
-        None,
-        "--config",
-        "-c",
-        help="Path to configuration file",
-    ),
     recursive: bool = typer.Option(
         False,
         "--recursive",
@@ -203,7 +197,7 @@ def analyze(
             analysis_types=analysis_types,
             output=output,
             format=format,
-            config_path=config,
+            config_path=None,  # Config file support not yet implemented
             recursive=recursive,
             offline=False,  # Legacy parameter, no longer used
             ignore_metadata=no_metadata,

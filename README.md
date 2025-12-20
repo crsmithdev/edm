@@ -98,9 +98,18 @@ Each worker loads one audio file into memory. Budget approximately:
 
 ## Documentation
 
+### Core Documentation
 - [CLI Reference](docs/cli-reference.md) - Complete command documentation
 - [Architecture](docs/architecture.md) - System design and module organization
-- [Development](docs/development.md) - Setup, testing, and code quality
+- [Development](docs/development.md) - Setup, testing, dev servers, and code quality
+- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
+- [Deployment](docs/deployment.md) - Production deployment guide
+
+### Additional Guides
+- [Training](docs/training.md) - Model training guide
+- [MLOps](docs/mlops.md) - Model registry and experiment tracking
+- [Testing](docs/testing.md) - Test framework and patterns
+- [Common Tasks](docs/common-tasks.md) - Quick reference for common operations
 
 ## Development
 

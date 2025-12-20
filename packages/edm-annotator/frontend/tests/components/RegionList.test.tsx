@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RegionList } from "@/components/Editing/RegionList";
 import { useStructureStore, useAudioStore } from "@/stores";
@@ -232,31 +232,32 @@ describe("RegionList", () => {
   });
 
   describe("Visual Styling", () => {
-    it.skip("applies hover effect to regions", async () => {
-      const user = userEvent.setup();
+    it("applies hover effect to regions", () => {
       const mockRegions: Region[] = [
-        { start: 0, end: 10, label: "intro" },
+        { start: 10, end: 20, label: "intro" },
       ];
 
       useStructureStore.setState({ regions: mockRegions });
+      // Set currentTime outside the region bounds
+      useAudioStore.setState({ currentTime: 0 });
 
-      render(<RegionList />);
+      const { container } = render(<RegionList />);
 
-      // Get the clickable region element (the one with cursor: pointer)
-      const timeText = screen.getByText(/00:00\.000 - 00:10\.000/);
-      const regionElement = timeText.parentElement!.parentElement!.parentElement!;
+      // Find the region container directly by looking for element with cursor: pointer
+      const regionElement = container.querySelector('[style*="cursor: pointer"]') as HTMLElement;
+      expect(regionElement).toBeInTheDocument();
 
-      // Hover over region
-      await user.hover(regionElement);
+      // Trigger mouseenter event
+      fireEvent.mouseEnter(regionElement);
 
-      // Should change background on hover
-      expect(regionElement).toHaveStyle({ background: "#252A45" });
+      // Should change background on hover (uses CSS variable)
+      expect(regionElement.style.background).toBe("var(--bg-elevated)");
 
-      // Unhover
-      await user.unhover(regionElement);
+      // Trigger mouseleave event
+      fireEvent.mouseLeave(regionElement);
 
       // Should revert to transparent
-      expect(regionElement).toHaveStyle({ background: "transparent" });
+      expect(regionElement.style.background).toBe("transparent");
     });
   });
 

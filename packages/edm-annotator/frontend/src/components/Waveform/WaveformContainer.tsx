@@ -87,8 +87,9 @@ export function WaveformContainer() {
             <>
               <div
                 style={{
-                  fontSize: "var(--font-size-lg)",
-                  fontWeight: "var(--font-weight-bold)",
+                  fontSize: "20px",
+                  fontWeight: "var(--font-weight-normal)",
+                  letterSpacing: "var(--letter-spacing-tight)",
                   color: "var(--text-primary)",
                 }}
               >
@@ -127,7 +128,7 @@ export function WaveformContainer() {
               borderRadius: "var(--radius-sm)",
               fontSize: "var(--font-size-lg)",
               cursor: "pointer",
-              fontWeight: "var(--font-weight-semibold)",
+              fontWeight: "var(--font-weight-normal)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -145,7 +146,7 @@ export function WaveformContainer() {
               borderRadius: "var(--radius-sm)",
               fontSize: "var(--font-size-lg)",
               cursor: "pointer",
-              fontWeight: "var(--font-weight-semibold)",
+              fontWeight: "var(--font-weight-normal)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -163,7 +164,7 @@ export function WaveformContainer() {
               borderRadius: "var(--radius-sm)",
               fontSize: "var(--font-size-lg)",
               cursor: "pointer",
-              fontWeight: "var(--font-weight-semibold)",
+              fontWeight: "var(--font-weight-normal)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

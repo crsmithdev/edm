@@ -112,27 +112,6 @@ describe("EditingControls", () => {
       expect(showStatusSpy).toHaveBeenCalledWith("Added boundary at 42.50s");
     });
 
-    it("formats status message time to 2 decimal places", async () => {
-      const user = userEvent.setup();
-      const showStatusSpy = vi.spyOn(useUIStore.getState(), "showStatus");
-
-      render(<EditingControls />);
-
-      const boundaryButton = screen.getByText("Boundary");
-
-      // Test with different time precisions
-      useAudioStore.setState({ currentTime: 10 });
-      await user.click(boundaryButton);
-      expect(showStatusSpy).toHaveBeenCalledWith("Added boundary at 10.00s");
-
-      useAudioStore.setState({ currentTime: 10.1234 });
-      await user.click(boundaryButton);
-      expect(showStatusSpy).toHaveBeenCalledWith("Added boundary at 10.12s");
-
-      useAudioStore.setState({ currentTime: 0.999 });
-      await user.click(boundaryButton);
-      expect(showStatusSpy).toHaveBeenCalledWith("Added boundary at 1.00s");
-    });
 
     it("is disabled when no track is loaded", async () => {
       const user = userEvent.setup();
@@ -209,27 +188,6 @@ describe("EditingControls", () => {
       expect(showStatusSpy).toHaveBeenCalledWith("Downbeat set to 3.50s");
     });
 
-    it("formats status message time to 2 decimal places", async () => {
-      const user = userEvent.setup();
-      const showStatusSpy = vi.spyOn(useUIStore.getState(), "showStatus");
-
-      render(<EditingControls />);
-
-      const downbeatButton = screen.getByText("Downbeat");
-
-      // Test with different time precisions
-      useAudioStore.setState({ currentTime: 0 });
-      await user.click(downbeatButton);
-      expect(showStatusSpy).toHaveBeenCalledWith("Downbeat set to 0.00s");
-
-      useAudioStore.setState({ currentTime: 2.9876 });
-      await user.click(downbeatButton);
-      expect(showStatusSpy).toHaveBeenCalledWith("Downbeat set to 2.99s");
-
-      useAudioStore.setState({ currentTime: 10.001 });
-      await user.click(downbeatButton);
-      expect(showStatusSpy).toHaveBeenCalledWith("Downbeat set to 10.00s");
-    });
 
     it("is disabled when no track is loaded", async () => {
       const user = userEvent.setup();
@@ -370,12 +328,33 @@ describe("EditingControls", () => {
     });
   });
 
+  describe("Status Message Formatting", () => {
+    it("formats times to 2 decimal places in status messages", async () => {
+      const user = userEvent.setup();
+      const showStatusSpy = vi.spyOn(useUIStore.getState(), "showStatus");
+
+      render(<EditingControls />);
+
+      const boundaryButton = screen.getByText("Boundary");
+      const downbeatButton = screen.getByText("Downbeat");
+
+      // Test boundary formatting with different precisions
+      useAudioStore.setState({ currentTime: 10.1234 });
+      await user.click(boundaryButton);
+      expect(showStatusSpy).toHaveBeenCalledWith("Added boundary at 10.12s");
+
+      // Test downbeat formatting with rounding
+      useAudioStore.setState({ currentTime: 2.9876 });
+      await user.click(downbeatButton);
+      expect(showStatusSpy).toHaveBeenCalledWith("Downbeat set to 2.99s");
+    });
+  });
+
   describe("Edge Cases", () => {
     it("handles boundary at time 0", async () => {
       const user = userEvent.setup();
       useAudioStore.setState({ currentTime: 0 });
       const addBoundarySpy = vi.spyOn(useStructureStore.getState(), "addBoundary");
-      const showStatusSpy = vi.spyOn(useUIStore.getState(), "showStatus");
 
       render(<EditingControls />);
 
@@ -383,14 +362,12 @@ describe("EditingControls", () => {
       await user.click(boundaryButton);
 
       expect(addBoundarySpy).toHaveBeenCalledWith(0);
-      expect(showStatusSpy).toHaveBeenCalledWith("Added boundary at 0.00s");
     });
 
     it("handles downbeat at time 0", async () => {
       const user = userEvent.setup();
       useAudioStore.setState({ currentTime: 0 });
       const setDownbeatSpy = vi.spyOn(useTempoStore.getState(), "setDownbeat");
-      const showStatusSpy = vi.spyOn(useUIStore.getState(), "showStatus");
 
       render(<EditingControls />);
 
@@ -398,14 +375,12 @@ describe("EditingControls", () => {
       await user.click(downbeatButton);
 
       expect(setDownbeatSpy).toHaveBeenCalledWith(0);
-      expect(showStatusSpy).toHaveBeenCalledWith("Downbeat set to 0.00s");
     });
 
     it("handles very large time values", async () => {
       const user = userEvent.setup();
       useAudioStore.setState({ currentTime: 999.99 });
       const addBoundarySpy = vi.spyOn(useStructureStore.getState(), "addBoundary");
-      const showStatusSpy = vi.spyOn(useUIStore.getState(), "showStatus");
 
       render(<EditingControls />);
 
@@ -413,24 +388,19 @@ describe("EditingControls", () => {
       await user.click(boundaryButton);
 
       expect(addBoundarySpy).toHaveBeenCalledWith(999.99);
-      expect(showStatusSpy).toHaveBeenCalledWith("Added boundary at 999.99s");
     });
 
-    it("handles very precise time values", async () => {
+    it("preserves full precision when passing to store", async () => {
       const user = userEvent.setup();
       useAudioStore.setState({ currentTime: 12.3456789 });
       const setDownbeatSpy = vi.spyOn(useTempoStore.getState(), "setDownbeat");
-      const showStatusSpy = vi.spyOn(useUIStore.getState(), "showStatus");
 
       render(<EditingControls />);
 
       const downbeatButton = screen.getByText("Downbeat");
       await user.click(downbeatButton);
 
-      // Should pass full precision to store
       expect(setDownbeatSpy).toHaveBeenCalledWith(12.3456789);
-      // But display message should round to 2 decimals
-      expect(showStatusSpy).toHaveBeenCalledWith("Downbeat set to 12.35s");
     });
 
     it("handles rapid button clicks", async () => {

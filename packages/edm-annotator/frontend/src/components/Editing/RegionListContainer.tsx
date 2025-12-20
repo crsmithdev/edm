@@ -77,6 +77,13 @@ export function RegionListContainer() {
     await loadGenerated();
   }, [currentTrack, isDirty, showStatus, loadGenerated]);
 
+  const doClear = useCallback(() => {
+    clearBoundaries();
+    markAsSaved();
+    showStatus("Cleared all boundaries");
+    setShowConfirm(null);
+  }, [clearBoundaries, markAsSaved, showStatus]);
+
   const handleClear = useCallback(() => {
     // Check for unsaved changes
     if (isDirty()) {
@@ -85,14 +92,7 @@ export function RegionListContainer() {
     }
 
     doClear();
-  }, [isDirty]);
-
-  const doClear = useCallback(() => {
-    clearBoundaries();
-    markAsSaved();
-    showStatus("Cleared all boundaries");
-    setShowConfirm(null);
-  }, [clearBoundaries, markAsSaved, showStatus]);
+  }, [isDirty, doClear]);
 
   return (
     <>
@@ -119,8 +119,9 @@ export function RegionListContainer() {
             <h3
               style={{
                 color: "var(--text-primary)",
-                fontSize: "var(--font-size-lg)",
-                fontWeight: "var(--font-weight-semibold)",
+                fontSize: "20px",
+                fontWeight: "var(--font-weight-normal)",
+                letterSpacing: "var(--letter-spacing-tight)",
                 margin: 0,
               }}
             >

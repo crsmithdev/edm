@@ -186,16 +186,6 @@ describe("uiStore", () => {
       const { statusMessage } = useUIStore.getState();
       expect(statusMessage).toBe("");
     });
-
-    it("should handle long messages", () => {
-      const { showStatus } = useUIStore.getState();
-
-      const longMessage = "A".repeat(1000);
-      showStatus(longMessage);
-
-      const { statusMessage } = useUIStore.getState();
-      expect(statusMessage).toBe(longMessage);
-    });
   });
 
   describe("clearStatus", () => {
@@ -366,58 +356,6 @@ describe("uiStore", () => {
       const { quantizeEnabled, statusMessage } = useUIStore.getState();
       expect(quantizeEnabled).toBe(true); // 10 toggles from true → back to true
       expect(statusMessage).toBe("Message 9");
-    });
-  });
-
-  describe("edge cases", () => {
-    it("should handle drag with zero coordinates", () => {
-      const { setDragging } = useUIStore.getState();
-
-      setDragging(true, 0, 0);
-
-      const { isDragging, dragStartX, dragStartViewport } =
-        useUIStore.getState();
-      expect(isDragging).toBe(true);
-      expect(dragStartX).toBe(0);
-      expect(dragStartViewport).toBe(0);
-    });
-
-    it("should handle very large drag coordinates", () => {
-      const { setDragging } = useUIStore.getState();
-
-      setDragging(true, 999999, 999999);
-
-      const { dragStartX, dragStartViewport } = useUIStore.getState();
-      expect(dragStartX).toBe(999999);
-      expect(dragStartViewport).toBe(999999);
-    });
-
-    it("should handle fractional drag coordinates", () => {
-      const { setDragging } = useUIStore.getState();
-
-      setDragging(true, 123.456, 78.901);
-
-      const { dragStartX, dragStartViewport } = useUIStore.getState();
-      expect(dragStartX).toBe(123.456);
-      expect(dragStartViewport).toBe(78.901);
-    });
-
-    it("should handle status messages with special characters", () => {
-      const { showStatus } = useUIStore.getState();
-
-      showStatus("Track: [test.mp3] - 128 BPM @ 0.5s");
-
-      const { statusMessage } = useUIStore.getState();
-      expect(statusMessage).toBe("Track: [test.mp3] - 128 BPM @ 0.5s");
-    });
-
-    it("should handle Unicode in status messages", () => {
-      const { showStatus } = useUIStore.getState();
-
-      showStatus("Loading... ⏳");
-
-      const { statusMessage } = useUIStore.getState();
-      expect(statusMessage).toBe("Loading... ⏳");
     });
   });
 

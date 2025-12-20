@@ -39,8 +39,16 @@ describe("PlaybackControls", () => {
 
     it("toggles playback on click", async () => {
       const user = userEvent.setup();
-      const playSpy = vi.spyOn(useAudioStore.getState(), "play");
-      const pauseSpy = vi.spyOn(useAudioStore.getState(), "pause");
+
+      // Create spies that also update the store state
+      const originalPlay = useAudioStore.getState().play;
+      const originalPause = useAudioStore.getState().pause;
+      const playSpy = vi.spyOn(useAudioStore.getState(), "play").mockImplementation(() => {
+        useAudioStore.setState({ isPlaying: true });
+      });
+      const pauseSpy = vi.spyOn(useAudioStore.getState(), "pause").mockImplementation(() => {
+        useAudioStore.setState({ isPlaying: false });
+      });
 
       render(<PlaybackControls />);
 
@@ -48,12 +56,19 @@ describe("PlaybackControls", () => {
       await user.click(screen.getByText("Play"));
       expect(playSpy).toHaveBeenCalledTimes(1);
 
-      // Update state to playing
-      useAudioStore.setState({ isPlaying: true });
+      // Wait for component to update and show Pause button
+      await waitFor(() => {
+        expect(screen.getByText("Pause")).toBeInTheDocument();
+      });
 
       // Click pause
       await user.click(screen.getByText("Pause"));
       expect(pauseSpy).toHaveBeenCalledTimes(1);
+
+      // Wait for component to update and show Play button again
+      await waitFor(() => {
+        expect(screen.getByText("Play")).toBeInTheDocument();
+      });
     });
   });
 

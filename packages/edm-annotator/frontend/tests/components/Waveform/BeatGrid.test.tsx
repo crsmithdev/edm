@@ -168,7 +168,7 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 10, duration: 180 });
 
       const { container } = render(<BeatGrid />);
-      const barLines = container.querySelectorAll('[style*="rgba(200, 200, 200"]');
+      const barLines = container.querySelectorAll('[style*="rgba(200, 200, 200, 0.7)"]');
 
       expect(barLines.length).toBeGreaterThan(0);
     });
@@ -178,7 +178,7 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 10, duration: 180 });
 
       const { container } = render(<BeatGrid />);
-      const barLine = container.querySelector('[style*="rgba(200, 200, 200"]');
+      const barLine = container.querySelector('[style*="rgba(200, 200, 200, 0.7)"]');
 
       expect(barLine?.getAttribute("style")).toContain("width: 2px");
     });
@@ -225,7 +225,7 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 10, duration: 180 });
 
       const { container } = render(<BeatGrid />);
-      const beatLines = container.querySelectorAll('[style*="rgba(150, 150, 150"]');
+      const beatLines = container.querySelectorAll('[style*="rgba(150, 150, 150, 0.3)"]');
 
       expect(beatLines.length).toBeGreaterThan(0);
     });
@@ -236,7 +236,7 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 100, duration: 180 });
 
       const { container } = render(<BeatGrid />);
-      const beatLines = container.querySelectorAll('[style*="rgba(150, 150, 150"]');
+      const beatLines = container.querySelectorAll('[style*="rgba(150, 150, 150, 0.3)"]');
 
       // Should not render beats when zoomed out
       expect(beatLines).toHaveLength(0);
@@ -247,7 +247,7 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 10, duration: 180 });
 
       const { container } = render(<BeatGrid />);
-      const beatLine = container.querySelector('[style*="rgba(150, 150, 150"]');
+      const beatLine = container.querySelector('[style*="rgba(150, 150, 150, 0.3)"]');
 
       expect(beatLine).toBeInTheDocument();
     });
@@ -257,7 +257,7 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 10, duration: 180 });
 
       const { container } = render(<BeatGrid />);
-      const beatLine = container.querySelector('[style*="rgba(150, 150, 150"]');
+      const beatLine = container.querySelector('[style*="rgba(150, 150, 150, 0.3)"]');
 
       expect(beatLine?.getAttribute("style")).toContain("width: 1px");
     });
@@ -267,7 +267,7 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 10, duration: 180 });
 
       const { container } = render(<BeatGrid />);
-      const beatLines = container.querySelectorAll('[style*="rgba(150, 150, 150"]');
+      const beatLines = container.querySelectorAll('[style*="rgba(150, 150, 150, 0.3)"]');
 
       beatLines.forEach((line) => {
         const label = line.querySelector('[style*="font-size: 10px"]');
@@ -376,7 +376,10 @@ describe("BeatGrid", () => {
       // 150 / 180 ≈ 83% visible
 
       const { container } = render(<BeatGrid />);
-      const lines = container.querySelectorAll('[style*="position: absolute"]');
+      // Filter to only line divs (not labels)
+      const lines = Array.from(container.querySelectorAll('[style*="position: absolute"]')).filter(
+        (el) => el.getAttribute("style")?.includes("height: 100%")
+      );
 
       // Should have very few lines (every 16 bars)
       expect(lines.length).toBeGreaterThan(0);
@@ -427,10 +430,10 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 20 });
 
       const { container } = render(<BeatGrid />);
-      const barLine = container.querySelector('[style*="rgba(200, 200, 200"]');
+      const barLine = container.querySelector('[style*="rgba(200, 200, 200, 0.7)"]');
       const label = barLine?.querySelector('[style*="font-size: 10px"]');
 
-      expect(label?.getAttribute("style")).toContain("rgba(220, 220, 220");
+      expect(label?.getAttribute("style")).toContain("rgba(220, 220, 220, 0.9)");
     });
 
     it("uses red color for downbeat label", () => {
@@ -513,7 +516,10 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 10 });
 
       const { container } = render(<BeatGrid />);
-      const lines = container.querySelectorAll('[style*="position: absolute"]');
+      // Filter to only line divs (ones with height: 100%)
+      const lines = Array.from(container.querySelectorAll('[style*="position: absolute"]')).filter(
+        (el) => el.getAttribute("style")?.includes("height: 100%")
+      );
 
       lines.forEach((line) => {
         expect(line.getAttribute("style")).toContain("height: 100%");
@@ -525,7 +531,10 @@ describe("BeatGrid", () => {
       useWaveformStore.setState({ viewportStart: 0, viewportEnd: 10 });
 
       const { container } = render(<BeatGrid />);
-      const lines = container.querySelectorAll('[style*="position: absolute"]');
+      // Filter to only line divs (ones with pointer-events: none)
+      const lines = Array.from(container.querySelectorAll('[style*="position: absolute"]')).filter(
+        (el) => el.getAttribute("style")?.includes("pointer-events: none")
+      );
 
       lines.forEach((line) => {
         expect(line.getAttribute("style")).toContain("pointer-events: none");
