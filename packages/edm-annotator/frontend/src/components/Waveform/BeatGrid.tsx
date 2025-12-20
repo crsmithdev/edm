@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useWaveformStore, useTempoStore } from "@/stores";
-import { getBarDuration, getBeatDuration } from "@/utils/barCalculations";
+import { getBarDuration, getBeatDuration } from "@/utils/tempo";
 
 interface BeatGridProps {
   /** Override viewport start (for centered playhead mode) */

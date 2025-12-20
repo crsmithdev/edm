@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState, useRef, useCallback } from "react";
 import { useWaveformStore, useAudioStore, useStructureStore, useUIStore, useTempoStore } from "@/stores";
-import { getBeatDuration } from "@/utils/barCalculations";
+import { getBeatDuration } from "@/utils/tempo";
 import { BeatGrid } from "./BeatGrid";
 import { BoundaryMarkers } from "./BoundaryMarkers";
 import { RegionOverlays } from "./RegionOverlays";
@@ -101,8 +101,8 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
       // Attack/release coefficients adapt based on zoom level
       // More zoomed in = faster response, more zoomed out = slower/smoother
       const zoomFactor = Math.min(1, span / 16); // Normalize to default 16s span
-      const attackCoeff = 0.75 + 0.2 * (1 - zoomFactor); // 0.75-0.95: faster when zoomed in
-      const releaseCoeff = 0.05 + 0.1 * (1 - zoomFactor); // 0.05-0.15: less smooth
+      const attackCoeff = 0.85 + 0.1 * (1 - zoomFactor); // 0.85-0.95: sharper peaks
+      const releaseCoeff = 0.03 + 0.05 * (1 - zoomFactor); // 0.03-0.08: faster decay, less smooth
 
       const smoothed: number[] = [];
       let envelope = arr[0] || 0;

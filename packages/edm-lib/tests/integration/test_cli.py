@@ -1,6 +1,6 @@
 """Integration tests for CLI."""
 
-from cli.main import app
+from edm_cli.main import app
 from typer.testing import CliRunner
 
 runner = CliRunner()

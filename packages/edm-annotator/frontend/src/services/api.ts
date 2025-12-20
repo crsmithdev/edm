@@ -2,6 +2,7 @@ import axios from "axios";
 import type {
   TrackListResponse,
   LoadTrackResponse,
+  LoadGeneratedAnnotationResponse,
   SaveAnnotationRequest,
   SaveAnnotationResponse,
 } from "@/types/api";
@@ -34,6 +35,18 @@ export const trackService = {
    */
   async loadTrack(filename: string): Promise<LoadTrackResponse> {
     const response = await api.get<LoadTrackResponse>(`/load/${filename}`);
+    return response.data;
+  },
+
+  /**
+   * Load generated annotation boundaries for a track
+   */
+  async loadGeneratedAnnotation(
+    filename: string
+  ): Promise<LoadGeneratedAnnotationResponse> {
+    const response = await api.get<LoadGeneratedAnnotationResponse>(
+      `/load-generated/${filename}`
+    );
     return response.data;
   },
 

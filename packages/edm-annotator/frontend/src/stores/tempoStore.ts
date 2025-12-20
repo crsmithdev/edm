@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import { timeToBar, barToTime, getBeatDuration } from "@/utils/barCalculations";
-import { quantizeToBeat } from "@/utils/quantization";
+import { getBeatDuration, quantizeToBeat, timeToBar, barToTime } from "@/utils/tempo";
 
 interface TempoState {
   // State
@@ -24,7 +23,7 @@ interface TempoState {
 
 export const useTempoStore = create<TempoState>((set, get) => ({
   // Initial state
-  trackBPM: 128,
+  trackBPM: 0,
   trackDownbeat: 0,
   tapTimes: [],
 
@@ -68,7 +67,7 @@ export const useTempoStore = create<TempoState>((set, get) => ({
 
   reset: () =>
     set({
-      trackBPM: 128,
+      trackBPM: 0,
       trackDownbeat: 0,
       tapTimes: [],
     }),

@@ -4,5 +4,5 @@ export { InfoCard } from "./InfoCard";
 export { Card } from "./Card";
 export { Tooltip } from "./Tooltip";
 export { Skeleton, TrackItemSkeleton } from "./Skeleton";
-export { EmptyState } from "./EmptyState";
 export { KeyboardHints, KeyboardShortcutsLink } from "./KeyboardHints";
+export { ConfirmDialog } from "./ConfirmDialog";

@@ -66,11 +66,11 @@ describe("waveformStore", () => {
     it("should zoom in centered on viewport", () => {
       const { zoom } = useWaveformStore.getState();
 
-      zoom(1); // Zoom in by 0.2
+      zoom(1); // Zoom in by 0.5
 
       const { zoomLevel, viewportStart, viewportEnd } =
         useWaveformStore.getState();
-      expect(zoomLevel).toBe(1.2);
+      expect(zoomLevel).toBe(1.5);
       expect(viewportEnd - viewportStart).toBeLessThan(
         mockWaveformData.duration
       );
@@ -83,7 +83,7 @@ describe("waveformStore", () => {
       zoom(-1); // Zoom out
 
       const { zoomLevel } = useWaveformStore.getState();
-      expect(zoomLevel).toBe(1.2); // 1.0 + 0.4 - 0.2
+      expect(zoomLevel).toBe(1.5); // 1.0 + 1.0 - 0.5
     });
 
     it("should zoom centered on specific time", () => {
@@ -109,7 +109,7 @@ describe("waveformStore", () => {
       expect(zoomLevel).toBe(0.1);
     });
 
-    it("should clamp zoom level to maximum (10)", () => {
+    it("should clamp zoom level to maximum (50)", () => {
       const { zoom } = useWaveformStore.getState();
 
       // Zoom in far beyond maximum
@@ -118,7 +118,7 @@ describe("waveformStore", () => {
       }
 
       const { zoomLevel } = useWaveformStore.getState();
-      expect(zoomLevel).toBe(10);
+      expect(zoomLevel).toBe(50);
     });
 
     it("should clamp viewport to track start", () => {
@@ -384,8 +384,8 @@ describe("waveformStore", () => {
       zoom(-4);
 
       const { zoomLevel } = useWaveformStore.getState();
-      // Net change: +5 -2 +3 -4 = +2 → 1.0 + 2*0.2 = 1.4
-      expect(zoomLevel).toBeCloseTo(1.4, 5);
+      // Net change: +5 -2 +3 -4 = +2 → 1.0 + 2*0.5 = 2.0
+      expect(zoomLevel).toBeCloseTo(2.0, 5);
     });
 
     it("should handle edge case: zoom at track start", () => {
@@ -444,7 +444,7 @@ describe("waveformStore", () => {
       zoom(0.5); // Not exact step
 
       const { zoomLevel } = useWaveformStore.getState();
-      expect(zoomLevel).toBeCloseTo(1.1, 5); // 1.0 + 0.5*0.2
+      expect(zoomLevel).toBeCloseTo(1.25, 5); // 1.0 + 0.5*0.5
     });
   });
 });

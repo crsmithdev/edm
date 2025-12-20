@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useWaveformStore, useAudioStore, useTempoStore, useUIStore, useStructureStore } from "@/stores";
-import { timeToBar, barToTime } from "@/utils/barCalculations";
+import { timeToBar, barToTime } from "@/utils/tempo";
 import { labelColors } from "@/utils/colors";
 
 /**
@@ -45,7 +45,7 @@ export function OverviewWaveform() {
     if (samples.length === 0) return "";
 
     // Apply smoothing for cleaner visual appearance
-    const smoothingWindowSize = 3; // Fixed window for overview
+    const smoothingWindowSize = 2; // Fixed window for overview (reduced for sharper detail)
     const smoothedAmplitudes: number[] = [];
     for (let i = 0; i < samples.length; i++) {
       const halfWindow = Math.floor(smoothingWindowSize / 2);

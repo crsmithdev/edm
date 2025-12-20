@@ -28,35 +28,35 @@ describe("labelColors", () => {
     it("should use rgba format with transparency", () => {
       const rgbaPattern = /^rgba\(\d+,\s*\d+,\s*\d+,\s*[\d.]+\)$/;
 
-      Object.entries(labelColors).forEach(([label, color]) => {
+      Object.values(labelColors).forEach((color) => {
         expect(color).toMatch(rgbaPattern);
       });
     });
   });
 
   describe("individual colors", () => {
-    it("should define intro as blue", () => {
-      expect(labelColors.intro).toBe("rgba(91, 124, 255, 0.2)");
+    it("should define intro as purple", () => {
+      expect(labelColors.intro).toBe("rgba(123, 106, 255, 0.2)");
     });
 
-    it("should define buildup as orange", () => {
-      expect(labelColors.buildup).toBe("rgba(255, 184, 0, 0.2)");
+    it("should define buildup as cyan", () => {
+      expect(labelColors.buildup).toBe("rgba(0, 229, 204, 0.2)");
     });
 
-    it("should define breakdown as cyan", () => {
-      expect(labelColors.breakdown).toBe("rgba(0, 230, 184, 0.2)");
+    it("should define breakdown as pink", () => {
+      expect(labelColors.breakdown).toBe("rgba(255, 107, 181, 0.2)");
     });
 
-    it("should define breakbuild as red", () => {
-      expect(labelColors.breakbuild).toBe("rgba(255, 107, 107, 0.2)");
+    it("should define breakbuild as light purple", () => {
+      expect(labelColors.breakbuild).toBe("rgba(167, 139, 250, 0.2)");
     });
 
-    it("should define outro as purple", () => {
-      expect(labelColors.outro).toBe("rgba(156, 39, 176, 0.2)");
+    it("should define outro as medium purple", () => {
+      expect(labelColors.outro).toBe("rgba(139, 122, 255, 0.2)");
     });
 
     it("should define unlabeled as gray", () => {
-      expect(labelColors.unlabeled).toBe("rgba(128, 128, 128, 0.1)");
+      expect(labelColors.unlabeled).toBe("rgba(96, 96, 104, 0.1)");
     });
   });
 
@@ -112,60 +112,41 @@ describe("labelBorderColors", () => {
       expect(Object.keys(labelBorderColors)).toHaveLength(6);
     });
 
-    it("should use rgba format with transparency", () => {
-      const rgbaPattern = /^rgba\(\d+,\s*\d+,\s*\d+,\s*[\d.]+\)$/;
+    it("should use hex format", () => {
+      const hexPattern = /^#[0-9a-f]{6}$/i;
 
-      Object.entries(labelBorderColors).forEach(([label, color]) => {
-        expect(color).toMatch(rgbaPattern);
+      Object.values(labelBorderColors).forEach((color) => {
+        expect(color).toMatch(hexPattern);
       });
     });
   });
 
   describe("individual border colors", () => {
-    it("should define intro border as blue", () => {
-      expect(labelBorderColors.intro).toBe("rgba(91, 124, 255, 0.8)");
+    it("should define intro border as purple", () => {
+      expect(labelBorderColors.intro).toBe("#7b6aff");
     });
 
-    it("should define buildup border as orange", () => {
-      expect(labelBorderColors.buildup).toBe("rgba(255, 184, 0, 0.8)");
+    it("should define buildup border as cyan", () => {
+      expect(labelBorderColors.buildup).toBe("#00e5cc");
     });
 
-    it("should define breakdown border as cyan", () => {
-      expect(labelBorderColors.breakdown).toBe("rgba(0, 230, 184, 0.8)");
+    it("should define breakdown border as pink", () => {
+      expect(labelBorderColors.breakdown).toBe("#ff6bb5");
     });
 
-    it("should define breakbuild border as red", () => {
-      expect(labelBorderColors.breakbuild).toBe("rgba(255, 107, 107, 0.8)");
+    it("should define breakbuild border as light purple", () => {
+      expect(labelBorderColors.breakbuild).toBe("#a78bfa");
     });
 
-    it("should define outro border as purple", () => {
-      expect(labelBorderColors.outro).toBe("rgba(156, 39, 176, 0.8)");
+    it("should define outro border as medium purple", () => {
+      expect(labelBorderColors.outro).toBe("#8b7aff");
     });
 
     it("should define unlabeled border as gray", () => {
-      expect(labelBorderColors.unlabeled).toBe("rgba(128, 128, 128, 0.5)");
+      expect(labelBorderColors.unlabeled).toBe("#606068");
     });
   });
 
-  describe("border color opacity", () => {
-    it("should use 0.8 opacity for most labels", () => {
-      const labelsWithOpacity08: SectionLabel[] = [
-        "intro",
-        "buildup",
-        "breakdown",
-        "breakbuild",
-        "outro",
-      ];
-
-      labelsWithOpacity08.forEach((label) => {
-        expect(labelBorderColors[label]).toContain("0.8)");
-      });
-    });
-
-    it("should use 0.5 opacity for unlabeled", () => {
-      expect(labelBorderColors.unlabeled).toContain("0.5)");
-    });
-  });
 
   describe("border color uniqueness", () => {
     it("should have unique border colors for each label", () => {
@@ -177,8 +158,8 @@ describe("labelBorderColors", () => {
 });
 
 describe("color consistency", () => {
-  describe("matching RGB values", () => {
-    it("should use same RGB values for fill and border colors", () => {
+  describe("color format consistency", () => {
+    it("should use rgba format for fill colors", () => {
       const labels: SectionLabel[] = [
         "intro",
         "buildup",
@@ -190,24 +171,11 @@ describe("color consistency", () => {
 
       labels.forEach((label) => {
         const fillColor = labelColors[label];
-        const borderColor = labelBorderColors[label];
-
-        // Extract RGB values
-        const fillRGB = fillColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/);
-        const borderRGB = borderColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/);
-
-        expect(fillRGB).toBeTruthy();
-        expect(borderRGB).toBeTruthy();
-
-        if (fillRGB && borderRGB) {
-          expect(fillRGB[1]).toBe(borderRGB[1]); // Red
-          expect(fillRGB[2]).toBe(borderRGB[2]); // Green
-          expect(fillRGB[3]).toBe(borderRGB[3]); // Blue
-        }
+        expect(fillColor).toMatch(/^rgba\(\d+,\s*\d+,\s*\d+,\s*[\d.]+\)$/);
       });
     });
 
-    it("should have higher opacity for borders than fills", () => {
+    it("should use hex format for border colors", () => {
       const labels: SectionLabel[] = [
         "intro",
         "buildup",
@@ -218,14 +186,8 @@ describe("color consistency", () => {
       ];
 
       labels.forEach((label) => {
-        const fillColor = labelColors[label];
         const borderColor = labelBorderColors[label];
-
-        // Extract alpha values
-        const fillAlpha = parseFloat(fillColor.match(/,\s*([\d.]+)\)$/)?.[1] || "0");
-        const borderAlpha = parseFloat(borderColor.match(/,\s*([\d.]+)\)$/)?.[1] || "0");
-
-        expect(borderAlpha).toBeGreaterThan(fillAlpha);
+        expect(borderColor).toMatch(/^#[0-9a-f]{6}$/i);
       });
     });
   });

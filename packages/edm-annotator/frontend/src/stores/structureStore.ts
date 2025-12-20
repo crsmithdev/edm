@@ -5,6 +5,8 @@ interface StructureState {
   // State
   boundaries: number[];
   regions: Region[];
+  savedState: { regions: Region[]; boundaries: number[] } | null;
+  annotationTier: number | null; // 1 = reference (hand-tagged), 2 = generated, null = none
 
   // Actions
   addBoundary: (time: number) => void;
@@ -12,6 +14,10 @@ interface StructureState {
   setRegionLabel: (index: number, label: SectionLabel) => void;
   rebuildRegions: () => void;
   setBoundaries: (boundaries: number[]) => void;
+  clearBoundaries: () => void;
+  setAnnotationTier: (tier: number | null) => void;
+  markAsSaved: () => void;
+  isDirty: () => boolean;
   reset: () => void;
 }
 
@@ -19,6 +25,8 @@ export const useStructureStore = create<StructureState>((set, get) => ({
   // Initial state
   boundaries: [],
   regions: [],
+  savedState: null,
+  annotationTier: null,
 
   // Actions
   addBoundary: (time) => {
@@ -35,6 +43,11 @@ export const useStructureStore = create<StructureState>((set, get) => ({
 
   removeBoundary: (time) => {
     const { boundaries } = get();
+    // Prevent removing a boundary if it would leave fewer than 2 boundaries
+    // (need at least 2 boundaries to have a valid region)
+    if (boundaries.length <= 2) {
+      return;
+    }
     // Use looser tolerance for removal (user interaction)
     const newBoundaries = boundaries.filter((t) => Math.abs(t - time) > 0.01);
     set({ boundaries: newBoundaries });
@@ -51,7 +64,7 @@ export const useStructureStore = create<StructureState>((set, get) => ({
   },
 
   rebuildRegions: () => {
-    const { boundaries } = get();
+    const { boundaries, regions } = get();
     if (boundaries.length === 0) {
       set({ regions: [] });
       return;
@@ -59,10 +72,18 @@ export const useStructureStore = create<StructureState>((set, get) => ({
 
     const newRegions: Region[] = [];
     for (let i = 0; i < boundaries.length - 1; i++) {
+      const start = boundaries[i];
+      const end = boundaries[i + 1];
+
+      // Find existing region that starts at the same position to preserve label
+      // When a boundary is removed, regions merge and the new region starts where
+      // the previous (earlier) region started, so we preserve that region's label
+      const existingRegion = regions.find((r) => Math.abs(r.start - start) < 0.00001);
+
       newRegions.push({
-        start: boundaries[i],
-        end: boundaries[i + 1],
-        label: "unlabeled",
+        start,
+        end,
+        label: existingRegion ? existingRegion.label : "unlabeled",
       });
     }
     set({ regions: newRegions });
@@ -73,9 +94,48 @@ export const useStructureStore = create<StructureState>((set, get) => ({
     get().rebuildRegions();
   },
 
+  clearBoundaries: () => {
+    set({ boundaries: [], regions: [] });
+  },
+
+  setAnnotationTier: (tier) => {
+    set({ annotationTier: tier });
+  },
+
+  markAsSaved: () => {
+    const { regions, boundaries } = get();
+    set({
+      savedState: {
+        regions: JSON.parse(JSON.stringify(regions)),
+        boundaries: [...boundaries],
+      },
+    });
+  },
+
+  isDirty: () => {
+    const { regions, boundaries, savedState } = get();
+    if (!savedState) return false;
+
+    // Check boundaries
+    if (boundaries.length !== savedState.boundaries.length) return true;
+    for (let i = 0; i < boundaries.length; i++) {
+      if (Math.abs(boundaries[i] - savedState.boundaries[i]) > 0.00001) return true;
+    }
+
+    // Check regions
+    if (regions.length !== savedState.regions.length) return true;
+    for (let i = 0; i < regions.length; i++) {
+      if (regions[i].label !== savedState.regions[i].label) return true;
+    }
+
+    return false;
+  },
+
   reset: () =>
     set({
       boundaries: [],
       regions: [],
+      savedState: null,
+      annotationTier: null,
     }),
 }));

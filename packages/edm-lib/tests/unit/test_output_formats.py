@@ -4,7 +4,7 @@ import json
 from io import StringIO
 
 import yaml
-from cli.commands.analyze import TrackAnalysis, output_json, output_yaml
+from edm_cli.commands.analyze import TrackAnalysis, output_json, output_yaml
 from rich.console import Console
 
 

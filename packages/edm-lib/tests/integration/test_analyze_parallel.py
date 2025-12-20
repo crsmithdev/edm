@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
-from cli.main import app
+from edm_cli.main import app
 from typer.testing import CliRunner
 
 runner = CliRunner()

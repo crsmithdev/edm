@@ -83,47 +83,40 @@ export function WaveformContainer() {
         <div
           style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}
         >
-          <div
-            style={{
-              fontSize: "var(--font-size-lg)",
-              fontWeight: "var(--font-weight-bold)",
-              color: "var(--text-primary)",
-            }}
-          >
-            {currentTrack || "No track loaded"}
-          </div>
           {currentTrack && (
-            <div
-              style={{
-                fontSize: "var(--font-size-xs)",
-                color: "var(--text-tertiary)",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}
-            >
-              {formatDuration(duration)} duration
-            </div>
+            <>
+              <div
+                style={{
+                  fontSize: "var(--font-size-lg)",
+                  fontWeight: "var(--font-weight-bold)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                {currentTrack}
+              </div>
+              <div
+                style={{
+                  fontSize: "var(--font-size-xs)",
+                  color: "var(--text-tertiary)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                {formatDuration(duration)} duration
+              </div>
+            </>
           )}
         </div>
 
         {/* Status displays in middle */}
         <div style={{ display: "flex", gap: "var(--space-6)", alignItems: "flex-end" }}>
           <InfoCard label="BPM" value={trackBPM || "--"} />
-          <InfoCard label="Bar" value={currentBar} />
-          <InfoCard label="Time" value={formatTime(currentTime)} />
+          <InfoCard label="Bar" value={currentTrack ? currentBar : "--"} />
+          <InfoCard label="Time" value={currentTrack ? formatTime(currentTime) : "--"} />
         </div>
 
         {/* Zoom controls on right */}
-        <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
-          <span
-            style={{
-              fontSize: "var(--font-size-xs)",
-              color: "var(--text-tertiary)",
-              marginRight: "var(--space-2)",
-            }}
-          >
-            {detailSpan.toFixed(0)}s view
-          </span>
+        <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "stretch" }}>
           <button
             onClick={handleZoomOut}
             style={{
@@ -135,6 +128,9 @@ export function WaveformContainer() {
               fontSize: "var(--font-size-lg)",
               cursor: "pointer",
               fontWeight: "var(--font-weight-semibold)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             −
@@ -150,6 +146,9 @@ export function WaveformContainer() {
               fontSize: "var(--font-size-lg)",
               cursor: "pointer",
               fontWeight: "var(--font-weight-semibold)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             +
@@ -162,8 +161,12 @@ export function WaveformContainer() {
               color: "var(--text-secondary)",
               border: "none",
               borderRadius: "var(--radius-sm)",
-              fontSize: "var(--font-size-sm)",
+              fontSize: "var(--font-size-lg)",
               cursor: "pointer",
+              fontWeight: "var(--font-weight-semibold)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             Reset

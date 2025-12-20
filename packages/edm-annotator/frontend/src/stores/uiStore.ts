@@ -24,7 +24,7 @@ export const useUIStore = create<UIState>((set) => ({
   dragStartX: 0,
   dragStartViewport: 0,
   quantizeEnabled: true,
-  jumpMode: "beats",
+  jumpMode: "bars",
   statusMessage: null,
 
   // Actions

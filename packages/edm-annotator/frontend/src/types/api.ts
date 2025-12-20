@@ -8,6 +8,14 @@ export interface LoadTrackResponse extends WaveformData {
   filename: string;
   bpm: number | null;
   downbeat: number;
+  boundaries?: Boundary[];
+  annotation_tier?: number | null; // 1 = reference (hand-tagged), 2 = generated
+}
+
+export interface LoadGeneratedAnnotationResponse {
+  bpm: number | null;
+  downbeat: number;
+  boundaries: Boundary[];
 }
 
 export interface SaveAnnotationRequest {

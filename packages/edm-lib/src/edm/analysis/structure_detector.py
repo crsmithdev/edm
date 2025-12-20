@@ -10,15 +10,24 @@ import scipy
 import structlog
 
 # Patch scipy for compatibility with msaf
+# IMPORTANT: Must patch BEFORE importing msaf
 # scipy 1.12+ removed scipy.inf, scipy 1.13+ moved signal.gaussian to signal.windows
 if not hasattr(scipy, "inf"):
     scipy.inf = np.inf
 
 import scipy.signal
+
+# Patch scipy.signal.gaussian if needed
 import scipy.signal.windows
 
 if not hasattr(scipy.signal, "gaussian"):
     scipy.signal.gaussian = scipy.signal.windows.gaussian
+
+# Patch msaf.pymf modules that try to import scipy.inf
+import sys
+
+# Pre-patch scipy module before msaf tries to import it
+sys.modules["scipy"].inf = np.inf
 
 import msaf  # noqa: E402
 

@@ -1,13 +1,13 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAudioStore, useTempoStore, useUIStore } from "@/stores";
-import { getBarDuration, getBeatDuration } from "@/utils/barCalculations";
+import { getBarDuration, getBeatDuration } from "@/utils/tempo";
 import { Button } from "@/components/UI";
 
 /**
  * Navigation controls for jumping by bars/beats
  */
 export function NavigationControls() {
-  const { currentTime, seek } = useAudioStore();
+  const { seek } = useAudioStore();
   const { trackBPM } = useTempoStore();
   const { jumpMode, toggleJumpMode } = useUIStore();
 
@@ -15,6 +15,8 @@ export function NavigationControls() {
   const beatDuration = getBeatDuration(trackBPM);
 
   const jump = (count: number) => {
+    // Get current time from store to avoid stale closure
+    const currentTime = useAudioStore.getState().currentTime;
     const duration = jumpMode === "beats" ? beatDuration : barDuration;
     const newTime = currentTime + duration * count;
     seek(Math.max(0, newTime));

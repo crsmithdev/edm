@@ -64,13 +64,15 @@ class AnnotationService:
     def load_annotation(self, filename: str) -> dict[str, Any] | None:
         """Load annotation data for a track if it exists.
 
+        Prefers reference (hand-tagged) annotations over generated annotations.
+
         Args:
             filename: Audio filename
 
         Returns:
-            Dictionary with bpm and downbeat if found, None otherwise
+            Dictionary with bpm, downbeat, boundaries, and tier if found, None otherwise
         """
-        annotation_path, _ = self.find_annotation_for_file(filename)
+        annotation_path, tier = self.find_annotation_for_file(filename)
 
         if not annotation_path or not annotation_path.exists():
             return None
@@ -79,13 +81,92 @@ class AnnotationService:
             with open(annotation_path) as f:
                 annotation_data = yaml.safe_load(f)
 
-            if annotation_data and "audio" in annotation_data:
-                return {
-                    "bpm": annotation_data["audio"].get("bpm"),
-                    "downbeat": annotation_data["audio"].get("downbeat", 0.0),
-                }
+            if not annotation_data:
+                return None
+
+            # Audio section is required for valid annotation
+            if "audio" not in annotation_data:
+                return None
+
+            result = {"tier": tier}
+
+            # Load audio metadata
+            result["bpm"] = annotation_data["audio"].get("bpm")
+            result["downbeat"] = annotation_data["audio"].get("downbeat", 0.0)
+
+            # Load structure boundaries
+            if "structure" in annotation_data:
+                boundaries = []
+                for section in annotation_data["structure"]:
+                    if isinstance(section, dict):
+                        boundaries.append(
+                            {
+                                "time": section.get("time", 0.0),
+                                "label": section.get("label", "unlabeled"),
+                            }
+                        )
+                result["boundaries"] = boundaries
+
+            return result
         except Exception as e:
             print(f"Warning: Could not load annotation: {e}")
+
+        return None
+
+    def load_generated_annotation(self, filename: str) -> dict[str, Any] | None:
+        """Load full annotation data from generated tier only.
+
+        Args:
+            filename: Audio filename
+
+        Returns:
+            Dictionary with bpm, downbeat, and boundaries if found, None otherwise
+        """
+        stem = Path(filename).stem
+        gen_path = self.generated_dir / f"{stem}.yaml"
+
+        if not gen_path.exists():
+            # Try case-insensitive search
+            if self.generated_dir.exists():
+                for yaml_file in self.generated_dir.glob("*.yaml"):
+                    if yaml_file.stem.lower() == stem.lower():
+                        gen_path = yaml_file
+                        break
+                else:
+                    return None
+            else:
+                return None
+
+        try:
+            with open(gen_path) as f:
+                annotation_data = yaml.safe_load(f)
+
+            if not annotation_data:
+                return None
+
+            result = {}
+
+            # Load audio metadata
+            if "audio" in annotation_data:
+                result["bpm"] = annotation_data["audio"].get("bpm")
+                result["downbeat"] = annotation_data["audio"].get("downbeat", 0.0)
+
+            # Load structure boundaries
+            if "structure" in annotation_data:
+                boundaries = []
+                for section in annotation_data["structure"]:
+                    if isinstance(section, dict):
+                        boundaries.append(
+                            {
+                                "time": section.get("time", 0.0),
+                                "label": section.get("label", "unlabeled"),
+                            }
+                        )
+                result["boundaries"] = boundaries
+
+            return result if result else None
+        except Exception as e:
+            print(f"Warning: Could not load generated annotation: {e}")
 
         return None
 

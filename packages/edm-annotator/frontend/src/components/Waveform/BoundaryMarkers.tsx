@@ -1,4 +1,4 @@
-import { useStructureStore, useWaveformStore } from "@/stores";
+import { useStructureStore, useWaveformStore, useAudioStore } from "@/stores";
 import { formatTime } from "@/utils/timeFormat";
 
 interface BoundaryMarkersProps {
@@ -13,6 +13,7 @@ interface BoundaryMarkersProps {
  */
 export function BoundaryMarkers(props: BoundaryMarkersProps) {
   const { boundaries, removeBoundary } = useStructureStore();
+  const { seek } = useAudioStore();
   const store = useWaveformStore();
   const viewportStart = props.viewportStart ?? store.viewportStart;
   const viewportEnd = props.viewportEnd ?? store.viewportEnd;
@@ -47,9 +48,11 @@ export function BoundaryMarkers(props: BoundaryMarkersProps) {
               e.stopPropagation();
               if (e.ctrlKey || e.metaKey) {
                 removeBoundary(time);
+              } else {
+                seek(time);
               }
             }}
-            title={`Boundary at ${formatTime(time)} (Ctrl+Click to remove)`}
+            title={`Boundary at ${formatTime(time)} (Click to seek, Ctrl+Click to remove)`}
           />
         );
       })}

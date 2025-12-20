@@ -20,13 +20,14 @@ describe("RegionList", () => {
   });
 
   describe("Empty State", () => {
-    it("renders header with count when no regions exist", () => {
+    it("renders column headers when no regions exist", () => {
       useStructureStore.setState({ regions: [], boundaries: [] });
 
       render(<RegionList />);
 
-      expect(screen.getByText(/Regions \(/)).toBeInTheDocument();
-      expect(screen.getByText("0", { exact: false })).toBeInTheDocument();
+      expect(screen.getByText("Time")).toBeInTheDocument();
+      expect(screen.getByText("Bars")).toBeInTheDocument();
+      expect(screen.getByText("Label")).toBeInTheDocument();
     });
   });
 
@@ -41,8 +42,6 @@ describe("RegionList", () => {
       useStructureStore.setState({ regions: mockRegions });
 
       render(<RegionList />);
-
-      expect(screen.getByText(/Regions \(3\)/)).toBeInTheDocument();
 
       // Check that all regions are displayed
       expect(screen.getByText(/00:00\.000 - 00:10\.000/)).toBeInTheDocument();
@@ -271,7 +270,6 @@ describe("RegionList", () => {
 
       render(<RegionList />);
 
-      expect(screen.getByText(/Regions \(1\)/)).toBeInTheDocument();
       expect(screen.getByText(/00:00\.000 - 03:00\.000/)).toBeInTheDocument();
     });
 
@@ -349,7 +347,7 @@ describe("RegionList", () => {
 
       const { rerender } = render(<RegionList />);
 
-      expect(screen.getByText(/Regions \(0\)/)).toBeInTheDocument();
+      expect(screen.getByText("Time")).toBeInTheDocument();
 
       // Add regions
       useStructureStore.setState({
@@ -359,7 +357,6 @@ describe("RegionList", () => {
 
       rerender(<RegionList />);
 
-      expect(screen.getByText(/Regions \(1\)/)).toBeInTheDocument();
       expect(screen.getByText(/00:00\.000 - 00:10\.000/)).toBeInTheDocument();
     });
 
@@ -378,7 +375,8 @@ describe("RegionList", () => {
 
       rerender(<RegionList />);
 
-      expect(screen.getByText(/Regions \(0\)/)).toBeInTheDocument();
+      expect(screen.getByText("Time")).toBeInTheDocument();
+      expect(screen.queryByText(/00:00\.000/)).not.toBeInTheDocument();
     });
   });
 });

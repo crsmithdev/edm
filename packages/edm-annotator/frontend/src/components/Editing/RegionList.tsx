@@ -17,16 +17,16 @@ const VALID_LABELS: SectionLabel[] = [
  */
 export function RegionList() {
   const { regions, setRegionLabel, removeBoundary } = useStructureStore();
-  const { seek } = useAudioStore();
+  const { seek, currentTime } = useAudioStore();
   const { timeToBar } = useTempoStore();
 
   const handleDeleteRegion = (idx: number, region: { start: number; end: number }) => {
     // Can't delete if there's only one region
     if (regions.length <= 1) return;
 
-    // For all regions except the last, remove the boundary at the end
-    // For the last region, remove the boundary at the start
-    const boundaryToRemove = idx === regions.length - 1 ? region.start : region.end;
+    // For all regions except the first, remove the boundary at the start (merge with previous)
+    // For the first region, remove the boundary at the end (merge with next)
+    const boundaryToRemove = idx === 0 ? region.end : region.start;
     removeBoundary(boundaryToRemove);
   };
 
@@ -63,6 +63,7 @@ export function RegionList() {
       {regions.map((region, idx) => {
         const startBar = timeToBar(region.start);
         const endBar = timeToBar(region.end);
+        const isCurrentRegion = currentTime >= region.start && currentTime < region.end;
 
         return (
           <div
@@ -75,15 +76,19 @@ export function RegionList() {
               borderBottom: "1px solid var(--border-primary)",
               alignItems: "center",
               cursor: "pointer",
-              background: "transparent",
+              background: isCurrentRegion ? "rgba(91, 124, 255, 0.15)" : "transparent",
               transition: "all var(--transition-base)",
             }}
             onClick={() => seek(region.start)}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--bg-elevated)";
+              if (!isCurrentRegion) {
+                e.currentTarget.style.background = "var(--bg-elevated)";
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
+              if (!isCurrentRegion) {
+                e.currentTarget.style.background = "transparent";
+              }
             }}
           >
             {/* Time */}
@@ -124,7 +129,7 @@ export function RegionList() {
                 borderRadius: "var(--radius-sm)",
                 fontSize: "var(--font-size-sm)",
                 fontWeight: "var(--font-weight-semibold)",
-                textTransform: "uppercase",
+                textTransform: "capitalize",
                 cursor: "pointer",
                 transition: "all var(--transition-base)",
                 maxWidth: "180px",

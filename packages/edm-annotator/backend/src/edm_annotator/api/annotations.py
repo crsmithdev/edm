@@ -5,6 +5,32 @@ from flask import Blueprint, current_app, jsonify, request
 bp = Blueprint("annotations", __name__, url_prefix="/api")
 
 
+@bp.route("/load-generated/<path:filename>")
+def load_generated_annotation(filename: str):
+    """Load generated annotation boundaries for a track.
+
+    Args:
+        filename: Audio filename
+
+    Returns:
+        JSON object with:
+            - bpm: BPM (or null if not found)
+            - downbeat: Downbeat time in seconds
+            - boundaries: List of boundary dicts with 'time' and 'label'
+    """
+    annotation_service = current_app.annotation_service
+
+    try:
+        annotation = annotation_service.load_generated_annotation(filename)
+
+        if not annotation:
+            return jsonify({"error": "No generated annotation found"}), 404
+
+        return jsonify(annotation)
+    except Exception as e:
+        return jsonify({"error": f"Error loading annotation: {str(e)}"}), 500
+
+
 @bp.route("/save", methods=["POST"])
 def save_annotation():
     """Save annotation to YAML file.

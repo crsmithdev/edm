@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   useAudioStore,
   useStructureStore,
@@ -7,21 +7,36 @@ import {
   useUIStore,
   useTrackStore,
 } from "@/stores";
-import { getBarDuration, getBeatDuration } from "@/utils/barCalculations";
+import { getBarDuration, getBeatDuration } from "@/utils/tempo";
 
 /**
  * Handles keyboard shortcuts for the application
  */
 export function useKeyboardShortcuts() {
-  const { isPlaying, play, pause, seek, currentTime, returnToCue, setCuePoint } =
+  const { isPlaying, play, pause, seek, currentTime, returnToCue, setCuePoint, cuePoint } =
     useAudioStore();
   const { addBoundary } = useStructureStore();
   const { setDownbeat, trackBPM, trackDownbeat } = useTempoStore();
   const { zoom, zoomToFit } = useWaveformStore();
   const { toggleQuantize, showStatus, quantizeEnabled } = useUIStore();
   const { previousTrack, nextTrack } = useTrackStore();
+  const isPreviewingRef = useRef(false);
 
   useEffect(() => {
+    const getQuantizedPosition = (time: number): number => {
+      if (!quantizeEnabled || trackBPM <= 0) return time;
+      const beatDuration = getBeatDuration(trackBPM);
+      const beatsFromDownbeat = (time - trackDownbeat) / beatDuration;
+      const nearestBeat = Math.round(beatsFromDownbeat);
+      return trackDownbeat + nearestBeat * beatDuration;
+    };
+
+    const isAtCuePoint = (): boolean => {
+      const quantizedPosition = getQuantizedPosition(currentTime);
+      const quantizedCue = getQuantizedPosition(cuePoint);
+      return Math.abs(quantizedPosition - quantizedCue) < 0.01;
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if typing in input or select
       const target = e.target as HTMLElement;
@@ -60,25 +75,30 @@ export function useKeyboardShortcuts() {
           toggleQuantize();
           break;
 
-        case "c": // C - set cue when stopped, return to cue when playing
+        case "c": // C - smart cue behavior
           if (e.ctrlKey || e.metaKey) {
             // Allow Ctrl+C / Cmd+C for copy
             return;
           }
           e.preventDefault();
+
+          // Prevent repeated keydown events while key is held
+          if (e.repeat) {
+            return;
+          }
+
           if (isPlaying) {
             returnToCue();
             showStatus("Returned to cue");
+          } else if (isAtCuePoint()) {
+            // At cue point - start preview
+            play();
+            isPreviewingRef.current = true;
           } else {
-            // Snap to nearest beat if quantize enabled
-            let cueTime = currentTime;
-            if (quantizeEnabled && trackBPM > 0) {
-              const beatDuration = getBeatDuration(trackBPM);
-              const beatsFromDownbeat = (currentTime - trackDownbeat) / beatDuration;
-              const nearestBeat = Math.round(beatsFromDownbeat);
-              cueTime = trackDownbeat + nearestBeat * beatDuration;
-            }
+            // Not at cue point - set cue
+            const cueTime = getQuantizedPosition(currentTime);
             setCuePoint(cueTime);
+            seek(cueTime);
             showStatus(`Cue point set at ${cueTime.toFixed(2)}s`);
           }
           break;
@@ -153,8 +173,39 @@ export function useKeyboardShortcuts() {
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // Ignore if typing in input or select
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "SELECT" ||
+        target.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+
+      switch (e.key) {
+        case "c": // C - stop preview when released
+          if (e.ctrlKey || e.metaKey) {
+            return;
+          }
+          e.preventDefault();
+
+          if (isPreviewingRef.current) {
+            // Stop preview and return to cue
+            returnToCue();
+            isPreviewingRef.current = false;
+          }
+          break;
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
   }, [
     isPlaying,
     play,
@@ -163,6 +214,7 @@ export function useKeyboardShortcuts() {
     currentTime,
     returnToCue,
     setCuePoint,
+    cuePoint,
     addBoundary,
     setDownbeat,
     toggleQuantize,

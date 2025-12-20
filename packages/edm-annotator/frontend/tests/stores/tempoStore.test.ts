@@ -185,7 +185,7 @@ describe("tempoStore", () => {
       tapTempo();
 
       const { trackBPM, tapTimes } = useTempoStore.getState();
-      expect(trackBPM).toBe(128); // Default value
+      expect(trackBPM).toBe(0); // Default value (undefined BPM)
       expect(tapTimes).toHaveLength(1);
     });
   });
@@ -234,7 +234,7 @@ describe("tempoStore", () => {
       reset();
 
       const { trackBPM, trackDownbeat, tapTimes } = useTempoStore.getState();
-      expect(trackBPM).toBe(128);
+      expect(trackBPM).toBe(0); // Default value (undefined BPM displays as "--")
       expect(trackDownbeat).toBe(0);
       expect(tapTimes).toEqual([]);
     });
