@@ -30,7 +30,7 @@ echo -e "  ${GREEN}✓${RESET} Backend installed"
 # Check if frontend dependencies are installed
 if [ ! -d "frontend/node_modules" ]; then
     echo -e "  ${RED}✗${RESET} Frontend dependencies not installed"
-    echo -e "    ${DIM}Run: ${CYAN}cd frontend && pnpm install${RESET}"
+    echo -e "    ${DIM}Run: ${CYAN}cd frontend && npm install${RESET}"
     exit 1
 fi
 echo -e "  ${GREEN}✓${RESET} Frontend dependencies installed\n"
@@ -68,7 +68,7 @@ echo -e "  ${DIM}Starting frontend...${RESET}"
 
 # Start frontend in background
 cd frontend
-pnpm run dev 2>&1 | sed "s/^/  ${DIM}[frontend]${RESET} /" &
+npm run dev 2>&1 | sed "s/^/  ${DIM}[frontend]${RESET} /" &
 FRONTEND_PID=$!
 cd ..
 
