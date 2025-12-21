@@ -260,7 +260,7 @@ dvc remote add -d nas /mnt/shared/edm-checkpoints
 dvc push
 ```
 
-See [docs/experiment-tracking.md](experiment-tracking.md) for comprehensive DVC workflow guide.
+See [Model Management Guide](model-management.md) for comprehensive DVC and MLflow workflow guide.
 
 ## Model Evaluation
 

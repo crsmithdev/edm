@@ -719,7 +719,7 @@ sudo journalctl -u edm-annotator-backend -n 50
 ## Additional Resources
 
 - **Annotator Architecture**: `packages/edm-annotator/ARCHITECTURE.md`
-- **MLflow Guide**: `docs/mlops.md`
+- **Model Management Guide**: `docs/guides/model-management.md`
 - **Development Setup**: `docs/development.md`
 - **Troubleshooting**: `docs/troubleshooting.md`
 

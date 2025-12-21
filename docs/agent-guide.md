@@ -13,8 +13,8 @@ just train-standard  # 50 epoch production
 ```
 
 Read together:
-- [training-quickref.md](training-quickref.md) - Quick reference for common patterns
-- [training.md](training.md) - Complete training documentation
+- [cheatsheets/training.md](cheatsheets/training.md) - Quick reference for training commands
+- [guides/training.md](guides/training.md) - Complete training documentation
 - `configs/training_first_run.yaml` - Example configuration
 - `packages/edm-lib/src/edm/training/trainer.py` - Training loop implementation
 - `packages/edm-lib/src/edm/models/multitask.py` - Model architecture
@@ -62,13 +62,13 @@ Read together:
 - `packages/edm-lib/src/edm/evaluation/common.py` - Shared utilities, metrics
 - `packages/edm-lib/src/edm/evaluation/reference.py` - Reference data sources
 - `packages/edm-lib/src/edm/evaluation/evaluators/bpm.py` - BPM evaluator
-- [cli-reference.md](cli-reference.md) - Evaluation commands
+- [reference/cli.md](reference/cli.md) - Evaluation commands
 
 ### Modify CLI Commands
 
 Read:
 - `packages/edm-cli/src/edm_cli/main.py` - Typer app, command definitions
-- [cli-reference.md](cli-reference.md) - Complete CLI documentation
+- [reference/cli.md](reference/cli.md) - Complete CLI documentation
 
 ### Work on Logging
 
@@ -89,11 +89,11 @@ Read:
 | Topic | File | Contents |
 |-------|------|----------|
 | System design | [architecture.md](architecture.md) | Module organization, data flow, design decisions |
-| CLI usage | [cli-reference.md](cli-reference.md) | Commands, options, examples |
+| CLI usage | [reference/cli.md](reference/cli.md) | Commands, options, examples |
 | Development | [development.md](development.md) | Setup, testing, logging, code quality |
 | Testing | [testing.md](testing.md) | Test framework, conventions |
 | Project structure | [project-structure.md](project-structure.md) | Directory layout |
-| Python style | [python-style.md](python-style.md) | Code conventions |
+| Python style | [development/code-style-python.md](development/code-style-python.md) | Code conventions |
 
 ## Code Locations by Feature
 

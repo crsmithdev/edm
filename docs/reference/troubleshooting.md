@@ -694,7 +694,7 @@ Include in bug reports:
 - **Project documentation**: `docs/`
 - **Architecture overview**: `docs/architecture.md`
 - **Development guide**: `docs/development.md`
-- **Code style guides**: `docs/python-style.md`, `docs/javascript-style.md`
+- **Code style guides**: `docs/development/code-style-python.md`, `docs/development/code-style-javascript.md`
 - **Agent navigation**: `docs/agent-guide.md`
 
 ---
