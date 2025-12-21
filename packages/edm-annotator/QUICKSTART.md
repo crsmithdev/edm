@@ -43,7 +43,7 @@ just annotator
 ```
 
 This starts both servers automatically:
-- **Backend API**: http://localhost:5000
+- **Backend API**: http://localhost:5001
 - **Frontend**: http://localhost:5174
 
 You should see:
@@ -54,7 +54,7 @@ You should see:
 ✅ Prerequisites met
 
 Starting servers...
-  Backend:  http://localhost:5000
+  Backend:  http://localhost:5001
   Frontend: http://localhost:5174
 
 Press Ctrl+C to stop both servers
@@ -74,7 +74,7 @@ If you prefer to run servers separately:
 
 ```bash
 cd packages/edm-annotator
-uv run edm-annotator --env development --port 5000
+uv run edm-annotator --env development --port 5001
 ```
 
 ### Terminal 2: Frontend
@@ -177,7 +177,7 @@ npm run dev
 
 ### Waveform not loading
 - Check browser console (F12) for errors
-- Verify backend is running on port 5000
+- Verify backend is running on port 5001
 - Check CORS is enabled in backend
 
 ### Audio won't play

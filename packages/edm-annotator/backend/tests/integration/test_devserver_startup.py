@@ -52,7 +52,7 @@ class TestDevServerStartup:
 
     def test_backend_starts(self, devserver_process):
         """Backend server starts and responds to API requests."""
-        backend_url = "http://localhost:5000/api/tracks"
+        backend_url = "http://localhost:5001/api/tracks"
         max_wait = 15  # seconds
 
         # Wait for backend to be ready
@@ -89,7 +89,7 @@ class TestDevServerStartup:
 
     def test_both_servers_running(self, devserver_process):
         """Both backend and frontend are running simultaneously."""
-        backend_url = "http://localhost:5000/api/tracks"
+        backend_url = "http://localhost:5001/api/tracks"
         frontend_url = "http://localhost:5174"
         max_wait = 20
 

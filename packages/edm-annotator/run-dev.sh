@@ -36,10 +36,10 @@ stream_with_timestamp() {
 log "${BOLD}${CYAN}EDM Structure Annotator - Development Mode${RESET}"
 echo ""
 
-# Kill any existing processes on port 5000
-EXISTING_PIDS=$(lsof -ti :5000 2>/dev/null)
+# Kill any existing processes on port 5001
+EXISTING_PIDS=$(lsof -ti :5001 2>/dev/null)
 if [ -n "$EXISTING_PIDS" ]; then
-    log "${YELLOW}Cleaning up existing processes on port 5000${RESET}"
+    log "${YELLOW}Cleaning up existing processes on port 5001${RESET}"
     echo "$EXISTING_PIDS" | xargs kill -9 2>/dev/null
     sleep 1
 fi
@@ -57,7 +57,7 @@ if [ ! -d "frontend/node_modules" ]; then
 fi
 
 log "${BOLD}Starting Servers${RESET}"
-log "Backend (Flask)  → ${GREEN}http://localhost:5000${RESET}"
+log "Backend (Flask)  → ${GREEN}http://localhost:5001${RESET}"
 log "Frontend (Vite)  → ${GREEN}http://localhost:5174${RESET}"
 log "Starting backend..."
 
@@ -78,7 +78,7 @@ cleanup() {
 trap cleanup SIGINT SIGTERM EXIT
 
 # Start backend in background
-uv run edm-annotator --env development --port 5000 2>&1 | stream_with_timestamp "backend" &
+uv run edm-annotator --env development --port 5001 2>&1 | stream_with_timestamp "backend" &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start

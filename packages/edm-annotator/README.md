@@ -147,7 +147,7 @@ This starts both servers with proper logging and auto-reload.
 #### Backend
 ```bash
 # From workspace root
-uv run edm-annotator --env development --port 5000
+uv run edm-annotator --env development --port 5001
 
 # Run tests (from workspace root)
 uv run pytest packages/edm-annotator/backend/tests

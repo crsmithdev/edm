@@ -268,7 +268,7 @@ if __name__ == "__main__":
     print(f"Audio directory: {AUDIO_DIR}")
     print(f"Annotation directory: {ANNOTATION_DIR}")
     print("\nStarting annotation server with auto-reload...")
-    print("Open http://localhost:5000 in your browser")
+    print("Open http://localhost:5001 in your browser")
     print("Changes to Python files will automatically restart the server")
     app.run(
         debug=True,

@@ -189,7 +189,7 @@ def main():
         help="Environment configuration",
     )
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
-    parser.add_argument("--port", type=int, default=5000, help="Port to bind to")
+    parser.add_argument("--port", type=int, default=5001, help="Port to bind to")
     args = parser.parse_args()
 
     app = create_app(args.env)

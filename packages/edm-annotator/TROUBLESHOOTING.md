@@ -46,15 +46,15 @@ These tests will fail if the `edm-lib` dependency is not properly installed, cat
 ## Other Common Issues
 
 ### Port Already in Use
-The dev server (`run-dev.sh`) now automatically cleans up any processes using port 5000 before starting. If you still encounter issues:
+The dev server (`run-dev.sh`) now automatically cleans up any processes using port 5001 before starting. If you still encounter issues:
 
 ```bash
-# Manually check what's using port 5000
-lsof -i :5000
+# Manually check what's using port 5001
+lsof -i :5001
 
 # The dev server will automatically kill orphaned processes
 # But you can also do it manually if needed:
-lsof -ti :5000 | xargs kill -9
+lsof -ti :5001 | xargs kill -9
 ```
 
 **Note**: Previous versions of the dev server could leave orphaned processes when terminated forcefully. This has been fixed by:
