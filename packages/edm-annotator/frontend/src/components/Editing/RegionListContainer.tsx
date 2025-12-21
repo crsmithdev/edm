@@ -99,7 +99,7 @@ export function RegionListContainer() {
       <Card
         padding="sm"
         style={{
-          overflow: "hidden",
+          overflow: "visible",
           display: "flex",
           flexDirection: "column",
           maxHeight: "600px",
@@ -113,6 +113,7 @@ export function RegionListContainer() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            overflow: "visible",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>

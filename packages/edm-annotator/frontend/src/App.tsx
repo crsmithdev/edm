@@ -46,7 +46,7 @@ function App() {
           style={{
             color: "var(--text-primary)",
             fontSize: "var(--font-size-3xl)",
-            fontWeight: "var(--font-weight-bold)",
+            fontWeight: "var(--font-weight-normal)",
             letterSpacing: "-0.02em",
             margin: 0,
           }}

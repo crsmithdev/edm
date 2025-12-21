@@ -109,10 +109,10 @@ export function OverviewWaveform() {
         overflow: "hidden",
       }}
     >
-      {/* Region overlays (subtle, behind waveform) - skip unlabeled regions */}
+      {/* Region overlays (subtle, behind waveform) - skip default regions */}
       {duration > 0 &&
         regions
-          .filter((region) => region.label !== "unlabeled")
+          .filter((region) => region.label !== "default")
           .map((region, idx) => {
             const leftPercent = (region.start / duration) * 100;
             const widthPercent = ((region.end - region.start) / duration) * 100;
@@ -126,7 +126,7 @@ export function OverviewWaveform() {
                   width: `${widthPercent}%`,
                   height: "100%",
                   background: labelColors[region.label],
-                  opacity: 0.15,
+                  opacity: 0.35,
                   pointerEvents: "none",
                 }}
               />
