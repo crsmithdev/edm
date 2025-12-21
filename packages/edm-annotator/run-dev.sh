@@ -37,7 +37,7 @@ log "${BOLD}${CYAN}EDM Structure Annotator - Development Mode${RESET}"
 echo ""
 
 # Kill any existing processes on port 5001
-EXISTING_PIDS=$(lsof -ti :5001 2>/dev/null)
+EXISTING_PIDS=$(lsof -ti :5001 2>/dev/null || true)
 if [ -n "$EXISTING_PIDS" ]; then
     log "${YELLOW}Cleaning up existing processes on port 5001${RESET}"
     echo "$EXISTING_PIDS" | xargs kill -9 2>/dev/null
