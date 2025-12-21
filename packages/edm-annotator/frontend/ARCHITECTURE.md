@@ -69,7 +69,7 @@ Six focused stores provide clean separation of concerns:
 - **Responsibility**: Boundaries and regions
 - **State**: `boundaries` (array of times), `regions` (array of {start, end, label})
 - **Actions**: `addBoundary()`, `removeBoundary()`, `setRegionLabel()`
-- **Label types**: intro, buildup, main, breakdown, outro, unlabeled
+- **Label types**: intro, buildup, main, breakdown, breakdown-buildup, outro, default
 
 #### tempoStore
 - **Responsibility**: BPM, downbeat, time/bar conversions
@@ -153,7 +153,7 @@ Six focused stores provide clean separation of concerns:
 #### RegionOverlays
 - Colored semi-transparent backgrounds (0.4 opacity)
 - Colors from `labelColors` mapping
-- **Filters out unlabeled regions** - no overlay shown
+- **Filters out default regions** - no overlay shown
 - Clipped to viewport bounds
 
 ### Control Components
@@ -216,8 +216,9 @@ Six focused stores provide clean separation of concerns:
 - buildup: `#ff9800` (orange)
 - main: `#4caf50` (green)
 - breakdown: `#2196f3` (blue)
+- breakdown-buildup: `#a78bfa` (light purple)
 - outro: `#9c27b0` (purple)
-- unlabeled: No overlay shown
+- default: No overlay shown
 
 ### Backgrounds
 - Waveform background: `#0a0a12` (dark)

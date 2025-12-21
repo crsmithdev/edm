@@ -40,7 +40,7 @@ describe("structureStore", () => {
       expect(regions[0]).toEqual({
         start: 10,
         end: 20,
-        label: "unlabeled",
+        label: "default",
       });
     });
 
@@ -54,9 +54,9 @@ describe("structureStore", () => {
 
       const { regions } = useStructureStore.getState();
       expect(regions).toHaveLength(3);
-      expect(regions[0]).toEqual({ start: 0, end: 30, label: "unlabeled" });
-      expect(regions[1]).toEqual({ start: 30, end: 60, label: "unlabeled" });
-      expect(regions[2]).toEqual({ start: 60, end: 90, label: "unlabeled" });
+      expect(regions[0]).toEqual({ start: 0, end: 30, label: "default" });
+      expect(regions[1]).toEqual({ start: 30, end: 60, label: "default" });
+      expect(regions[2]).toEqual({ start: 60, end: 90, label: "default" });
     });
   });
 
@@ -99,7 +99,7 @@ describe("structureStore", () => {
 
       regions = useStructureStore.getState().regions;
       expect(regions).toHaveLength(1);
-      expect(regions[0]).toEqual({ start: 0, end: 60, label: "unlabeled" });
+      expect(regions[0]).toEqual({ start: 0, end: 60, label: "default" });
     });
 
     it("should handle removing non-existent boundary gracefully", () => {
@@ -121,9 +121,9 @@ describe("structureStore", () => {
 
       const { regions } = useStructureStore.getState();
       expect(regions).toHaveLength(3);
-      expect(regions[0]).toEqual({ start: 0, end: 32, label: "unlabeled" });
-      expect(regions[1]).toEqual({ start: 32, end: 64, label: "unlabeled" });
-      expect(regions[2]).toEqual({ start: 64, end: 128, label: "unlabeled" });
+      expect(regions[0]).toEqual({ start: 0, end: 32, label: "default" });
+      expect(regions[1]).toEqual({ start: 32, end: 64, label: "default" });
+      expect(regions[2]).toEqual({ start: 64, end: 128, label: "default" });
     });
 
     it("should handle empty boundaries", () => {
@@ -174,7 +174,7 @@ describe("structureStore", () => {
 
       const { regions } = useStructureStore.getState();
       expect(regions).toHaveLength(2);
-      expect(regions.every((r) => r.label === "unlabeled")).toBe(true);
+      expect(regions.every((r) => r.label === "default")).toBe(true);
     });
 
     it("should handle negative index gracefully", () => {
@@ -184,7 +184,7 @@ describe("structureStore", () => {
       setRegionLabel(-1, "intro");
 
       const { regions } = useStructureStore.getState();
-      expect(regions.every((r) => r.label === "unlabeled")).toBe(true);
+      expect(regions.every((r) => r.label === "default")).toBe(true);
     });
 
     it("should update multiple region labels independently", () => {
@@ -197,7 +197,7 @@ describe("structureStore", () => {
 
       const { regions } = useStructureStore.getState();
       expect(regions[0].label).toBe("intro");
-      expect(regions[1].label).toBe("unlabeled");
+      expect(regions[1].label).toBe("default");
       expect(regions[2].label).toBe("breakdown");
       expect(regions[3].label).toBe("outro");
     });
@@ -278,7 +278,7 @@ describe("structureStore", () => {
       expect(regions).toHaveLength(2);
       // Labels are preserved based on region start position
       expect(regions[0]).toEqual({ start: 0, end: 60, label: "intro" });
-      expect(regions[1]).toEqual({ start: 60, end: 90, label: "unlabeled" });
+      expect(regions[1]).toEqual({ start: 60, end: 90, label: "default" });
     });
 
     it("should handle boundaries at track start (0.0)", () => {
@@ -333,8 +333,8 @@ describe("structureStore", () => {
       const { boundaries, regions } = useStructureStore.getState();
       expect(boundaries).toEqual([0, 20, 30]);
       expect(regions).toHaveLength(2);
-      expect(regions[0]).toEqual({ start: 0, end: 20, label: "unlabeled" });
-      expect(regions[1]).toEqual({ start: 20, end: 30, label: "unlabeled" });
+      expect(regions[0]).toEqual({ start: 0, end: 20, label: "default" });
+      expect(regions[1]).toEqual({ start: 20, end: 30, label: "default" });
     });
 
     it("should merge middle region with previous when removing its start boundary", () => {

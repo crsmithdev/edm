@@ -208,7 +208,7 @@ import { formatTime } from "@/utils/timeFormat";
 // - Delete region button
 
 // Label dropdown options:
-// - intro, buildup, breakdown, breakbuild, outro, unlabeled
+// - intro, buildup, breakdown, breakdown-buildup, outro, default
 
 // Connect to:
 // - structureStore.regions (read)

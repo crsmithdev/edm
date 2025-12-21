@@ -67,7 +67,7 @@ describe("Annotation Workflow Integration", () => {
       const { markAsSaved, isDirty } = useStructureStore.getState();
       markAsSaved();
       act(() => {
-        setRegionLabel(0, "unlabeled");
+        setRegionLabel(0, "default");
       });
       expect(isDirty()).toBe(true);
 
@@ -85,7 +85,7 @@ describe("Annotation Workflow Integration", () => {
 
       expect(trackService.saveAnnotation).toHaveBeenCalledWith("test.mp3", {
         boundaries: expect.arrayContaining([
-          expect.objectContaining({ label: "unlabeled" }),
+          expect.objectContaining({ label: "default" }),
           expect.objectContaining({ label: "buildup" }),
         ]),
       });
@@ -210,7 +210,7 @@ describe("Annotation Workflow Integration", () => {
 
       // Modify and save
       act(() => {
-        setRegionLabel(1, "breakbuild");
+        setRegionLabel(1, "breakdown-buildup");
       });
 
       vi.mocked(trackService.saveAnnotation).mockResolvedValue(undefined);

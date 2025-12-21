@@ -9,9 +9,9 @@ describe("labelColors", () => {
         "intro",
         "buildup",
         "breakdown",
-        "breakbuild",
+        "breakdown-buildup",
         "outro",
-        "unlabeled",
+        "default",
       ];
 
       expectedLabels.forEach((label) => {
@@ -47,16 +47,16 @@ describe("labelColors", () => {
       expect(labelColors.breakdown).toBe("rgba(255, 107, 181, 0.2)");
     });
 
-    it("should define breakbuild as light purple", () => {
-      expect(labelColors.breakbuild).toBe("rgba(167, 139, 250, 0.2)");
+    it("should define breakdown-buildup as light purple", () => {
+      expect(labelColors["breakdown-buildup"]).toBe("rgba(167, 139, 250, 0.2)");
     });
 
     it("should define outro as medium purple", () => {
       expect(labelColors.outro).toBe("rgba(139, 122, 255, 0.2)");
     });
 
-    it("should define unlabeled as gray", () => {
-      expect(labelColors.unlabeled).toBe("rgba(96, 96, 104, 0.1)");
+    it("should define default as gray", () => {
+      expect(labelColors.default).toBe("rgba(96, 96, 104, 0.1)");
     });
   });
 
@@ -66,7 +66,7 @@ describe("labelColors", () => {
         "intro",
         "buildup",
         "breakdown",
-        "breakbuild",
+        "breakdown-buildup",
         "outro",
       ];
 
@@ -75,8 +75,8 @@ describe("labelColors", () => {
       });
     });
 
-    it("should use 0.1 opacity for unlabeled", () => {
-      expect(labelColors.unlabeled).toContain("0.1)");
+    it("should use 0.1 opacity for default", () => {
+      expect(labelColors.default).toContain("0.1)");
     });
   });
 
@@ -96,9 +96,9 @@ describe("labelBorderColors", () => {
         "intro",
         "buildup",
         "breakdown",
-        "breakbuild",
+        "breakdown-buildup",
         "outro",
-        "unlabeled",
+        "default",
       ];
 
       expectedLabels.forEach((label) => {
@@ -134,16 +134,16 @@ describe("labelBorderColors", () => {
       expect(labelBorderColors.breakdown).toBe("#ff6bb5");
     });
 
-    it("should define breakbuild border as light purple", () => {
-      expect(labelBorderColors.breakbuild).toBe("#a78bfa");
+    it("should define breakdown-buildup border as light purple", () => {
+      expect(labelBorderColors["breakdown-buildup"]).toBe("#a78bfa");
     });
 
     it("should define outro border as medium purple", () => {
       expect(labelBorderColors.outro).toBe("#8b7aff");
     });
 
-    it("should define unlabeled border as gray", () => {
-      expect(labelBorderColors.unlabeled).toBe("#606068");
+    it("should define default border as gray", () => {
+      expect(labelBorderColors.default).toBe("#606068");
     });
   });
 
@@ -164,9 +164,9 @@ describe("color consistency", () => {
         "intro",
         "buildup",
         "breakdown",
-        "breakbuild",
+        "breakdown-buildup",
         "outro",
-        "unlabeled",
+        "default",
       ];
 
       labels.forEach((label) => {
@@ -180,9 +180,9 @@ describe("color consistency", () => {
         "intro",
         "buildup",
         "breakdown",
-        "breakbuild",
+        "breakdown-buildup",
         "outro",
-        "unlabeled",
+        "default",
       ];
 
       labels.forEach((label) => {

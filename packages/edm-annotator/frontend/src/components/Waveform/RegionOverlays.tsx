@@ -22,8 +22,8 @@ export function RegionOverlays(props: RegionOverlaysProps) {
   return (
     <>
       {regions.map((region, idx) => {
-        // Skip unlabeled regions - only show labeled sections
-        if (region.label === "unlabeled") {
+        // Skip default regions - only show labeled sections
+        if (region.label === "default") {
           return null;
         }
 

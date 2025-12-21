@@ -96,7 +96,7 @@ describe("RegionList", () => {
     it("allows changing region label", async () => {
       const user = userEvent.setup();
       const mockRegions: Region[] = [
-        { start: 0, end: 10, label: "unlabeled" },
+        { start: 0, end: 10, label: "default" },
       ];
 
       useStructureStore.setState({ regions: mockRegions });
@@ -129,9 +129,9 @@ describe("RegionList", () => {
         "intro",
         "buildup",
         "breakdown",
-        "breakbuild",
+        "breakdown-buildup",
         "outro",
-        "unlabeled",
+        "default",
       ]);
     });
 

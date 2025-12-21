@@ -362,17 +362,17 @@ describe("OverviewWaveform", () => {
       expect(overlays.length).toBeGreaterThanOrEqual(3);
     });
 
-    it("does not render unlabeled regions", () => {
+    it("does not render default regions", () => {
       useStructureStore.setState({
         regions: [
-          { start: 0, end: 60, label: "unlabeled" },
+          { start: 0, end: 60, label: "default" },
           { start: 60, end: 120, label: "verse" },
         ],
       });
 
       const { container } = render(<OverviewWaveform />);
       // Only verse region should be visible
-      const overlays = container.querySelectorAll('[style*="opacity: 0.15"]');
+      const overlays = container.querySelectorAll('[style*="opacity: 0.35"]');
 
       expect(overlays).toHaveLength(1);
     });
@@ -383,7 +383,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const overlay = container.querySelector('[style*="opacity: 0.15"]');
+      const overlay = container.querySelector('[style*="opacity: 0.35"]');
 
       // Should have a background color from labelColors
       expect(overlay?.getAttribute("style")).toContain("background");
@@ -396,7 +396,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const overlay = container.querySelector('[style*="opacity: 0.15"]');
+      const overlay = container.querySelector('[style*="opacity: 0.35"]');
 
       // 60 / 180 * 100 = 33.333...%
       expect(overlay?.getAttribute("style")).toContain("left: 33.33");
@@ -410,7 +410,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const overlay = container.querySelector('[style*="opacity: 0.15"]');
+      const overlay = container.querySelector('[style*="opacity: 0.35"]');
 
       expect(overlay).toBeInTheDocument();
     });
@@ -421,7 +421,7 @@ describe("OverviewWaveform", () => {
       });
 
       const { container } = render(<OverviewWaveform />);
-      const overlay = container.querySelector('[style*="opacity: 0.15"]');
+      const overlay = container.querySelector('[style*="opacity: 0.35"]');
       const svg = container.querySelector("svg");
 
       // Overlay should appear before SVG in DOM

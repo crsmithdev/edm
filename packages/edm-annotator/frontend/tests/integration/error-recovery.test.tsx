@@ -454,7 +454,7 @@ describe("Error Recovery Integration", () => {
 
       // Make changes
       act(() => {
-        setRegionLabel(1, "breakbuild");
+        setRegionLabel(1, "breakdown-buildup");
       });
 
       const beforeSave = {

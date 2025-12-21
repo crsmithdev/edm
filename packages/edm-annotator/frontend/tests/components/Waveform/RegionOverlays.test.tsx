@@ -118,10 +118,10 @@ describe("RegionOverlays", () => {
   });
 
   describe("Unlabeled Region Filtering", () => {
-    it("does not render unlabeled regions", () => {
+    it("does not render default regions", () => {
       useStructureStore.setState({
         regions: [
-          { start: 0, end: 60, label: "unlabeled" },
+          { start: 0, end: 60, label: "default" },
           { start: 60, end: 120, label: "buildup" },
         ],
       });
@@ -139,7 +139,7 @@ describe("RegionOverlays", () => {
           { start: 0, end: 30, label: "intro" },
           { start: 30, end: 60, label: "buildup" },
           { start: 60, end: 90, label: "breakdown" },
-          { start: 90, end: 120, label: "breakbuild" },
+          { start: 90, end: 120, label: "breakdown-buildup" },
           { start: 120, end: 150, label: "outro" },
         ],
       });
@@ -150,13 +150,13 @@ describe("RegionOverlays", () => {
       expect(overlays).toHaveLength(5);
     });
 
-    it("handles mix of labeled and unlabeled regions", () => {
+    it("handles mix of labeled and default regions", () => {
       useStructureStore.setState({
         regions: [
           { start: 0, end: 30, label: "intro" },
-          { start: 30, end: 60, label: "unlabeled" },
+          { start: 30, end: 60, label: "default" },
           { start: 60, end: 90, label: "buildup" },
-          { start: 90, end: 120, label: "unlabeled" },
+          { start: 90, end: 120, label: "default" },
           { start: 120, end: 150, label: "breakdown" },
         ],
       });

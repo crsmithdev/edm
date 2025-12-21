@@ -389,7 +389,7 @@ describe("SaveButton", () => {
           { start: 0, end: 10, label: "intro" },
           { start: 10, end: 20, label: "buildup" },
           { start: 20, end: 30, label: "breakdown" },
-          { start: 30, end: 40, label: "breakbuild" },
+          { start: 30, end: 40, label: "breakdown-buildup" },
         ],
         boundaries: [0, 10, 20, 30, 40],
         savedState: {
@@ -411,7 +411,7 @@ describe("SaveButton", () => {
             { time: 0, label: "intro" },
             { time: 10, label: "buildup" },
             { time: 20, label: "breakdown" },
-            { time: 30, label: "breakbuild" },
+            { time: 30, label: "breakdown-buildup" },
           ],
         });
       });

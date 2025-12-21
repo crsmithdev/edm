@@ -7,9 +7,9 @@ const VALID_LABELS: SectionLabel[] = [
   "intro",
   "buildup",
   "breakdown",
-  "breakbuild",
+  "breakdown-buildup",
   "outro",
-  "unlabeled",
+  "default",
 ];
 
 /**

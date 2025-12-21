@@ -239,7 +239,7 @@ describe("fixtures", () => {
 
       expect(region.start).toBe(0);
       expect(region.end).toBe(10);
-      expect(region.label).toBe("unlabeled");
+      expect(region.label).toBe("default");
     });
 
     it("creates region with custom label", () => {
@@ -267,8 +267,8 @@ describe("fixtures", () => {
     it("creates regions with default labels", () => {
       const regions = createMockRegions([0, 10, 20]);
 
-      expect(regions[0].label).toBe("unlabeled");
-      expect(regions[1].label).toBe("unlabeled");
+      expect(regions[0].label).toBe("default");
+      expect(regions[1].label).toBe("default");
     });
 
     it("creates regions with custom labels", () => {
@@ -285,7 +285,7 @@ describe("fixtures", () => {
       const boundary = createMockBoundary(10);
 
       expect(boundary.time).toBe(10);
-      expect(boundary.label).toBe("unlabeled");
+      expect(boundary.label).toBe("default");
     });
 
     it("creates boundary with custom label", () => {
@@ -309,9 +309,9 @@ describe("fixtures", () => {
     it("creates boundaries with default labels", () => {
       const boundaries = createMockBoundaries([0, 10, 20]);
 
-      expect(boundaries[0].label).toBe("unlabeled");
-      expect(boundaries[1].label).toBe("unlabeled");
-      expect(boundaries[2].label).toBe("unlabeled");
+      expect(boundaries[0].label).toBe("default");
+      expect(boundaries[1].label).toBe("default");
+      expect(boundaries[2].label).toBe("default");
     });
 
     it("creates boundaries with custom labels", () => {

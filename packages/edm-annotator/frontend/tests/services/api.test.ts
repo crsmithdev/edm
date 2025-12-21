@@ -296,7 +296,7 @@ describe("trackService", () => {
           { time: 0, label: "intro" },
           { time: 16, label: "buildup" },
           { time: 32, label: "breakdown" },
-          { time: 48, label: "breakbuild" },
+          { time: 48, label: "breakdown-buildup" },
           { time: 64, label: "outro" },
         ],
       };

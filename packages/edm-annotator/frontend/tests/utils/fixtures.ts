@@ -269,7 +269,7 @@ export function createMockTrackResponse(
 export function createMockRegion(
   start: number,
   end: number,
-  label: SectionLabel = "unlabeled"
+  label: SectionLabel = "default"
 ): Region {
   return { start, end, label };
 }
@@ -282,7 +282,7 @@ export function createMockRegion(
  */
 export function createMockRegions(
   times: number[],
-  labels: SectionLabel[] = ["unlabeled"]
+  labels: SectionLabel[] = ["default"]
 ): Region[] {
   const regions: Region[] = [];
   for (let i = 0; i < times.length - 1; i++) {
@@ -300,7 +300,7 @@ export function createMockRegions(
  */
 export function createMockBoundary(
   time: number,
-  label: SectionLabel = "unlabeled"
+  label: SectionLabel = "default"
 ): Boundary {
   return { time, label };
 }
@@ -310,7 +310,7 @@ export function createMockBoundary(
  */
 export function createMockBoundaries(
   times: number[],
-  labels: SectionLabel[] = ["unlabeled"]
+  labels: SectionLabel[] = ["default"]
 ): Boundary[] {
   return times.map((time, i) => ({
     time,

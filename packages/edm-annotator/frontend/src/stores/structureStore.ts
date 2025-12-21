@@ -82,7 +82,7 @@ export const useStructureStore = create<StructureState>((set, get) => ({
       newRegions.push({
         start,
         end,
-        label: existingRegion ? existingRegion.label : "unlabeled",
+        label: existingRegion ? existingRegion.label : "default",
       });
     }
     set({ regions: newRegions });

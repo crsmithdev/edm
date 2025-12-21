@@ -7,9 +7,9 @@ export const labelColors: Record<SectionLabel, string> = {
   intro: "rgba(123, 106, 255, 0.2)", // Purple
   buildup: "rgba(0, 229, 204, 0.2)", // Cyan
   breakdown: "rgba(255, 107, 181, 0.2)", // Pink
-  breakbuild: "rgba(167, 139, 250, 0.2)", // Light purple
+  "breakdown-buildup": "rgba(167, 139, 250, 0.2)", // Light purple
   outro: "rgba(139, 122, 255, 0.2)", // Medium purple
-  unlabeled: "rgba(96, 96, 104, 0.1)", // Gray
+  default: "rgba(96, 96, 104, 0.1)", // Gray
 };
 
 /**
@@ -19,9 +19,9 @@ export const labelBorderColors: Record<SectionLabel, string> = {
   intro: "#7b6aff", // Purple
   buildup: "#00e5cc", // Cyan
   breakdown: "#ff6bb5", // Pink
-  breakbuild: "#a78bfa", // Light purple
+  "breakdown-buildup": "#a78bfa", // Light purple
   outro: "#8b7aff", // Medium purple
-  unlabeled: "#606068", // Gray
+  default: "#606068", // Gray
 };
 
 /**
@@ -31,7 +31,7 @@ export const labelWaveformColors: Record<SectionLabel, string> = {
   intro: "#7b6aff", // Purple
   buildup: "#00e5cc", // Cyan
   breakdown: "#ff6bb5", // Pink
-  breakbuild: "#a78bfa", // Light purple
+  "breakdown-buildup": "#a78bfa", // Light purple
   outro: "#8b7aff", // Medium purple
-  unlabeled: "#e8e8ea", // Light gray
+  default: "#e8e8ea", // Light gray
 };

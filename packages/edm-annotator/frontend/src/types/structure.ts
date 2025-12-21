@@ -2,9 +2,9 @@ export type SectionLabel =
   | "intro"
   | "buildup"
   | "breakdown"
-  | "breakbuild"
+  | "breakdown-buildup"
   | "outro"
-  | "unlabeled";
+  | "default";
 
 export interface Region {
   start: number;
