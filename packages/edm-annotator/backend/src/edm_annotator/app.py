@@ -5,6 +5,7 @@ Outputs YAML in the format expected by the EDM training pipeline.
 """
 
 import argparse
+import logging
 import time
 from pathlib import Path
 
@@ -14,6 +15,12 @@ from flask_cors import CORS
 from .api import register_routes
 from .config import config_class_map
 from .services import AnnotationService, AudioService, WaveformService
+
+# Configure logging - no timestamp (added by stream processor in run-dev.sh)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+)
 
 
 def create_app(config_name: str = "development") -> Flask:
@@ -101,6 +108,8 @@ def register_request_logging(app: Flask) -> None:
     Args:
         app: Flask application instance
     """
+    logger = logging.getLogger("api")
+
     # ANSI color codes
     green = "\033[92m"
     cyan = "\033[96m"
@@ -157,9 +166,10 @@ def register_request_logging(app: Flask) -> None:
         else:
             duration_color = red
 
-        # Log format: METHOD /path [STATUS] duration_ms
-        print(
-            f"  {dim}[api]{reset}      "
+        # Log format: [api] METHOD /path [STATUS] duration_ms
+        # Note: timestamp is added by the logging formatter
+        logger.info(
+            f"[api] "
             f"{method_color}{method:<7}{reset} "
             f"{cyan}{path:<40}{reset} "
             f"[{status_color}{status}{reset}] "
@@ -192,10 +202,11 @@ def main():
 
 def _print_startup_banner(app: Flask, args) -> None:
     """Print colorized startup banner with configuration details."""
+    logger = logging.getLogger(__name__)
+
     # ANSI color codes
     bold = "\033[1m"
     green = "\033[92m"
-    blue = "\033[94m"
     cyan = "\033[96m"
     yellow = "\033[93m"
     reset = "\033[0m"
@@ -214,69 +225,46 @@ def _print_startup_banner(app: Flask, args) -> None:
     if annotation_dir.exists():
         annotation_count = len(list(annotation_dir.glob("**/*.yaml")))
 
-    banner_line = f"{bold}{cyan}╔══════════════════════════════════════════════════════════╗{reset}"
-    print(f"\n{banner_line}")
-    title = f"{bold}🎵  EDM Structure Annotator - Backend API{reset}"
-    print(f"{bold}{cyan}║{reset}  {title}          {bold}{cyan}║{reset}")
-    print(f"{bold}{cyan}╚══════════════════════════════════════════════════════════╝{reset}\n")
-
+    logger.info(f"{bold}{cyan}EDM Structure Annotator - Backend API{reset}")
+    logger.info("")
     # Configuration section
-    print(f"{bold}{blue}Configuration{reset}")
-    box_top = f"  {dim}┌────────────────────────────────────────────────────────┐{reset}"
-    print(box_top)
-    print(f"  {dim}│{reset} Environment     {green}{args.env:<39}{reset} {dim}│{reset}")
+    logger.info(f"{bold}Configuration{reset}")
+    logger.info(f"  Environment:  {green}{args.env}{reset}")
     debug_status = "enabled" if app.debug else "disabled"
     debug_color = yellow if app.debug else green
-    print(f"  {dim}│{reset} Debug Mode      {debug_color}{debug_status:<39}{reset} {dim}│{reset}")
+    logger.info(f"  Debug mode:   {debug_color}{debug_status}{reset}")
     reload_status = "active" if app.debug else "inactive"
     reload_color = green if app.debug else dim
-    print(f"  {dim}│{reset} Auto-reload     {reload_color}{reload_status:<39}{reset} {dim}│{reset}")
-    box_bottom = f"  {dim}└────────────────────────────────────────────────────────┘{reset}"
-    print(f"{box_bottom}\n")
-
+    logger.info(f"  Auto-reload:  {reload_color}{reload_status}{reset}")
+    logger.info("")
     # Paths section
-    print(f"{bold}{blue}Paths{reset}")
-    print(box_top)
-    audio_path_str = str(audio_dir)[:52]
-    print(f"  {dim}│{reset} Audio           {cyan}{audio_path_str:<39}{reset} {dim}│{reset}")
-    annotation_path_str = str(annotation_dir)[:52]
-    print(f"  {dim}│{reset} Annotations     {cyan}{annotation_path_str:<39}{reset} {dim}│{reset}")
-    print(f"{box_bottom}\n")
-
+    logger.info(f"{bold}Paths{reset}")
+    logger.info(f"  Audio:        {cyan}{audio_dir}{reset}")
+    logger.info(f"  Annotations:  {cyan}{annotation_dir}{reset}")
+    logger.info("")
     # Data statistics section
-    print(f"{bold}{blue}Available Data{reset}")
-    print(box_top)
+    logger.info(f"{bold}Available Data{reset}")
     audio_color = green if audio_count > 0 else yellow
-    audio_files_line = f"  {dim}│{reset} Audio Files     {audio_color}{audio_count:<39}{reset}"
-    print(f"{audio_files_line} {dim}│{reset}")
+    logger.info(f"  Audio files:  {audio_color}{audio_count}{reset}")
     annotation_color = green if annotation_count > 0 else dim
-    anno_line = f"  {dim}│{reset} Annotations     {annotation_color}{annotation_count:<39}{reset}"
-    print(f"{anno_line} {dim}│{reset}")
-    formats = [ext.replace("*", "") for ext in app.config["AUDIO_EXTENSIONS"]]
-    supported_formats = ", ".join(formats)
-    formats_line = f"  {dim}│{reset} Formats         {dim}{supported_formats:<39}{reset}"
-    print(f"{formats_line} {dim}│{reset}")
-    print(f"{box_bottom}\n")
-
+    logger.info(f"  Annotations:  {annotation_color}{annotation_count}{reset}")
+    logger.info("")
     # Server info
-    print(f"{bold}{blue}Server{reset}")
-    print(box_top)
+    logger.info(f"{bold}Server{reset}")
     server_url = f"http://{args.host}:{args.port}"
-    print(f"  {dim}│{reset} URL             {bold}{green}{server_url:<39}{reset} {dim}│{reset}")
+    logger.info(f"  URL:          {bold}{green}{server_url}{reset}")
     cors_origins = ", ".join(app.config.get("CORS_ORIGINS", []))
     cors_display = cors_origins if cors_origins else "disabled"
-    print(f"  {dim}│{reset} CORS            {dim}{cors_display:<39}{reset} {dim}│{reset}")
-    print(f"{box_bottom}\n")
-
+    logger.info(f"  CORS:         {dim}{cors_display}{reset}")
+    logger.info("")
     # Status and next steps
     if audio_count == 0:
-        warning = f"  {yellow}⚠{reset}  No audio files found. "
-        instruction = f"Set {cyan}EDM_AUDIO_DIR{reset} or add files to {cyan}{audio_dir}{reset}"
-        print(warning + instruction)
+        logger.warning(
+            f"No audio files found. Set {cyan}EDM_AUDIO_DIR{reset} "
+            f"or add files to {cyan}{audio_dir}{reset}"
+        )
     else:
-        print(f"  {green}✓{reset}  Ready to annotate {green}{audio_count}{reset} tracks")
-
-    print(f"\n  {dim}Press Ctrl+C to stop the server{reset}\n")
+        logger.info(f"Ready to annotate {green}{audio_count}{reset} tracks")
 
 
 if __name__ == "__main__":

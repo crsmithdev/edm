@@ -13,70 +13,89 @@ RED="\033[91m"
 RESET="\033[0m"
 DIM="\033[2m"
 
-echo -e "\n${BOLD}${CYAN}╔══════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${BOLD}${CYAN}║${RESET}  ${BOLD}🎵  EDM Structure Annotator - Development Mode${RESET}      ${BOLD}${CYAN}║${RESET}"
-echo -e "${BOLD}${CYAN}╚══════════════════════════════════════════════════════════╝${RESET}\n"
+# Logging function with timestamp
+log() {
+    echo -e "$(date '+%Y-%m-%d %H:%M:%S') $1"
+}
 
-echo -e "${BOLD}${BLUE}Checking Prerequisites${RESET}"
+# Stream processor: adds timestamp and source tag to each line
+stream_with_timestamp() {
+    local source="$1"
+    while IFS= read -r line; do
+        # Remove leading/trailing whitespace
+        line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # Strip existing timestamp patterns (e.g., "8:04:59 AM", "08:04:59")
+        line=$(echo "$line" | sed 's/^[0-9]\{1,2\}:[0-9]\{2\}:[0-9]\{2\}\( [AP]M\)\{0,1\}[[:space:]]*//')
+        # Only print non-empty lines
+        if [ -n "$line" ]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') [$source] $line"
+        fi
+    done
+}
+
+log "${BOLD}${CYAN}EDM Structure Annotator - Development Mode${RESET}"
+echo ""
+
+# Kill any existing processes on port 5000
+EXISTING_PIDS=$(lsof -ti :5000 2>/dev/null)
+if [ -n "$EXISTING_PIDS" ]; then
+    log "${YELLOW}Cleaning up existing processes on port 5000${RESET}"
+    echo "$EXISTING_PIDS" | xargs kill -9 2>/dev/null
+    sleep 1
+fi
 
 # Check if backend is set up
 if ! uv run edm-annotator --help &> /dev/null; then
-    echo -e "  ${RED}✗${RESET} Backend not installed"
-    echo -e "    ${DIM}Run: ${CYAN}uv sync${RESET}"
+    log "${RED}Error: Backend not installed. Run: uv sync${RESET}"
     exit 1
 fi
-echo -e "  ${GREEN}✓${RESET} Backend installed"
 
 # Check if frontend dependencies are installed
 if [ ! -d "frontend/node_modules" ]; then
-    echo -e "  ${RED}✗${RESET} Frontend dependencies not installed"
-    echo -e "    ${DIM}Run: ${CYAN}cd frontend && npm install${RESET}"
+    log "${RED}Error: Frontend dependencies not installed. Run: cd frontend && npm install${RESET}"
     exit 1
 fi
-echo -e "  ${GREEN}✓${RESET} Frontend dependencies installed\n"
 
-echo -e "${BOLD}${BLUE}Starting Servers${RESET}"
-echo -e "  ${DIM}┌────────────────────────────────────────────────────────┐${RESET}"
-echo -e "  ${DIM}│${RESET} Backend (Flask)    ${GREEN}http://localhost:5000${RESET}               ${DIM}│${RESET}"
-echo -e "  ${DIM}│${RESET} Frontend (Vite)    ${GREEN}http://localhost:5174${RESET}               ${DIM}│${RESET}"
-echo -e "  ${DIM}└────────────────────────────────────────────────────────┘${RESET}\n"
-
-echo -e "  ${DIM}Starting backend...${RESET}"
+log "${BOLD}Starting Servers${RESET}"
+log "Backend (Flask)  → ${GREEN}http://localhost:5000${RESET}"
+log "Frontend (Vite)  → ${GREEN}http://localhost:5174${RESET}"
+log "Starting backend..."
 
 # Function to cleanup background processes
 cleanup() {
-    echo -e "\n${BOLD}${BLUE}Shutting Down${RESET}"
-    echo -e "  ${DIM}Stopping backend (PID: $BACKEND_PID)${RESET}"
+    # Prevent recursive trap execution
+    trap - SIGINT SIGTERM EXIT
+
+    log "${BOLD}Shutting Down${RESET}"
+    log "Stopping backend (PID: $BACKEND_PID)"
     kill $BACKEND_PID 2>/dev/null
-    echo -e "  ${DIM}Stopping frontend (PID: $FRONTEND_PID)${RESET}"
+    log "Stopping frontend (PID: $FRONTEND_PID)"
     kill $FRONTEND_PID 2>/dev/null
-    echo -e "  ${GREEN}✓${RESET} Servers stopped\n"
+    log "${GREEN}Servers stopped${RESET}"
     exit 0
 }
 
-trap cleanup SIGINT SIGTERM
+trap cleanup SIGINT SIGTERM EXIT
 
 # Start backend in background
-uv run edm-annotator --env development --port 5000 2>&1 | sed "s/^/  ${DIM}[backend]${RESET}  /" &
+uv run edm-annotator --env development --port 5000 2>&1 | stream_with_timestamp "backend" &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start
 sleep 2
-echo -e "  ${GREEN}✓${RESET} Backend running (PID: ${BACKEND_PID})\n"
-
-echo -e "  ${DIM}Starting frontend...${RESET}"
+log "${GREEN}Backend running (PID: ${BACKEND_PID})${RESET}"
+log "Starting frontend..."
 
 # Start frontend in background
 cd frontend
-npm run dev 2>&1 | sed "s/^/  ${DIM}[frontend]${RESET} /" &
+npm run dev 2>&1 | stream_with_timestamp "frontend" &
 FRONTEND_PID=$!
 cd ..
 
 sleep 1
-echo -e "  ${GREEN}✓${RESET} Frontend running (PID: ${FRONTEND_PID})\n"
-
-echo -e "${BOLD}${GREEN}Ready!${RESET} Open ${BOLD}${CYAN}http://localhost:5174${RESET} in your browser\n"
-echo -e "${DIM}Press Ctrl+C to stop both servers${RESET}\n"
+log "${GREEN}Frontend running (PID: ${FRONTEND_PID})${RESET}"
+log "${GREEN}Ready! Open ${CYAN}http://localhost:5174${RESET} in your browser${RESET}"
+log "Press Ctrl+C to stop both servers"
 
 # Wait for both processes
 wait $BACKEND_PID $FRONTEND_PID

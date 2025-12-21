@@ -114,33 +114,55 @@ See `frontend/ARCHITECTURE.md` for detailed system documentation.
 ### Prerequisites
 - Python 3.12+
 - Node.js 20+
-- pnpm (`corepack enable pnpm`)
+- npm (comes with Node.js)
+- uv (Python package manager)
 
-### Backend Setup
+### Initial Setup
+
+**IMPORTANT**: Run setup commands from the workspace root (`/home/crsmi/edm`), not from inside package directories. The project uses a uv workspace that links dependencies between packages.
+
 ```bash
-cd packages/edm-annotator/backend
-uv pip install -e ".[dev]"
+# From workspace root (/home/crsmi/edm)
+uv sync  # Install all Python dependencies including edm-lib
 
-# Run backend
-edm-annotator --env development --port 5000
-
-# Run tests
-pytest
+# Install frontend dependencies
+cd packages/edm-annotator/frontend
+npm install
+cd ../../..  # Back to workspace root
 ```
 
-### Frontend Setup
+### Running the Dev Server
+
+The easiest way to run both backend and frontend together:
+
+```bash
+# From packages/edm-annotator directory
+./run-dev.sh
+```
+
+This starts both servers with proper logging and auto-reload.
+
+### Running Servers Individually
+
+#### Backend
+```bash
+# From workspace root
+uv run edm-annotator --env development --port 5000
+
+# Run tests (from workspace root)
+uv run pytest packages/edm-annotator/backend/tests
+```
+
+#### Frontend
 ```bash
 cd packages/edm-annotator/frontend
-pnpm install
-
-# Run dev server (with backend proxy)
-pnpm dev
+npm run dev
 
 # Build for production
-pnpm build
+npm run build
 
 # Run tests
-pnpm test
+npm test
 ```
 
 ### Environment Variables
