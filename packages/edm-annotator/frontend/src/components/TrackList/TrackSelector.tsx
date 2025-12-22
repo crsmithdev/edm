@@ -317,10 +317,10 @@ export function TrackSelector() {
               >
                 <div
                   style={{
-                    fontSize: "13px",
-                    color: isSelected ? "var(--color-primary)" : "var(--text-secondary)",
-                    fontWeight: "var(--font-weight-normal)",
-                    marginBottom: "var(--space-1)",
+                    fontSize: "var(--font-size-base)",
+                    color: isSelected ? "var(--color-primary)" : "var(--text-primary)",
+                    fontWeight: "var(--font-weight-medium)",
+                    marginBottom: artist ? "var(--space-1)" : 0,
                     wordBreak: "break-word",
                     display: "flex",
                     alignItems: "center",
