@@ -116,7 +116,7 @@ export function WaveformContainer() {
               </div>
               <div
                 style={{
-                  fontSize: "var(--font-size-xs)",
+                  fontSize: "var(--font-size-sm)",
                   color: "var(--text-tertiary)",
                   letterSpacing: "0.5px",
                 }}

@@ -67,7 +67,7 @@ export function NavigationControls() {
             onClick={handleStart}
             variant="secondary"
           >
-            &lt; Start
+            &lt;&lt; Start
           </Button>
         </Tooltip>
         <Tooltip content="Previous boundary" shortcut="↑">
@@ -91,7 +91,7 @@ export function NavigationControls() {
             onClick={handleEnd}
             variant="secondary"
           >
-            End &gt;
+            End &gt;&gt;
           </Button>
         </Tooltip>
       </div>
