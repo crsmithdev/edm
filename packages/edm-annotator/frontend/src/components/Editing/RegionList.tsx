@@ -17,7 +17,7 @@ const VALID_LABELS: SectionLabel[] = [
  */
 export function RegionList() {
   const { regions, setRegionLabel, removeBoundary } = useStructureStore();
-  const { seek, play, currentTime } = useAudioStore();
+  const { seek, currentTime } = useAudioStore();
   const { timeToBar } = useTempoStore();
 
   const handleDeleteRegion = (idx: number, region: { start: number; end: number }) => {
@@ -81,7 +81,6 @@ export function RegionList() {
             }}
             onClick={() => {
               seek(region.start);
-              play();
             }}
             onMouseEnter={(e) => {
               if (!isCurrentRegion) {
