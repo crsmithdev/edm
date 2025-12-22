@@ -96,41 +96,88 @@ export function OverviewWaveform() {
   };
 
   return (
-    <div
-      onClick={handleClick}
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "60px",
-        background: "var(--bg-tertiary)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: "var(--radius-md)",
-        cursor: "default",
-        overflow: "hidden",
-      }}
-    >
-      {/* Waveform SVG */}
-      <svg
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
+      {/* Waveform display */}
+      <div
+        onClick={handleClick}
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
+          position: "relative",
           width: "100%",
-          height: "100%",
-          background: "#0a0a12",
+          height: "60px",
+          background: "var(--bg-tertiary)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-md)",
+          cursor: "default",
+          overflow: "hidden",
         }}
       >
-        {/* Combined waveform - single color for overview */}
-        <path d={waveformPath} fill="rgba(100, 140, 180, 0.6)" stroke="none" />
-      </svg>
+        {/* Waveform SVG */}
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "#0a0a12",
+          }}
+        >
+          {/* Combined waveform - single color for overview */}
+          <path d={waveformPath} fill="rgba(100, 140, 180, 0.6)" stroke="none" />
+        </svg>
 
-      {/* Region overlays (colored by type, on top of waveform) - skip default regions */}
-      {duration > 0 &&
-        regions
-          .filter((region) => region.label !== "default")
-          .map((region, idx) => {
+        {/* Boundary markers (subtle) */}
+        {duration > 0 &&
+          boundaries.map((time, idx) => {
+            const xPercent = (time / duration) * 100;
+            return (
+              <div
+                key={idx}
+                style={{
+                  position: "absolute",
+                  left: `${xPercent}%`,
+                  top: 0,
+                  width: "2px",
+                  height: "100%",
+                  background: "rgba(123, 106, 255, 0.7)",
+                  pointerEvents: "none",
+                }}
+              />
+            );
+          })}
+
+        {/* Playhead */}
+        <div
+          style={{
+            position: "absolute",
+            left: `${playheadPercent}%`,
+            top: 0,
+            width: "2px",
+            height: "100%",
+            background: "#1affef",
+            boxShadow: "0 0 8px rgba(26, 255, 239, 0.6)",
+            pointerEvents: "none",
+            transform: "translateX(-1px)",
+          }}
+        />
+      </div>
+
+      {/* Timeline strip showing region structure */}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "8px",
+          background: "var(--bg-tertiary)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-sm)",
+          overflow: "hidden",
+        }}
+      >
+        {duration > 0 &&
+          regions.map((region, idx) => {
             const leftPercent = (region.start / duration) * 100;
             const widthPercent = ((region.end - region.start) / duration) * 100;
             return (
@@ -143,47 +190,25 @@ export function OverviewWaveform() {
                   width: `${widthPercent}%`,
                   height: "100%",
                   background: labelWaveformColors[region.label],
-                  opacity: 0.25,
-                  pointerEvents: "none",
                 }}
               />
             );
           })}
 
-      {/* Boundary markers (subtle) */}
-      {duration > 0 &&
-        boundaries.map((time, idx) => {
-          const xPercent = (time / duration) * 100;
-          return (
-            <div
-              key={idx}
-              style={{
-                position: "absolute",
-                left: `${xPercent}%`,
-                top: 0,
-                width: "2px",
-                height: "100%",
-                background: "rgba(123, 106, 255, 0.7)",
-                pointerEvents: "none",
-              }}
-            />
-          );
-        })}
-
-      {/* Playhead */}
-      <div
-        style={{
-          position: "absolute",
-          left: `${playheadPercent}%`,
-          top: 0,
-          width: "2px",
-          height: "100%",
-          background: "#1affef",
-          boxShadow: "0 0 8px rgba(26, 255, 239, 0.6)",
-          pointerEvents: "none",
-          transform: "translateX(-1px)",
-        }}
-      />
+        {/* Playhead on timeline */}
+        <div
+          style={{
+            position: "absolute",
+            left: `${playheadPercent}%`,
+            top: 0,
+            width: "2px",
+            height: "100%",
+            background: "#1affef",
+            pointerEvents: "none",
+            transform: "translateX(-1px)",
+          }}
+        />
+      </div>
     </div>
   );
 }
