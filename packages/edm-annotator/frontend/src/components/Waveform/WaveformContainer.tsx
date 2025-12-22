@@ -9,6 +9,24 @@ const DEFAULT_DETAIL_SPAN = 16;
 const MIN_DETAIL_SPAN = 4;
 const MAX_DETAIL_SPAN = 60;
 
+// Helper to parse filename into artist and title
+function parseFilename(filename: string): { artist: string; title: string } {
+  const nameWithoutExt = filename.replace(/\.[^.]+$/, "");
+  const parts = nameWithoutExt.split(" - ");
+
+  if (parts.length >= 2) {
+    return {
+      artist: parts[0].trim(),
+      title: parts.slice(1).join(" - ").trim(),
+    };
+  }
+
+  return {
+    artist: "",
+    title: nameWithoutExt,
+  };
+}
+
 /**
  * Container for dual waveform display:
  * - Overview: full track, moving playhead
@@ -36,6 +54,7 @@ export function WaveformContainer() {
   };
 
   const currentBar = timeToBar(currentTime);
+  const { artist, title } = currentTrack ? parseFilename(currentTrack) : { artist: "", title: "" };
 
   const handleZoomIn = () => {
     setDetailSpan((prev) => Math.max(MIN_DETAIL_SPAN, prev / 1.5));
@@ -93,24 +112,23 @@ export function WaveformContainer() {
                   color: "var(--text-primary)",
                 }}
               >
-                {currentTrack}
+                {title}
               </div>
               <div
                 style={{
                   fontSize: "var(--font-size-xs)",
                   color: "var(--text-tertiary)",
-                  textTransform: "uppercase",
                   letterSpacing: "0.5px",
                 }}
               >
-                {formatDuration(duration)} duration
+                {artist}
               </div>
             </>
           )}
         </div>
 
-        {/* Status displays in middle */}
-        <div style={{ display: "flex", gap: "var(--space-6)", alignItems: "flex-end" }}>
+        {/* Status displays in middle - centered */}
+        <div style={{ display: "flex", gap: "var(--space-6)", alignItems: "center" }}>
           <InfoCard label="BPM" value={trackBPM || "--"} />
           <InfoCard label="Bar" value={currentTrack ? currentBar : "--"} />
           <InfoCard label="Time" value={currentTrack ? formatTime(currentTime) : "--"} />
