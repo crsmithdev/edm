@@ -1,15 +1,17 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useAudioStore, useTempoStore, useUIStore } from "@/stores";
+import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from "lucide-react";
+import { useAudioStore, useTempoStore, useUIStore, useStructureStore, useWaveformStore } from "@/stores";
 import { getBarDuration, getBeatDuration } from "@/utils/tempo";
-import { Button } from "@/components/UI";
+import { Button, Tooltip } from "@/components/UI";
 
 /**
- * Navigation controls for jumping by bars/beats
+ * Navigation controls for boundary/track navigation and jumping by bars/beats
  */
 export function NavigationControls() {
-  const { seek } = useAudioStore();
+  const { seek, currentTime } = useAudioStore();
   const { trackBPM } = useTempoStore();
   const { jumpMode, toggleJumpMode } = useUIStore();
+  const { getNextBoundary, getPreviousBoundary } = useStructureStore();
+  const { duration } = useWaveformStore();
 
   const barDuration = getBarDuration(trackBPM);
   const beatDuration = getBeatDuration(trackBPM);
@@ -22,15 +24,91 @@ export function NavigationControls() {
     seek(Math.max(0, newTime));
   };
 
+  const handlePreviousBoundary = () => {
+    const previous = getPreviousBoundary(currentTime);
+    if (previous !== null) {
+      seek(previous);
+    }
+  };
+
+  const handleNextBoundary = () => {
+    const next = getNextBoundary(currentTime);
+    if (next !== null) {
+      seek(next);
+    }
+  };
+
+  const handleStart = () => {
+    seek(0);
+  };
+
+  const handleEnd = () => {
+    seek(duration);
+  };
+
   return (
     <div
       style={{
         display: "flex",
-        gap: "var(--space-2)",
-        alignItems: "stretch",
-        justifyContent: "center",
+        flexDirection: "column",
+        gap: "var(--space-3)",
       }}
     >
+      {/* Boundary navigation row */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "var(--space-3)",
+        }}
+      >
+        <Tooltip content="Seek to start" shortcut="Home">
+          <Button
+            onClick={handleStart}
+            variant="secondary"
+            icon={<SkipBack size={16} />}
+          >
+            Start
+          </Button>
+        </Tooltip>
+        <Tooltip content="Previous boundary" shortcut="↑">
+          <Button
+            onClick={handlePreviousBoundary}
+            variant="secondary"
+            icon={<ChevronLeft size={16} />}
+          >
+            &lt; Boundary
+          </Button>
+        </Tooltip>
+        <Tooltip content="Next boundary" shortcut="↓">
+          <Button
+            onClick={handleNextBoundary}
+            variant="secondary"
+            icon={<ChevronRight size={16} />}
+          >
+            Boundary &gt;
+          </Button>
+        </Tooltip>
+        <Tooltip content="Seek to end" shortcut="End">
+          <Button
+            onClick={handleEnd}
+            variant="secondary"
+            icon={<SkipForward size={16} />}
+          >
+            End &gt;
+          </Button>
+        </Tooltip>
+      </div>
+
+      {/* Bar/beat navigation */}
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--space-2)",
+          alignItems: "stretch",
+          justifyContent: "center",
+        }}
+      >
       <Button onClick={() => jump(-16)} variant="ghost" size="sm" style={{ minWidth: "70px" }}>
         <ChevronLeft size={14} /> 16
       </Button>
@@ -69,6 +147,7 @@ export function NavigationControls() {
       <Button onClick={() => jump(16)} variant="ghost" size="sm" style={{ minWidth: "70px" }}>
         16 <ChevronRight size={14} />
       </Button>
+      </div>
     </div>
   );
 }
