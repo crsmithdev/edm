@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useWaveformStore, useAudioStore, useTempoStore, useUIStore, useStructureStore } from "@/stores";
 import { timeToBar, barToTime } from "@/utils/tempo";
-import { labelColors } from "@/utils/colors";
+import { labelWaveformColors } from "@/utils/colors";
 
 /**
  * Compact full-track waveform overview with moving playhead
@@ -109,7 +109,7 @@ export function OverviewWaveform() {
         overflow: "hidden",
       }}
     >
-      {/* Region overlays (subtle, behind waveform) - skip default regions */}
+      {/* Region overlays (colored by type, behind waveform) - skip default regions */}
       {duration > 0 &&
         regions
           .filter((region) => region.label !== "default")
@@ -125,8 +125,8 @@ export function OverviewWaveform() {
                   top: 0,
                   width: `${widthPercent}%`,
                   height: "100%",
-                  background: labelColors[region.label],
-                  opacity: 0.35,
+                  background: labelWaveformColors[region.label],
+                  opacity: 0.25,
                   pointerEvents: "none",
                 }}
               />
