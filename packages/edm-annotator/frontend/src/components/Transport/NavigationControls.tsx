@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from "lucide-react";
 import { useAudioStore, useTempoStore, useUIStore, useStructureStore, useWaveformStore } from "@/stores";
 import { getBarDuration, getBeatDuration } from "@/utils/tempo";
 import { Button, Tooltip } from "@/components/UI";
@@ -66,32 +66,36 @@ export function NavigationControls() {
           <Button
             onClick={handleStart}
             variant="secondary"
+            icon={<SkipBack size={16} />}
           >
-            &lt;&lt; Start
+            Start
           </Button>
         </Tooltip>
         <Tooltip content="Previous boundary" shortcut="↑">
           <Button
             onClick={handlePreviousBoundary}
             variant="secondary"
+            icon={<ChevronLeft size={16} />}
           >
-            &lt; Boundary
+            Boundary
           </Button>
         </Tooltip>
         <Tooltip content="Next boundary" shortcut="↓">
           <Button
             onClick={handleNextBoundary}
             variant="secondary"
+            icon={<ChevronRight size={16} />}
           >
-            Boundary &gt;
+            Boundary
           </Button>
         </Tooltip>
         <Tooltip content="Seek to end" shortcut="End">
           <Button
             onClick={handleEnd}
             variant="secondary"
+            icon={<SkipForward size={16} />}
           >
-            End &gt;&gt;
+            End
           </Button>
         </Tooltip>
       </div>
