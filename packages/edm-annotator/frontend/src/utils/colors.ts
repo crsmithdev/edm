@@ -8,7 +8,7 @@ export const labelColors: Record<SectionLabel, string> = {
   buildup: "rgba(0, 229, 204, 0.2)", // Cyan
   breakdown: "rgba(255, 107, 181, 0.2)", // Pink
   "breakdown-buildup": "rgba(255, 149, 0, 0.2)", // Orange
-  outro: "rgba(0, 184, 148, 0.2)", // Teal-green
+  outro: "rgba(91, 124, 255, 0.2)", // Blue
   default: "rgba(96, 96, 104, 0.1)", // Gray
 };
 
@@ -20,7 +20,7 @@ export const labelBorderColors: Record<SectionLabel, string> = {
   buildup: "#00e5cc", // Cyan
   breakdown: "#ff6bb5", // Pink
   "breakdown-buildup": "#ff9500", // Orange
-  outro: "#00b894", // Teal-green
+  outro: "#5b7cff", // Blue
   default: "#606068", // Gray
 };
 
@@ -32,6 +32,6 @@ export const labelWaveformColors: Record<SectionLabel, string> = {
   buildup: "#00e5cc", // Cyan
   breakdown: "#ff6bb5", // Pink
   "breakdown-buildup": "#ff9500", // Orange
-  outro: "#00b894", // Teal-green
+  outro: "#5b7cff", // Blue
   default: "#e8e8ea", // Light gray
 };
