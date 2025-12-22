@@ -29,9 +29,6 @@ export function NavigationControls() {
         gap: "var(--space-2)",
         alignItems: "stretch",
         justifyContent: "center",
-        paddingBottom: "var(--space-5)",
-        marginBottom: "var(--space-5)",
-        borderBottom: "1px solid var(--border-subtle)",
       }}
     >
       <Button onClick={() => jump(-16)} variant="ghost" size="sm" style={{ minWidth: "70px" }}>

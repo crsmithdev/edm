@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
-import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
-import { useAudioStore, useUIStore, useTempoStore, useStructureStore } from "@/stores";
+import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, SkipBack, SkipForward } from "lucide-react";
+import { useAudioStore, useUIStore, useTempoStore, useStructureStore, useWaveformStore } from "@/stores";
 import { Button, Tooltip } from "@/components/UI";
 import { getBeatDuration } from "@/utils/tempo";
 
@@ -11,6 +11,7 @@ export function PlaybackControls() {
   const { isPlaying, play, pause, currentTime, returnToCue, setCuePoint, seek, cuePoint } =
     useAudioStore();
   const { getNextBoundary, getPreviousBoundary } = useStructureStore();
+  const { duration } = useWaveformStore();
   const { quantizeEnabled } = useUIStore();
   const { trackBPM, trackDownbeat } = useTempoStore();
   const [isPreviewing, setIsPreviewing] = useState(false);
@@ -94,62 +95,110 @@ export function PlaybackControls() {
     }
   };
 
+  const handleStart = () => {
+    seek(0);
+  };
+
+  const handleEnd = () => {
+    seek(duration);
+  };
+
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
+        display: "flex",
+        flexDirection: "column",
         gap: "var(--space-3)",
-        alignItems: "stretch",
       }}
     >
-      <Tooltip content="Toggle playback" shortcut="Space">
-        <Button
-          onClick={togglePlayback}
-          variant={isPlaying ? "danger" : "accent"}
-          icon={isPlaying ? <Pause size={16} /> : <Play size={16} />}
-        >
-          {isPlaying ? "Pause" : "Play"}
-        </Button>
-      </Tooltip>
-      <Tooltip
-        content={
-          isPlaying
-            ? "Return to cue point and stop"
-            : isAtCuePoint()
-              ? "Hold to preview"
-              : "Set cue point at current position"
-        }
-        shortcut="C / R"
+      {/* Main controls row */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "var(--space-3)",
+        }}
       >
-        <Button
-          onClick={handleCueClick}
-          onMouseDown={handleCueMouseDown}
-          onMouseUp={handleCueMouseUp}
-          variant="warning"
-          icon={<RotateCcw size={16} />}
+        <Tooltip content="Toggle playback" shortcut="Space">
+          <Button
+            onClick={togglePlayback}
+            variant={isPlaying ? "danger" : "accent"}
+            icon={isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          >
+            {isPlaying ? "Pause" : "Play"}
+          </Button>
+        </Tooltip>
+        <Tooltip
+          content={
+            isPlaying
+              ? "Return to cue point and stop"
+              : isAtCuePoint()
+                ? "Hold to preview"
+                : "Set cue point at current position"
+          }
+          shortcut="C / R"
         >
-          Cue
-        </Button>
-      </Tooltip>
-      <Tooltip content="Previous boundary" shortcut="↑">
-        <Button
-          onClick={handlePreviousBoundary}
-          variant="secondary"
-          icon={<ChevronLeft size={16} />}
-        >
-          Boundary
-        </Button>
-      </Tooltip>
-      <Tooltip content="Next boundary" shortcut="↓">
-        <Button
-          onClick={handleNextBoundary}
-          variant="secondary"
-          icon={<ChevronRight size={16} />}
-        >
-          Boundary
-        </Button>
-      </Tooltip>
+          <Button
+            onClick={handleCueClick}
+            onMouseDown={handleCueMouseDown}
+            onMouseUp={handleCueMouseUp}
+            variant="warning"
+            icon={<RotateCcw size={16} />}
+          >
+            Cue
+          </Button>
+        </Tooltip>
+      </div>
+
+      {/* Navigation row - smaller buttons */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "var(--space-3)",
+        }}
+      >
+        <Tooltip content="Seek to start" shortcut="Home">
+          <Button
+            onClick={handleStart}
+            variant="secondary"
+            size="sm"
+            icon={<SkipBack size={14} />}
+          >
+            Start
+          </Button>
+        </Tooltip>
+        <Tooltip content="Previous boundary" shortcut="↑">
+          <Button
+            onClick={handlePreviousBoundary}
+            variant="secondary"
+            size="sm"
+            icon={<ChevronLeft size={14} />}
+          >
+            Boundary
+          </Button>
+        </Tooltip>
+        <Tooltip content="Next boundary" shortcut="↓">
+          <Button
+            onClick={handleNextBoundary}
+            variant="secondary"
+            size="sm"
+            icon={<ChevronRight size={14} />}
+          >
+            Boundary
+          </Button>
+        </Tooltip>
+        <Tooltip content="Seek to end" shortcut="End">
+          <Button
+            onClick={handleEnd}
+            variant="secondary"
+            size="sm"
+            icon={<SkipForward size={14} />}
+          >
+            End
+          </Button>
+        </Tooltip>
+      </div>
     </div>
   );
 }

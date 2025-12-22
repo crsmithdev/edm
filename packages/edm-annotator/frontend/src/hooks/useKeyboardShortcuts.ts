@@ -16,7 +16,7 @@ export function useKeyboardShortcuts() {
     useAudioStore();
   const { addBoundary, removeBoundary, getNextBoundary, getPreviousBoundary } = useStructureStore();
   const { setDownbeat, trackBPM, trackDownbeat } = useTempoStore();
-  const { zoom, zoomToFit } = useWaveformStore();
+  const { zoom, zoomToFit, duration } = useWaveformStore();
   const { toggleQuantize, showStatus, quantizeEnabled } = useUIStore();
   const isPreviewingRef = useRef(false);
 
@@ -185,6 +185,18 @@ export function useKeyboardShortcuts() {
           zoomToFit();
           showStatus("Zoom reset");
           break;
+
+        case "Home": // Home - seek to start
+          e.preventDefault();
+          seek(0);
+          showStatus("Seeked to start");
+          break;
+
+        case "End": // End - seek to end
+          e.preventDefault();
+          seek(duration);
+          showStatus("Seeked to end");
+          break;
       }
     };
 
@@ -239,6 +251,7 @@ export function useKeyboardShortcuts() {
     showStatus,
     zoom,
     zoomToFit,
+    duration,
     trackBPM,
     trackDownbeat,
     quantizeEnabled,
