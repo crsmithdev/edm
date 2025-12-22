@@ -99,10 +99,16 @@ class AnnotationService:
                 boundaries = []
                 for section in annotation_data["structure"]:
                     if isinstance(section, dict):
+                        label = section.get("label", "default")
+                        # Migrate old labels to new names
+                        if label == "unlabeled":
+                            label = "default"
+                        elif label == "breakbuild":
+                            label = "breakdown-buildup"
                         boundaries.append(
                             {
                                 "time": section.get("time", 0.0),
-                                "label": section.get("label", "unlabeled"),
+                                "label": label,
                             }
                         )
                 result["boundaries"] = boundaries
