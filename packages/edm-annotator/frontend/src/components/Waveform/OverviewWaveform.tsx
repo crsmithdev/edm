@@ -109,7 +109,24 @@ export function OverviewWaveform() {
         overflow: "hidden",
       }}
     >
-      {/* Region overlays (colored by type, behind waveform) - skip default regions */}
+      {/* Waveform SVG */}
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "#0a0a12",
+        }}
+      >
+        {/* Combined waveform - single color for overview */}
+        <path d={waveformPath} fill="rgba(100, 140, 180, 0.6)" stroke="none" />
+      </svg>
+
+      {/* Region overlays (colored by type, on top of waveform) - skip default regions */}
       {duration > 0 &&
         regions
           .filter((region) => region.label !== "default")
@@ -132,21 +149,6 @@ export function OverviewWaveform() {
               />
             );
           })}
-
-      {/* Waveform SVG */}
-      <svg
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "100%",
-          background: "#0a0a12",
-        }}
-      >
-        {/* Combined waveform - single color for overview */}
-        <path d={waveformPath} fill="rgba(100, 140, 180, 0.6)" stroke="none" />
-      </svg>
 
       {/* Boundary markers (subtle) */}
       {duration > 0 &&
