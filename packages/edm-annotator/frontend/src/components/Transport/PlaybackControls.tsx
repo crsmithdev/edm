@@ -138,7 +138,7 @@ export function PlaybackControls() {
           variant="secondary"
           icon={<ChevronLeft size={16} />}
         >
-          Previous
+          Boundary
         </Button>
       </Tooltip>
       <Tooltip content="Next boundary" shortcut="↓">
@@ -147,7 +147,7 @@ export function PlaybackControls() {
           variant="secondary"
           icon={<ChevronRight size={16} />}
         >
-          Next
+          Boundary
         </Button>
       </Tooltip>
     </div>
