@@ -1,13 +1,13 @@
-import { Plus, MapPin, Grid3x3 } from "lucide-react";
+import { Plus, Minus, MapPin, Grid3x3 } from "lucide-react";
 import { useAudioStore, useStructureStore, useTempoStore, useUIStore, useTrackStore } from "@/stores";
 import { Button, Tooltip } from "@/components/UI";
 
 /**
- * Editing row - three action buttons
+ * Editing row - four action buttons
  */
 export function EditingControls() {
   const { currentTime } = useAudioStore();
-  const { addBoundary } = useStructureStore();
+  const { addBoundary, removeBoundary } = useStructureStore();
   const { setDownbeat } = useTempoStore();
   const { quantizeEnabled, toggleQuantize, showStatus } = useUIStore();
   const { currentTrack } = useTrackStore();
@@ -22,11 +22,16 @@ export function EditingControls() {
     showStatus(`Added boundary at ${currentTime.toFixed(2)}s`);
   };
 
+  const handleRemoveBoundary = () => {
+    removeBoundary(currentTime);
+    showStatus(`Removed boundary at ${currentTime.toFixed(2)}s`);
+  };
+
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
+        gridTemplateColumns: "repeat(4, 1fr)",
         gap: "var(--space-3)",
         alignItems: "stretch",
       }}
@@ -37,6 +42,16 @@ export function EditingControls() {
           disabled={!currentTrack}
           variant="primary"
           icon={<Plus size={16} />}
+        >
+          Boundary
+        </Button>
+      </Tooltip>
+      <Tooltip content="Remove boundary at current time" shortcut="Shift+B">
+        <Button
+          onClick={handleRemoveBoundary}
+          disabled={!currentTrack}
+          variant="danger"
+          icon={<Minus size={16} />}
         >
           Boundary
         </Button>

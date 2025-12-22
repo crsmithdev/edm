@@ -14,7 +14,7 @@ import { getBarDuration, getBeatDuration } from "@/utils/tempo";
 export function useKeyboardShortcuts() {
   const { isPlaying, play, pause, seek, currentTime, returnToCue, setCuePoint, cuePoint } =
     useAudioStore();
-  const { addBoundary, getNextBoundary, getPreviousBoundary } = useStructureStore();
+  const { addBoundary, removeBoundary, getNextBoundary, getPreviousBoundary } = useStructureStore();
   const { setDownbeat, trackBPM, trackDownbeat } = useTempoStore();
   const { zoom, zoomToFit } = useWaveformStore();
   const { toggleQuantize, showStatus, quantizeEnabled } = useUIStore();
@@ -56,10 +56,15 @@ export function useKeyboardShortcuts() {
           }
           break;
 
-        case "b": // B - add boundary at playhead
+        case "b": // B - add boundary, Shift+B - remove boundary
           e.preventDefault();
-          addBoundary(currentTime);
-          showStatus(`Added boundary at ${currentTime.toFixed(2)}s`);
+          if (e.shiftKey) {
+            removeBoundary(currentTime);
+            showStatus(`Removed boundary at ${currentTime.toFixed(2)}s`);
+          } else {
+            addBoundary(currentTime);
+            showStatus(`Added boundary at ${currentTime.toFixed(2)}s`);
+          }
           break;
 
         case "d": // D - set downbeat at playhead
@@ -226,6 +231,7 @@ export function useKeyboardShortcuts() {
     setCuePoint,
     cuePoint,
     addBoundary,
+    removeBoundary,
     getNextBoundary,
     getPreviousBoundary,
     setDownbeat,
