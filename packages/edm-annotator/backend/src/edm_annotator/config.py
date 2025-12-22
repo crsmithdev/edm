@@ -33,7 +33,7 @@ class Config:
     HIGHS_LOW = 4000
 
     # Valid section labels
-    VALID_LABELS = ["intro", "buildup", "breakdown", "breakbuild", "outro", "unlabeled"]
+    VALID_LABELS = ["intro", "buildup", "breakdown", "breakdown-buildup", "outro", "default"]
 
     # Supported audio formats
     AUDIO_EXTENSIONS = ["*.mp3", "*.flac", "*.wav", "*.m4a"]
