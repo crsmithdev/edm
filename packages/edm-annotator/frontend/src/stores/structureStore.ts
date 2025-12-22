@@ -19,6 +19,8 @@ interface StructureState {
   markAsSaved: () => void;
   isDirty: () => boolean;
   reset: () => void;
+  getNextBoundary: (currentTime: number) => number | null;
+  getPreviousBoundary: (currentTime: number) => number | null;
 }
 
 export const useStructureStore = create<StructureState>((set, get) => ({
@@ -137,4 +139,18 @@ export const useStructureStore = create<StructureState>((set, get) => ({
       savedState: null,
       annotationTier: null,
     }),
+
+  getNextBoundary: (currentTime) => {
+    const { boundaries } = get();
+    // Find the first boundary after the current time (with small tolerance)
+    const next = boundaries.find((b) => b > currentTime + 0.01);
+    return next ?? null;
+  },
+
+  getPreviousBoundary: (currentTime) => {
+    const { boundaries } = get();
+    // Find the last boundary before the current time (with small tolerance)
+    const previous = [...boundaries].reverse().find((b) => b < currentTime - 0.01);
+    return previous ?? null;
+  },
 }));

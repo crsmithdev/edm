@@ -5,7 +5,6 @@ import {
   useTempoStore,
   useWaveformStore,
   useUIStore,
-  useTrackStore,
 } from "@/stores";
 import { getBarDuration, getBeatDuration } from "@/utils/tempo";
 
@@ -15,11 +14,10 @@ import { getBarDuration, getBeatDuration } from "@/utils/tempo";
 export function useKeyboardShortcuts() {
   const { isPlaying, play, pause, seek, currentTime, returnToCue, setCuePoint, cuePoint } =
     useAudioStore();
-  const { addBoundary } = useStructureStore();
+  const { addBoundary, getNextBoundary, getPreviousBoundary } = useStructureStore();
   const { setDownbeat, trackBPM, trackDownbeat } = useTempoStore();
   const { zoom, zoomToFit } = useWaveformStore();
   const { toggleQuantize, showStatus, quantizeEnabled } = useUIStore();
-  const { previousTrack, nextTrack } = useTrackStore();
   const isPreviewingRef = useRef(false);
 
   useEffect(() => {
@@ -143,14 +141,26 @@ export function useKeyboardShortcuts() {
           }
           break;
 
-        case "ArrowUp": // Up - previous track
+        case "ArrowUp": // Up - previous boundary
           e.preventDefault();
-          previousTrack();
+          {
+            const previous = getPreviousBoundary(currentTime);
+            if (previous !== null) {
+              seek(previous);
+              showStatus(`Jumped to boundary at ${previous.toFixed(2)}s`);
+            }
+          }
           break;
 
-        case "ArrowDown": // Down - next track
+        case "ArrowDown": // Down - next boundary
           e.preventDefault();
-          nextTrack();
+          {
+            const next = getNextBoundary(currentTime);
+            if (next !== null) {
+              seek(next);
+              showStatus(`Jumped to boundary at ${next.toFixed(2)}s`);
+            }
+          }
           break;
 
         case "+": // + - zoom in
@@ -216,11 +226,11 @@ export function useKeyboardShortcuts() {
     setCuePoint,
     cuePoint,
     addBoundary,
+    getNextBoundary,
+    getPreviousBoundary,
     setDownbeat,
     toggleQuantize,
     showStatus,
-    previousTrack,
-    nextTrack,
     zoom,
     zoomToFit,
     trackBPM,

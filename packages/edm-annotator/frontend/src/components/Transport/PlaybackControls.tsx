@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
-import { useAudioStore, useTrackStore, useUIStore, useTempoStore } from "@/stores";
+import { useAudioStore, useUIStore, useTempoStore, useStructureStore } from "@/stores";
 import { Button, Tooltip } from "@/components/UI";
 import { getBeatDuration } from "@/utils/tempo";
 
@@ -10,7 +10,7 @@ import { getBeatDuration } from "@/utils/tempo";
 export function PlaybackControls() {
   const { isPlaying, play, pause, currentTime, returnToCue, setCuePoint, seek, cuePoint } =
     useAudioStore();
-  const { nextTrack, previousTrack } = useTrackStore();
+  const { getNextBoundary, getPreviousBoundary } = useStructureStore();
   const { quantizeEnabled } = useUIStore();
   const { trackBPM, trackDownbeat } = useTempoStore();
   const [isPreviewing, setIsPreviewing] = useState(false);
@@ -80,6 +80,20 @@ export function PlaybackControls() {
     // If at cue point and not playing, preview was handled by mouse down/up
   };
 
+  const handlePreviousBoundary = () => {
+    const previous = getPreviousBoundary(currentTime);
+    if (previous !== null) {
+      seek(previous);
+    }
+  };
+
+  const handleNextBoundary = () => {
+    const next = getNextBoundary(currentTime);
+    if (next !== null) {
+      seek(next);
+    }
+  };
+
   return (
     <div
       style={{
@@ -118,18 +132,18 @@ export function PlaybackControls() {
           Cue
         </Button>
       </Tooltip>
-      <Tooltip content="Previous track" shortcut="↑">
+      <Tooltip content="Previous boundary" shortcut="↑">
         <Button
-          onClick={previousTrack}
+          onClick={handlePreviousBoundary}
           variant="secondary"
           icon={<ChevronLeft size={16} />}
         >
           Previous
         </Button>
       </Tooltip>
-      <Tooltip content="Next track" shortcut="↓">
+      <Tooltip content="Next boundary" shortcut="↓">
         <Button
-          onClick={nextTrack}
+          onClick={handleNextBoundary}
           variant="secondary"
           icon={<ChevronRight size={16} />}
         >
