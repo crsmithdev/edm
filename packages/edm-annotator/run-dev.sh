@@ -34,7 +34,6 @@ stream_with_timestamp() {
 }
 
 log "${BOLD}${CYAN}EDM Structure Annotator - Development Mode${RESET}"
-echo ""
 
 # Kill any existing processes on port 5001
 EXISTING_PIDS=$(lsof -ti :5001 2>/dev/null || true)
