@@ -360,7 +360,7 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
 
   // Handle mousewheel zoom
   const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
+    (e: WheelEvent) => {
       e.preventDefault();
       if (e.deltaY < 0 && onZoomIn) {
         onZoomIn();
@@ -371,12 +371,22 @@ export function DetailWaveform({ span, onZoomIn, onZoomOut }: DetailWaveformProp
     [onZoomIn, onZoomOut]
   );
 
+  // Add wheel listener with passive: false to allow preventDefault
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener("wheel", handleWheel);
+    };
+  }, [handleWheel]);
+
   return (
     <div
       ref={containerRef}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
-      onWheel={handleWheel}
       style={{
         position: "relative",
         width: "100%",
