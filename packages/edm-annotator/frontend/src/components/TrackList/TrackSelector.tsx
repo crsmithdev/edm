@@ -113,6 +113,21 @@ export function TrackSelector() {
     }
   };
 
+  // Calculate annotation counts
+  const annotationCounts = tracks.reduce(
+    (acc, track) => {
+      if (track.has_reference) {
+        acc.reference++;
+      } else if (track.has_generated) {
+        acc.generated++;
+      } else {
+        acc.none++;
+      }
+      return acc;
+    },
+    { reference: 0, generated: 0, none: 0 }
+  );
+
   return (
     <Card
       padding="sm"
@@ -133,17 +148,41 @@ export function TrackSelector() {
           overflow: "visible",
         }}
       >
-        <h3
-          style={{
-            color: "var(--text-primary)",
-            fontSize: "20px",
-            fontWeight: "var(--font-weight-normal)",
-            letterSpacing: "var(--letter-spacing-tight)",
-            margin: 0,
-          }}
-        >
-          Tracks
-        </h3>
+        <div>
+          <h3
+            style={{
+              color: "var(--text-primary)",
+              fontSize: "20px",
+              fontWeight: "var(--font-weight-normal)",
+              letterSpacing: "var(--letter-spacing-tight)",
+              margin: 0,
+              marginBottom: "var(--space-1)",
+            }}
+          >
+            Tracks
+          </h3>
+          <div
+            style={{
+              display: "flex",
+              gap: "var(--space-3)",
+              fontSize: "var(--font-size-xs)",
+              color: "var(--text-secondary)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
+              <CheckCircle size={12} style={{ color: "var(--color-success)" }} />
+              <span>{annotationCounts.reference} reference</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
+              <Sparkles size={12} style={{ color: "rgba(123, 106, 255, 0.8)" }} />
+              <span>{annotationCounts.generated} generated</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
+              <Circle size={12} style={{ color: "var(--text-muted)" }} />
+              <span>{annotationCounts.none} none</span>
+            </div>
+          </div>
+        </div>
         <div style={{ width: "auto" }}>
           <Tooltip content="Load selected track">
             <Button
